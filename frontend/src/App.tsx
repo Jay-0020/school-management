@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
+import { StudentsPage } from "./pages/StudentsPage";
 
 export function App() {
   return (
@@ -21,6 +22,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}>
             <SchoolSetupPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/students"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "TEACHER", "ACCOUNTANT"]}>
+            <StudentsPage />
           </ProtectedRoute>
         }
       />

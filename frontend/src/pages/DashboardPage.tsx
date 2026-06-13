@@ -6,7 +6,7 @@ import type { Role } from "../lib/types";
 // Module tiles available per role. `path` is set once a module is built;
 // the rest are Phase-1 stubs wired up in later phases.
 const MODULES: Record<string, { label: string; roles: Role[]; path?: string }> = {
-  students: { label: "Students", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "ACCOUNTANT"] },
+  students: { label: "Students", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "ACCOUNTANT"], path: "/students" },
   teachers: { label: "Teachers & Staff", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"] },
   attendance: { label: "Attendance", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER"] },
   notes: { label: "Notes", roles: ["STUDENT", "TEACHER"] },

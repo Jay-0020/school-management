@@ -40,3 +40,31 @@ export interface ClassWithSections {
   order: number;
   sections: SectionSummary[];
 }
+
+export type EnrollmentStatus = "ACTIVE" | "INACTIVE" | "ALUMNI" | "TRANSFERRED";
+
+export interface Student {
+  id: string;
+  admissionNo: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string | null;
+  gender?: string | null;
+  sectionId?: string | null;
+  guardianName?: string | null;
+  guardianPhone?: string | null;
+  address?: string | null;
+  status: EnrollmentStatus;
+  section?: {
+    id: string;
+    name: string;
+    class: { id: string; name: string };
+  } | null;
+}
+
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

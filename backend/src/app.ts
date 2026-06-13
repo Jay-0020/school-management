@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import { env } from "./config/env";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 import { authRouter } from "./modules/auth/auth.routes";
+import { classesRouter } from "./modules/classes/classes.routes";
 import { schoolRouter } from "./modules/school/school.routes";
 import { studentsRouter } from "./modules/students/students.routes";
 import { teachersRouter } from "./modules/teachers/teachers.routes";
@@ -28,6 +29,7 @@ export function createApp() {
 
   app.use("/api/auth", authRouter);
   app.use("/api/school", schoolRouter);
+  app.use("/api/classes", classesRouter);
   app.use("/api/students", studentsRouter);
   app.use("/api/teachers", teachersRouter);
 

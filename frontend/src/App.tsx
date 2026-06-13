@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
+import { SchoolSetupPage } from "./pages/SchoolSetupPage";
 
 export function App() {
   return (
@@ -12,6 +13,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/setup"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}>
+            <SchoolSetupPage />
           </ProtectedRoute>
         }
       />

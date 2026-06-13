@@ -5,7 +5,7 @@ import { useBranding } from "../context/BrandingContext";
 
 export function LoginPage() {
   const { login } = useAuth();
-  const branding = useBranding();
+  const { settings: branding } = useBranding();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");

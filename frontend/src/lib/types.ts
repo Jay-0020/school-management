@@ -26,3 +26,17 @@ export interface SchoolSettings {
   timezone: string;
   academicYear?: string | null;
 }
+
+export interface SectionSummary {
+  id: string;
+  name: string;
+  classTeacher?: { id: string; firstName: string; lastName: string } | null;
+  _count: { students: number };
+}
+
+export interface ClassWithSections {
+  id: string;
+  name: string;
+  order: number;
+  sections: SectionSummary[];
+}

@@ -6,6 +6,13 @@ import { useAuth } from "../context/AuthContext";
 import { useBranding } from "../context/BrandingContext";
 import type { ClassWithSections, SchoolSettings } from "../lib/types";
 
+/** Pull a human-readable message out of an axios error. */
+function errMsg(err: unknown, fallback: string): string {
+  return (
+    (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? fallback
+  );
+}
+
 export function SchoolSetupPage() {
   const { user, logout } = useAuth();
   const { settings, refresh } = useBranding();
@@ -55,7 +62,7 @@ function BrandingPanel({
       await onSaved();
       setTimeout(() => setSaved(false), 2500);
     },
-    onError: () => setError("Could not save settings"),
+    onError: (err) => setError(errMsg(err, "Could not save settings")),
   });
 
   if (!form) return <section className="panel">Loading settings…</section>;
@@ -158,19 +165,26 @@ function ClassesPanel() {
       (await api.get<{ items: ClassWithSections[] }>("/classes")).data.items,
   });
 
+  const [error, setError] = useState<string | null>(null);
   const invalidate = () => qc.invalidateQueries({ queryKey: ["classes"] });
 
   const addClass = useMutation({
     mutationFn: (name: string) => api.post("/classes", { name }),
     onSuccess: () => {
       setClassName("");
+      setError(null);
       invalidate();
     },
+    onError: (err) => setError(errMsg(err, "Could not add class")),
   });
 
   const deleteClass = useMutation({
     mutationFn: (id: string) => api.delete(`/classes/${id}`),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      setError(null);
+      invalidate();
+    },
+    onError: (err) => setError(errMsg(err, "Could not delete class")),
   });
 
   return (
@@ -194,6 +208,8 @@ function ClassesPanel() {
           Add class
         </button>
       </form>
+
+      {error && <p className="error">{error}</p>}
 
       {isLoading && <p className="muted">Loading…</p>}
       {data && data.length === 0 && <p className="muted">No classes yet.</p>}
@@ -222,18 +238,25 @@ function ClassRow({
   onDelete: () => void;
 }) {
   const [sectionName, setSectionName] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const addSection = useMutation({
     mutationFn: (name: string) => api.post(`/classes/${cls.id}/sections`, { name }),
     onSuccess: () => {
       setSectionName("");
+      setError(null);
       onChanged();
     },
+    onError: (err) => setError(errMsg(err, "Could not add section")),
   });
 
   const deleteSection = useMutation({
     mutationFn: (id: string) => api.delete(`/classes/sections/${id}`),
-    onSuccess: onChanged,
+    onSuccess: () => {
+      setError(null);
+      onChanged();
+    },
+    onError: (err) => setError(errMsg(err, "Could not delete section")),
   });
 
   return (
@@ -277,6 +300,8 @@ function ClassRow({
           Add section
         </button>
       </form>
+
+      {error && <p className="error">{error}</p>}
     </div>
   );
 }

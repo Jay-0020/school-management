@@ -184,6 +184,9 @@ button.link {
   font-weight: 600;
   color: var(--muted);
 }
+.form-grid .full-width {
+  grid-column: 1 / -1;
+}
 .form-grid input {
   width: 100%;
   margin-top: 6px;

@@ -316,6 +316,10 @@ function StudentModal({
               onChange={(e) => set("guardianPhone", e.target.value)}
             />
           </label>
+          <label className="full-width">
+            Address
+            <input value={form.address} onChange={(e) => set("address", e.target.value)} />
+          </label>
 
           <div className="form-actions">
             {error && <span className="error inline">{error}</span>}

@@ -37,12 +37,13 @@ const createSchema = z.object({
   admissionNo: z.string().min(1),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  dateOfBirth: z.coerce.date().optional(),
-  gender: z.string().optional(),
-  sectionId: z.string().optional(),
-  guardianName: z.string().optional(),
-  guardianPhone: z.string().optional(),
-  address: z.string().optional(),
+  dateOfBirth: z.coerce.date().nullish(),
+  gender: z.string().nullish(),
+  sectionId: z.string().nullish(),
+  guardianName: z.string().nullish(),
+  guardianPhone: z.string().nullish(),
+  address: z.string().nullish(),
+  status: z.enum(["ACTIVE", "INACTIVE", "ALUMNI", "TRANSFERRED"]).optional(),
 });
 
 studentsRouter.post(

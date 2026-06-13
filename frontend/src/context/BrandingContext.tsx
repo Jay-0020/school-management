@@ -17,7 +17,10 @@ interface BrandingState {
 const BrandingContext = createContext<BrandingState | undefined>(undefined);
 
 function applyTheme(settings: SchoolSettings) {
-  document.documentElement.style.setProperty("--primary", settings.primaryColor);
+  // Only override the CSS default when a colour is actually set.
+  if (settings.primaryColor) {
+    document.documentElement.style.setProperty("--primary", settings.primaryColor);
+  }
   document.title = settings.name;
 }
 

@@ -7,7 +7,7 @@ import type { Role } from "../lib/types";
 // the rest are Phase-1 stubs wired up in later phases.
 const MODULES: Record<string, { label: string; roles: Role[]; path?: string }> = {
   students: { label: "Students", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "ACCOUNTANT"], path: "/students" },
-  teachers: { label: "Teachers & Staff", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"] },
+  teachers: { label: "Teachers & Staff", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"], path: "/teachers" },
   attendance: { label: "Attendance", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER"] },
   notes: { label: "Notes", roles: ["STUDENT", "TEACHER"] },
   schoolwork: { label: "Schoolwork", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"] },

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
-import { asyncHandler } from "../../lib/http";
+import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
 
 export const teachersRouter = Router();
@@ -33,10 +33,10 @@ const createSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   staffType: z.enum(["TEACHING", "NON_TEACHING"]).default("TEACHING"),
-  qualifications: z.string().optional(),
-  joiningDate: z.coerce.date().optional(),
-  phone: z.string().optional(),
-  email: z.string().email().optional(),
+  qualifications: z.string().nullish(),
+  joiningDate: z.coerce.date().nullish(),
+  phone: z.string().nullish(),
+  email: z.string().email().nullish(),
 });
 
 teachersRouter.post(
@@ -44,7 +44,50 @@ teachersRouter.post(
   requireRole("SUPER_ADMIN", "ADMIN"),
   asyncHandler(async (req, res) => {
     const data = createSchema.parse(req.body);
+    const clash = await prisma.teacher.findUnique({
+      where: { employeeNo: data.employeeNo },
+    });
+    if (clash) throw ApiError.conflict("Employee number already in use");
     const teacher = await prisma.teacher.create({ data });
     res.status(201).json(teacher);
+  })
+);
+
+teachersRouter.get(
+  "/:id",
+  requireRole("SUPER_ADMIN", "ADMIN", "ACCOUNTANT"),
+  asyncHandler(async (req, res) => {
+    const teacher = await prisma.teacher.findUnique({
+      where: { id: req.params.id },
+      include: { classTeacherOf: { include: { class: true } } },
+    });
+    if (!teacher) throw ApiError.notFound("Teacher not found");
+    res.json(teacher);
+  })
+);
+
+const updateSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  staffType: z.enum(["TEACHING", "NON_TEACHING"]).optional(),
+  isActive: z.boolean().optional(),
+  qualifications: z.string().nullish(),
+  joiningDate: z.coerce.date().nullish(),
+  phone: z.string().nullish(),
+  email: z.string().email().nullish(),
+});
+
+teachersRouter.patch(
+  "/:id",
+  requireRole("SUPER_ADMIN", "ADMIN"),
+  asyncHandler(async (req, res) => {
+    const data = updateSchema.parse(req.body);
+    const exists = await prisma.teacher.findUnique({ where: { id: req.params.id } });
+    if (!exists) throw ApiError.notFound("Teacher not found");
+    const teacher = await prisma.teacher.update({
+      where: { id: req.params.id },
+      data,
+    });
+    res.json(teacher);
   })
 );

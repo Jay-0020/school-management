@@ -62,6 +62,21 @@ export interface Student {
   } | null;
 }
 
+export type StaffType = "TEACHING" | "NON_TEACHING";
+
+export interface Teacher {
+  id: string;
+  employeeNo: string;
+  firstName: string;
+  lastName: string;
+  staffType: StaffType;
+  qualifications?: string | null;
+  joiningDate?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  isActive: boolean;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

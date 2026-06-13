@@ -4,6 +4,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
 import { StudentsPage } from "./pages/StudentsPage";
+import { TeachersPage } from "./pages/TeachersPage";
 
 export function App() {
   return (
@@ -30,6 +31,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "TEACHER", "ACCOUNTANT"]}>
             <StudentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teachers"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"]}>
+            <TeachersPage />
           </ProtectedRoute>
         }
       />

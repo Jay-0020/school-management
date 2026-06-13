@@ -31,14 +31,15 @@ schoolRouter.get(
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
-  shortName: z.string().optional(),
   primaryColor: z.string().optional(),
-  logoUrl: z.string().optional(),
-  contactEmail: z.string().optional(),
-  contactPhone: z.string().optional(),
   currency: z.string().optional(),
   timezone: z.string().optional(),
-  academicYear: z.string().optional(),
+  // Nullable columns — accept null to clear them.
+  shortName: z.string().nullish(),
+  logoUrl: z.string().nullish(),
+  contactEmail: z.string().nullish(),
+  contactPhone: z.string().nullish(),
+  academicYear: z.string().nullish(),
 });
 
 schoolRouter.put(

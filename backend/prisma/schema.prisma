@@ -1,0 +1,134 @@
+// School Management Portal — data model (Phase 1 core).
+//
+// Deployment model: ONE database per school (full instance per school), so there
+// is no cross-tenant scoping here — every row already belongs to this school.
+// `SchoolSettings` is a single-row table holding this deployment's white-label config.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── White-label config for this deployment ────────────────────────────────
+model SchoolSettings {
+  id            Int      @id @default(1) // single row, always id=1
+  name          String
+  shortName     String?
+  primaryColor  String   @default("#1d4ed8")
+  logoUrl       String?
+  contactEmail  String?
+  contactPhone  String?
+  currency      String   @default("INR")
+  timezone      String   @default("Asia/Kolkata")
+  academicYear  String?  // e.g. "2026-2027"
+  updatedAt     DateTime @updatedAt
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  ACCOUNTANT
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  phone              String?  @unique
+  passwordHash       String
+  role               Role
+  isActive           Boolean  @default(true)
+  mustChangePassword Boolean  @default(true)
+  lastLoginAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  teacher Teacher?
+  student Student?
+
+  @@index([role])
+}
+
+// ── Academic structure ─────────────────────────────────────────────────────
+model Class {
+  id        String    @id @default(cuid())
+  name      String    // e.g. "Grade 5", "X"
+  order     Int       @default(0) // for sorting / promotion
+  sections  Section[]
+  createdAt DateTime  @default(now())
+
+  @@unique([name])
+}
+
+model Section {
+  id           String    @id @default(cuid())
+  name         String    // e.g. "A", "B"
+  class        Class     @relation(fields: [classId], references: [id])
+  classId      String
+  classTeacher Teacher?  @relation("ClassTeacher", fields: [classTeacherId], references: [id])
+  classTeacherId String?
+  students     Student[]
+  createdAt    DateTime  @default(now())
+
+  @@unique([classId, name])
+}
+
+// ── People ──────────────────────────────────────────────────────────────────
+enum StaffType {
+  TEACHING
+  NON_TEACHING
+}
+
+model Teacher {
+  id             String    @id @default(cuid())
+  user           User?     @relation(fields: [userId], references: [id])
+  userId         String?   @unique
+  employeeNo     String    @unique
+  firstName      String
+  lastName       String
+  staffType      StaffType @default(TEACHING)
+  qualifications String?
+  joiningDate    DateTime?
+  phone          String?
+  email          String?
+  isActive       Boolean   @default(true)
+  classTeacherOf Section[] @relation("ClassTeacher")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  INACTIVE
+  ALUMNI
+  TRANSFERRED
+}
+
+model Student {
+  id            String           @id @default(cuid())
+  user          User?            @relation(fields: [userId], references: [id])
+  userId        String?          @unique
+  admissionNo   String           @unique
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime?
+  gender        String?
+  section       Section?         @relation(fields: [sectionId], references: [id])
+  sectionId     String?
+  guardianName  String?
+  guardianPhone String?
+  address       String?
+  status        EnrollmentStatus @default(ACTIVE)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([sectionId])
+  @@index([status])
+}

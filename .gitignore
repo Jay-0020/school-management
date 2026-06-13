@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.local
+*/.env
+!*/.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Prisma
+backend/prisma/*.db
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Uploads (local dev)
+uploads/

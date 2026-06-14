@@ -7,6 +7,7 @@ import { FeesPage } from "./pages/FeesPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NoticesPage } from "./pages/NoticesPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
+import { SchoolworkPage } from "./pages/SchoolworkPage";
 import { StudentsPage } from "./pages/StudentsPage";
 import { TeachersPage } from "./pages/TeachersPage";
 import { UsersPage } from "./pages/UsersPage";
@@ -84,6 +85,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "STUDENT", "PARENT"]}>
             <FeesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/schoolwork"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"]}>
+            <SchoolworkPage />
           </ProtectedRoute>
         }
       />

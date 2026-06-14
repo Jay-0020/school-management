@@ -95,6 +95,25 @@ export interface RosterEntry {
   note: string | null;
 }
 
+export interface Subject {
+  id: string;
+  name: string;
+  code: string | null;
+}
+
+export interface Homework {
+  id: string;
+  title: string;
+  description: string;
+  sectionId: string;
+  subjectId: string | null;
+  dueDate: string | null;
+  createdAt: string;
+  subject?: { id: string; name: string } | null;
+  section?: { id: string; name: string; class: { name: string } } | null;
+  assignedBy?: { id: string; email: string } | null;
+}
+
 export type InvoiceStatus = "PENDING" | "PARTIAL" | "PAID" | "CANCELLED";
 export type PaymentMethod =
   | "CASH"

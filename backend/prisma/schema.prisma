@@ -50,9 +50,10 @@ model User {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  teacher Teacher?
-  student Student?
-  notices Notice[]
+  teacher  Teacher?
+  student  Student?
+  notices  Notice[]
+  homework Homework[]
 
   @@index([role])
 }
@@ -78,6 +79,7 @@ model Section {
   classTeacherId String?
   students     Student[]
   notices      Notice[]
+  homework     Homework[]
   createdAt    DateTime  @default(now())
 
   @@unique([classId, name])
@@ -257,4 +259,31 @@ model Payment {
   createdAt    DateTime      @default(now())
 
   @@index([invoiceId])
+}
+
+// ── Schoolwork ────────────────────────────────────────────────────────────────
+model Subject {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  code      String?    @unique
+  homework  Homework[]
+  createdAt DateTime   @default(now())
+}
+
+model Homework {
+  id           String    @id @default(cuid())
+  title        String
+  description  String
+  section      Section   @relation(fields: [sectionId], references: [id])
+  sectionId    String
+  subject      Subject?  @relation(fields: [subjectId], references: [id])
+  subjectId    String?
+  dueDate      DateTime?
+  assignedBy   User?     @relation(fields: [assignedById], references: [id])
+  assignedById String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([sectionId])
+  @@index([subjectId])
 }

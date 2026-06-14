@@ -11,6 +11,7 @@ import { classesRouter } from "./modules/classes/classes.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
 import { noticesRouter } from "./modules/notices/notices.routes";
 import { schoolRouter } from "./modules/school/school.routes";
+import { schoolworkRouter } from "./modules/schoolwork/schoolwork.routes";
 import { studentsRouter } from "./modules/students/students.routes";
 import { teachersRouter } from "./modules/teachers/teachers.routes";
 import { usersRouter } from "./modules/users/users.routes";
@@ -33,6 +34,7 @@ export function createApp() {
 
   app.use("/api/auth", authRouter);
   app.use("/api/school", schoolRouter);
+  app.use("/api/schoolwork", schoolworkRouter);
   app.use("/api/classes", classesRouter);
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/fees", feesRouter);

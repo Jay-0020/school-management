@@ -11,7 +11,7 @@ const MODULES: Record<string, { label: string; roles: Role[]; path?: string }> =
   attendance: { label: "Attendance", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER"], path: "/attendance" },
   notices: { label: "Notices", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "STUDENT", "PARENT"], path: "/notices" },
   notes: { label: "Notes", roles: ["STUDENT", "TEACHER"] },
-  schoolwork: { label: "Schoolwork", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"] },
+  schoolwork: { label: "Schoolwork", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"], path: "/schoolwork" },
   fees: { label: "Fees", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "STUDENT", "PARENT"], path: "/fees" },
   payroll: { label: "Payroll", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"] },
   expenses: { label: "Expense Approvals", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "ACCOUNTANT"] },

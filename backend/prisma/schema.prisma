@@ -47,6 +47,7 @@ model User {
   role               Role
   isActive           Boolean  @default(true)
   mustChangePassword Boolean  @default(true)
+  leaveQuota         Int      @default(12) // annual leave days
   lastLoginAt        DateTime?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -59,6 +60,7 @@ model User {
   expensesDecided   Expense[]      @relation("ExpenseDecider")
   leaveRequests     LeaveRequest[] @relation("LeaveApplicant")
   leaveDecisions    LeaveRequest[] @relation("LeaveApprover")
+  notifications     Notification[]
 
   @@index([role])
 }
@@ -408,4 +410,17 @@ model LeaveRequest {
 
   @@index([applicantId])
   @@index([status])
+}
+
+// ── In-app notifications ──────────────────────────────────────────────────────
+model Notification {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
 }

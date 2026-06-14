@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Prisma, Role } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
+import { notify, notifyMany } from "../../lib/notify";
 import { authenticate } from "../../middleware/auth";
 
 export const leaveRouter = Router();
@@ -10,6 +11,63 @@ export const leaveRouter = Router();
 leaveRouter.use(authenticate);
 
 const STAFF_ROLES: Role[] = ["TEACHER", "ACCOUNTANT"];
+
+const dayCount = (from: Date, to: Date) =>
+  Math.round((to.getTime() - from.getTime()) / 86400000) + 1;
+
+/** Current Indian academic year (Apr 1 – Mar 31) as a UTC date range. */
+function academicYearRange(now = new Date()) {
+  const y = now.getUTCFullYear();
+  const startYear = now.getUTCMonth() >= 3 ? y : y - 1;
+  return {
+    start: new Date(Date.UTC(startYear, 3, 1)),
+    end: new Date(Date.UTC(startYear + 1, 2, 31, 23, 59, 59)),
+  };
+}
+
+/** Approved leave days used this academic year. */
+async function usedDays(userId: string): Promise<number> {
+  const { start, end } = academicYearRange();
+  const approved = await prisma.leaveRequest.findMany({
+    where: { applicantId: userId, status: "APPROVED", fromDate: { gte: start, lte: end } },
+    select: { fromDate: true, toDate: true },
+  });
+  return approved.reduce((sum, r) => sum + dayCount(r.fromDate, r.toDate), 0);
+}
+
+/** Users who should review a given applicant's leave. */
+async function resolveApprovers(applicantId: string): Promise<string[]> {
+  const applicant = await prisma.user.findUnique({
+    where: { id: applicantId },
+    include: { student: { include: { section: { include: { classTeacher: true } } } } },
+  });
+  if (!applicant) return [];
+  if (applicant.role === "STUDENT" || applicant.role === "PARENT") {
+    const ctUser = applicant.student?.section?.classTeacher?.userId;
+    if (ctUser) return [ctUser];
+  }
+  // staff (or student with no class-teacher login) → deans, else admins
+  const deans = await prisma.user.findMany({
+    where: { role: "DEAN", isActive: true },
+    select: { id: true },
+  });
+  if (deans.length) return deans.map((d) => d.id);
+  const admins = await prisma.user.findMany({
+    where: { role: { in: ["ADMIN", "SUPER_ADMIN"] }, isActive: true },
+    select: { id: true },
+  });
+  return admins.map((a) => a.id);
+}
+
+function applicantName(a: {
+  email: string;
+  student?: { firstName: string; lastName: string } | null;
+  teacher?: { firstName: string; lastName: string } | null;
+}): string {
+  if (a.student) return `${a.student.firstName} ${a.student.lastName}`;
+  if (a.teacher) return `${a.teacher.firstName} ${a.teacher.lastName}`;
+  return a.email;
+}
 
 const include = {
   applicant: {
@@ -54,17 +112,56 @@ leaveRouter.post(
   "/",
   asyncHandler(async (req, res) => {
     const data = createSchema.parse(req.body);
+    const from = parseDay(data.fromDate);
+    const to = parseDay(data.toDate);
+    const requested = dayCount(from, to);
+
+    // Advance permission is checked against the annual quota; a justification
+    // for a past absence is recorded regardless (the day was already missed).
+    if (data.kind === "ADVANCE") {
+      const me = await prisma.user.findUnique({ where: { id: req.user!.sub } });
+      const used = await usedDays(req.user!.sub);
+      const remaining = (me?.leaveQuota ?? 0) - used;
+      if (requested > remaining) {
+        throw ApiError.badRequest(
+          `Exceeds your leave balance — ${remaining} day(s) remaining this year`
+        );
+      }
+    }
+
     const request = await prisma.leaveRequest.create({
       data: {
         applicantId: req.user!.sub,
         kind: data.kind,
-        fromDate: parseDay(data.fromDate),
-        toDate: parseDay(data.toDate),
+        fromDate: from,
+        toDate: to,
         reason: data.reason,
       },
       include,
     });
+
+    // Notify the approver(s) that a request is waiting.
+    const approvers = await resolveApprovers(req.user!.sub);
+    if (approvers.length) {
+      await notifyMany(
+        approvers,
+        `New leave request from ${applicantName(request.applicant)}`,
+        "/leave"
+      );
+    }
+
     res.status(201).json(request);
+  })
+);
+
+// Current user's leave balance for the academic year.
+leaveRouter.get(
+  "/balance",
+  asyncHandler(async (req, res) => {
+    const me = await prisma.user.findUnique({ where: { id: req.user!.sub } });
+    const used = await usedDays(req.user!.sub);
+    const quota = me?.leaveQuota ?? 0;
+    res.json({ quota, used, remaining: Math.max(0, quota - used) });
   })
 );
 
@@ -148,6 +245,18 @@ leaveRouter.post(
       },
       include,
     });
+
+    // Notify the applicant of the outcome.
+    const range =
+      request.fromDate.toISOString().slice(0, 10) +
+      (request.toDate.getTime() !== request.fromDate.getTime()
+        ? `–${request.toDate.toISOString().slice(0, 10)}`
+        : "");
+    await notify(
+      request.applicantId,
+      `Your leave (${range}) was ${decision === "APPROVED" ? "approved" : "rejected"}`,
+      "/leave"
+    );
 
     // Approved student leave → mark those dates EXCUSED in attendance.
     const student = request.applicant.student;

@@ -6,7 +6,7 @@ import { EmptyState, SkeletonRows } from "../components/EmptyState";
 import { IconCalendar } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "../lib/toast";
-import type { LeaveKind, LeaveRequest, LeaveStatus } from "../lib/types";
+import type { LeaveBalance, LeaveKind, LeaveRequest, LeaveStatus } from "../lib/types";
 
 const statusClass: Record<LeaveStatus, string> = {
   PENDING: "inv-pending",
@@ -38,6 +38,8 @@ export function LeavePage() {
         {tab === "mine" && <RequestButton />}
       </div>
 
+      <BalanceStrip />
+
       {canApprove && (
         <div className="tabs">
           <button className={`tab ${tab === "mine" ? "active" : ""}`} onClick={() => setTab("mine")}>
@@ -51,6 +53,30 @@ export function LeavePage() {
 
       {tab === "mine" ? <LeaveList scope="mine" /> : <LeaveList scope="inbox" />}
     </AppShell>
+  );
+}
+
+function BalanceStrip() {
+  const { data } = useQuery({
+    queryKey: ["leave-balance"],
+    queryFn: async () => (await api.get<LeaveBalance>("/leave/balance")).data,
+  });
+  if (!data) return null;
+  return (
+    <div className="summary-strip">
+      <div className="summary-chip">
+        <span className="muted">Annual quota</span>
+        <strong>{data.quota} days</strong>
+      </div>
+      <div className="summary-chip">
+        <span className="muted">Used this year</span>
+        <strong>{data.used} days</strong>
+      </div>
+      <div className="summary-chip">
+        <span className="muted">Remaining</span>
+        <strong className={data.remaining <= 0 ? "pct-low" : "pct"}>{data.remaining} days</strong>
+      </div>
+    </div>
   );
 }
 
@@ -79,6 +105,7 @@ function LeaveList({ scope }: { scope: "mine" | "inbox" }) {
       api.post(`/leave/${v.id}/decision`, { decision: v.decision, note: v.note ?? null }),
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ["leave"] });
+      qc.invalidateQueries({ queryKey: ["leave-balance"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success(v.decision === "APPROVED" ? "Leave approved" : "Leave rejected");
     },
@@ -177,6 +204,7 @@ function RequestModal({ onClose }: { onClose: () => void }) {
     mutationFn: () => api.post("/leave", { kind, fromDate, toDate, reason }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leave"] });
+      qc.invalidateQueries({ queryKey: ["leave-balance"] });
       toast.success("Leave request submitted");
       onClose();
     },

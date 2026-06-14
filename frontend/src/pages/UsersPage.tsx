@@ -44,6 +44,26 @@ export function UsersPage() {
       api.post(`/users/${vars.id}/reset-password`, { newPassword: vars.newPassword }),
   });
 
+  const setQuota = useMutation({
+    mutationFn: (vars: { id: string; leaveQuota: number }) =>
+      api.patch(`/users/${vars.id}`, { leaveQuota: vars.leaveQuota }),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Leave quota updated");
+    },
+  });
+
+  function handleQuota(u: ManagedUser) {
+    const v = window.prompt(`Annual leave days for ${u.email}:`, String(u.leaveQuota));
+    if (v === null) return;
+    const n = Number(v);
+    if (!Number.isInteger(n) || n < 0 || n > 365) {
+      toast.error("Enter a whole number of days (0–365)");
+      return;
+    }
+    setQuota.mutate({ id: u.id, leaveQuota: n });
+  }
+
   function handleReset(u: ManagedUser) {
     const pw = window.prompt(`New temporary password for ${u.email} (min 8 chars):`);
     if (!pw) return;
@@ -80,6 +100,7 @@ export function UsersPage() {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Linked to</th>
+                <th>Leave/yr</th>
                 <th>Last login</th>
                 <th>Status</th>
                 <th></th>
@@ -96,6 +117,7 @@ export function UsersPage() {
                     <span className="badge">{u.role}</span>
                   </td>
                   <td>{linkedLabel(u)}</td>
+                  <td>{u.leaveQuota}</td>
                   <td>{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "—"}</td>
                   <td>
                     <span className={`status status-${u.isActive ? "active" : "inactive"}`}>
@@ -106,6 +128,9 @@ export function UsersPage() {
                     <div className="row-actions">
                       <button className="link" onClick={() => handleReset(u)}>
                         Reset pw
+                      </button>
+                      <button className="link" onClick={() => handleQuota(u)}>
+                        Quota
                       </button>
                       {u.id !== me?.id && (
                         <>

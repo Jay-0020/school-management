@@ -7,6 +7,20 @@ export type Role =
   | "STUDENT"
   | "PARENT";
 
+export interface AppNotification {
+  id: string;
+  message: string;
+  link: string | null;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface LeaveBalance {
+  quota: number;
+  used: number;
+  remaining: number;
+}
+
 export type LeaveKind = "ADVANCE" | "JUSTIFICATION";
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
@@ -314,6 +328,7 @@ export interface ManagedUser {
   role: Role;
   isActive: boolean;
   mustChangePassword: boolean;
+  leaveQuota: number;
   lastLoginAt?: string | null;
   createdAt: string;
   teacher?: { id: string; firstName: string; lastName: string; employeeNo: string } | null;

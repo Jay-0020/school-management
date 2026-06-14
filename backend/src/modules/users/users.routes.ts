@@ -16,6 +16,7 @@ const userSelect = {
   role: true,
   isActive: true,
   mustChangePassword: true,
+  leaveQuota: true,
   lastLoginAt: true,
   createdAt: true,
   teacher: { select: { id: true, firstName: true, lastName: true, employeeNo: true } },
@@ -123,20 +124,23 @@ usersRouter.post(
   })
 );
 
-const patchSchema = z.object({ isActive: z.boolean() });
+const patchSchema = z.object({
+  isActive: z.boolean().optional(),
+  leaveQuota: z.number().int().min(0).max(365).optional(),
+});
 
 usersRouter.patch(
   "/:id",
   asyncHandler(async (req, res) => {
-    const { isActive } = patchSchema.parse(req.body);
-    if (req.params.id === req.user!.sub && !isActive) {
+    const data = patchSchema.parse(req.body);
+    if (req.params.id === req.user!.sub && data.isActive === false) {
       throw ApiError.badRequest("You can't deactivate your own account");
     }
     const exists = await prisma.user.findUnique({ where: { id: req.params.id } });
     if (!exists) throw ApiError.notFound("User not found");
     const user = await prisma.user.update({
       where: { id: req.params.id },
-      data: { isActive },
+      data,
       select: userSelect,
     });
     res.json(user);

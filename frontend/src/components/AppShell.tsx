@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useBranding } from "../context/BrandingContext";
 import { useTheme } from "../context/ThemeContext";
 import { navForRole } from "../lib/nav";
+import { NotificationBell } from "./NotificationBell";
 import {
   IconChevronDown,
   IconClose,
@@ -102,6 +103,8 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
           <button className="icon-btn" onClick={toggle} title="Toggle theme">
             {theme === "light" ? <IconMoon /> : <IconSun />}
           </button>
+
+          <NotificationBell />
 
           <div className="user-menu" ref={menuRef}>
             <button className="user-btn" onClick={() => setMenuOpen((o) => !o)}>

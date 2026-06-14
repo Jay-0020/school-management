@@ -1,0 +1,553 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState, type FormEvent } from "react";
+import { api } from "../api/client";
+import { PageHeader } from "../components/PageHeader";
+import { useAuth } from "../context/AuthContext";
+import type {
+  ClassWithSections,
+  FeeStructure,
+  Invoice,
+  InvoiceDetail,
+  InvoiceStatus,
+  PaymentMethod,
+} from "../lib/types";
+
+const money = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+const STATUSES: InvoiceStatus[] = ["PENDING", "PARTIAL", "PAID", "CANCELLED"];
+const METHODS: PaymentMethod[] = [
+  "CASH",
+  "UPI",
+  "BANK_TRANSFER",
+  "CARD",
+  "CHEQUE",
+  "ONLINE",
+  "OTHER",
+];
+
+function errMsg(err: unknown, fallback: string): string {
+  return (
+    (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? fallback
+  );
+}
+
+export function FeesPage() {
+  const { user } = useAuth();
+  const isManager =
+    user?.role === "ADMIN" || user?.role === "SUPER_ADMIN" || user?.role === "ACCOUNTANT";
+  const [tab, setTab] = useState<"invoices" | "structures">("invoices");
+
+  return (
+    <div className="app-shell">
+      <PageHeader title="Fees" />
+      <main className="content">
+        <h2>{isManager ? "Fees" : "My Fees"}</h2>
+
+        {isManager ? (
+          <>
+            <div className="tabs">
+              <button
+                className={`tab ${tab === "invoices" ? "active" : ""}`}
+                onClick={() => setTab("invoices")}
+              >
+                Invoices
+              </button>
+              <button
+                className={`tab ${tab === "structures" ? "active" : ""}`}
+                onClick={() => setTab("structures")}
+              >
+                Fee structures
+              </button>
+            </div>
+            {tab === "invoices" ? <InvoicesTab manager /> : <StructuresTab />}
+          </>
+        ) : (
+          <InvoicesTab manager={false} />
+        )}
+      </main>
+    </div>
+  );
+}
+
+// ── Fee structures ──────────────────────────────────────────────────────────
+function StructuresTab() {
+  const qc = useQueryClient();
+  const [classId, setClassId] = useState("");
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const { data: classes } = useQuery({
+    queryKey: ["classes"],
+    queryFn: async () =>
+      (await api.get<{ items: ClassWithSections[] }>("/classes")).data.items,
+  });
+
+  // Default to first class.
+  if (!classId && classes && classes.length) setClassId(classes[0].id);
+
+  const { data: structures } = useQuery({
+    queryKey: ["fee-structures", classId],
+    queryFn: async () =>
+      (await api.get<{ items: FeeStructure[] }>("/fees/structures", { params: { classId } }))
+        .data.items,
+    enabled: !!classId,
+  });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["fee-structures", classId] });
+
+  const add = useMutation({
+    mutationFn: () =>
+      api.post("/fees/structures", { classId, name, amount: Number(amount) }),
+    onSuccess: () => {
+      setName("");
+      setAmount("");
+      setError(null);
+      invalidate();
+    },
+    onError: (err) => setError(errMsg(err, "Could not add fee")),
+  });
+
+  const del = useMutation({
+    mutationFn: (id: string) => api.delete(`/fees/structures/${id}`),
+    onSuccess: invalidate,
+  });
+
+  const total = (structures ?? []).reduce((s, f) => s + f.amount, 0);
+
+  return (
+    <section className="panel">
+      <div className="mark-controls">
+        <label className="inline-field">
+          Class
+          <select value={classId} onChange={(e) => setClassId(e.target.value)}>
+            {(classes ?? []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <form
+        className="add-row"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (name.trim() && Number(amount) > 0) add.mutate();
+        }}
+      >
+        <input
+          placeholder="Fee head (e.g. Tuition - Term 1)"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          type="number"
+          placeholder="Amount ₹"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          style={{ maxWidth: 140 }}
+        />
+        <button className="inline-btn" type="submit" disabled={add.isPending || !classId}>
+          Add
+        </button>
+      </form>
+      {error && <p className="error">{error}</p>}
+
+      {structures && structures.length > 0 ? (
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Fee head</th>
+              <th>Amount</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {structures.map((f) => (
+              <tr key={f.id}>
+                <td>{f.name}</td>
+                <td>{money(f.amount)}</td>
+                <td>
+                  <button className="link danger" onClick={() => del.mutate(f.id)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>
+                <strong>Total per student</strong>
+              </td>
+              <td>
+                <strong>{money(total)}</strong>
+              </td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      ) : (
+        <p className="muted">No fee heads for this class yet.</p>
+      )}
+    </section>
+  );
+}
+
+// ── Invoices ────────────────────────────────────────────────────────────────
+function InvoicesTab({ manager }: { manager: boolean }) {
+  const [sectionId, setSectionId] = useState("");
+  const [status, setStatus] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const { data: classes } = useQuery({
+    queryKey: ["classes"],
+    queryFn: async () =>
+      (await api.get<{ items: ClassWithSections[] }>("/classes")).data.items,
+    enabled: manager,
+  });
+  const sectionOptions = useMemo(
+    () =>
+      (classes ?? []).flatMap((c) =>
+        c.sections.map((s) => ({ id: s.id, label: `${c.name} · ${s.name}` }))
+      ),
+    [classes]
+  );
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["invoices", sectionId, status],
+    queryFn: async () => {
+      const params: Record<string, string> = {};
+      if (sectionId) params.sectionId = sectionId;
+      if (status) params.status = status;
+      return (await api.get<{ items: Invoice[] }>("/fees/invoices", { params })).data.items;
+    },
+  });
+
+  return (
+    <section className="panel">
+      {manager && (
+        <div className="page-head">
+          <div className="controls">
+            <select value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
+              <option value="">All sections</option>
+              {sectionOptions.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              <option value="">All statuses</option>
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button className="inline-btn" onClick={() => setGenerating(true)}>
+            + Generate invoices
+          </button>
+        </div>
+      )}
+
+      {isLoading && <p className="muted">Loading…</p>}
+      {data && data.length === 0 && <p className="muted">No invoices.</p>}
+
+      {data && data.length > 0 && (
+        <table className="data-table">
+          <thead>
+            <tr>
+              {manager && <th>Student</th>}
+              <th>Title</th>
+              <th>Total</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Due</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((inv) => (
+              <tr
+                key={inv.id}
+                className="clickable"
+                onClick={() => setOpenId(inv.id)}
+              >
+                {manager && (
+                  <td>
+                    {inv.student?.firstName} {inv.student?.lastName}
+                    <span className="muted"> ({inv.student?.admissionNo})</span>
+                  </td>
+                )}
+                <td>{inv.title}</td>
+                <td>{money(inv.total)}</td>
+                <td>{money(inv.amountPaid)}</td>
+                <td>{money(inv.total - inv.amountPaid)}</td>
+                <td>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}</td>
+                <td>
+                  <span className={`status inv-${inv.status.toLowerCase()}`}>{inv.status}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {generating && <GenerateModal classes={classes ?? []} onClose={() => setGenerating(false)} />}
+      {openId && (
+        <InvoiceModal id={openId} manager={manager} onClose={() => setOpenId(null)} />
+      )}
+    </section>
+  );
+}
+
+// ── Generate invoices modal ─────────────────────────────────────────────────
+function GenerateModal({
+  classes,
+  onClose,
+}: {
+  classes: ClassWithSections[];
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const [classId, setClassId] = useState(classes[0]?.id ?? "");
+  const [title, setTitle] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
+
+  const gen = useMutation({
+    mutationFn: () =>
+      api.post<{ created: number; skipped: number; total: number }>("/fees/invoices/generate", {
+        classId,
+        title,
+        dueDate: dueDate || null,
+      }),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ["invoices"] });
+      setResult(
+        `Created ${res.data.created} invoice(s) of ${money(res.data.total)} each` +
+          (res.data.skipped ? `, skipped ${res.data.skipped} existing` : "")
+      );
+    },
+    onError: (err) => setError(errMsg(err, "Could not generate invoices")),
+  });
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setResult(null);
+    gen.mutate();
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Generate invoices</h3>
+        <p className="muted hint">
+          Creates one invoice per active student in the class, from its fee structures.
+        </p>
+        <form onSubmit={handleSubmit}>
+          <div className="form-grid">
+            <label>
+              Class
+              <select value={classId} onChange={(e) => setClassId(e.target.value)}>
+                {classes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Due date
+              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+            </label>
+          </div>
+          <label className="stack-label">
+            Title
+            <input
+              placeholder="e.g. Term 1 Fees 2026-27"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </label>
+
+          <div className="form-actions">
+            {error && <span className="error inline">{error}</span>}
+            {result && <span className="ok inline">{result}</span>}
+            <button type="button" className="inline-btn ghost" onClick={onClose}>
+              {result ? "Close" : "Cancel"}
+            </button>
+            <button type="submit" className="inline-btn" disabled={gen.isPending}>
+              {gen.isPending ? "Generating…" : "Generate"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Invoice detail + record payment ─────────────────────────────────────────
+function InvoiceModal({
+  id,
+  manager,
+  onClose,
+}: {
+  id: string;
+  manager: boolean;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const { data: inv, isLoading } = useQuery({
+    queryKey: ["invoice", id],
+    queryFn: async () => (await api.get<InvoiceDetail>(`/fees/invoices/${id}`)).data,
+  });
+
+  const [amount, setAmount] = useState("");
+  const [method, setMethod] = useState<PaymentMethod>("CASH");
+  const [reference, setReference] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const balance = inv ? inv.total - inv.amountPaid : 0;
+
+  const pay = useMutation({
+    mutationFn: () =>
+      api.post(`/fees/invoices/${id}/payments`, {
+        amount: Number(amount),
+        method,
+        reference: reference || null,
+      }),
+    onSuccess: () => {
+      setAmount("");
+      setReference("");
+      setError(null);
+      qc.invalidateQueries({ queryKey: ["invoice", id] });
+      qc.invalidateQueries({ queryKey: ["invoices"] });
+    },
+    onError: (err) => setError(errMsg(err, "Could not record payment")),
+  });
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        {isLoading || !inv ? (
+          <p className="muted">Loading…</p>
+        ) : (
+          <>
+            <div className="notice-top">
+              <h3>{inv.title}</h3>
+              <span className={`status inv-${inv.status.toLowerCase()}`}>{inv.status}</span>
+            </div>
+            {inv.student && (
+              <p className="muted">
+                {inv.student.firstName} {inv.student.lastName} ({inv.student.admissionNo})
+              </p>
+            )}
+
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inv.items.map((it) => (
+                  <tr key={it.id}>
+                    <td>{it.name}</td>
+                    <td>{money(it.amount)}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td>
+                    <strong>Total</strong>
+                  </td>
+                  <td>
+                    <strong>{money(inv.total)}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div className="fee-summary">
+              <span>Paid: {money(inv.amountPaid)}</span>
+              <span className={balance > 0 ? "pct-low" : "pct"}>
+                Balance: {money(balance)}
+              </span>
+            </div>
+
+            <h4>Payments</h4>
+            {inv.payments.length === 0 ? (
+              <p className="muted">No payments recorded.</p>
+            ) : (
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Ref</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inv.payments.map((p) => (
+                    <tr key={p.id}>
+                      <td>{new Date(p.paidAt).toLocaleDateString()}</td>
+                      <td>{money(p.amount)}</td>
+                      <td>{p.method}</td>
+                      <td>{p.reference ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {manager && inv.status !== "PAID" && inv.status !== "CANCELLED" && (
+              <form
+                className="pay-row"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (Number(amount) > 0) pay.mutate();
+                }}
+              >
+                <input
+                  type="number"
+                  placeholder={`Amount (≤ ${balance})`}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <select value={method} onChange={(e) => setMethod(e.target.value as PaymentMethod)}>
+                  {METHODS.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  placeholder="Reference (optional)"
+                  value={reference}
+                  onChange={(e) => setReference(e.target.value)}
+                />
+                <button className="inline-btn" type="submit" disabled={pay.isPending}>
+                  Record
+                </button>
+              </form>
+            )}
+            {error && <p className="error">{error}</p>}
+
+            <div className="form-actions">
+              <button className="inline-btn ghost" onClick={onClose}>
+                Close
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

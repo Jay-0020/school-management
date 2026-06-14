@@ -95,6 +95,60 @@ export interface RosterEntry {
   note: string | null;
 }
 
+export type InvoiceStatus = "PENDING" | "PARTIAL" | "PAID" | "CANCELLED";
+export type PaymentMethod =
+  | "CASH"
+  | "BANK_TRANSFER"
+  | "UPI"
+  | "CARD"
+  | "CHEQUE"
+  | "ONLINE"
+  | "OTHER";
+
+export interface FeeStructure {
+  id: string;
+  classId: string;
+  name: string;
+  amount: number;
+}
+
+export interface InvoiceItem {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+export interface Payment {
+  id: string;
+  amount: number;
+  method: PaymentMethod;
+  reference: string | null;
+  paidAt: string;
+}
+
+export interface Invoice {
+  id: string;
+  studentId: string;
+  title: string;
+  total: number;
+  amountPaid: number;
+  status: InvoiceStatus;
+  dueDate: string | null;
+  createdAt: string;
+  student?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    admissionNo: string;
+    section?: { name: string; class: { name: string } } | null;
+  };
+}
+
+export interface InvoiceDetail extends Invoice {
+  items: InvoiceItem[];
+  payments: Payment[];
+}
+
 export interface ManagedUser {
   id: string;
   email: string;

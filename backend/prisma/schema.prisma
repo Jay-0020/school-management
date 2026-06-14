@@ -59,11 +59,12 @@ model User {
 
 // ── Academic structure ─────────────────────────────────────────────────────
 model Class {
-  id        String    @id @default(cuid())
-  name      String    // e.g. "Grade 5", "X"
-  order     Int       @default(0) // for sorting / promotion
-  sections  Section[]
-  createdAt DateTime  @default(now())
+  id            String         @id @default(cuid())
+  name          String // e.g. "Grade 5", "X"
+  order         Int            @default(0) // for sorting / promotion
+  sections      Section[]
+  feeStructures FeeStructure[]
+  createdAt     DateTime       @default(now())
 
   @@unique([name])
 }
@@ -129,6 +130,7 @@ model Student {
   address       String?
   status        EnrollmentStatus   @default(ACTIVE)
   attendance    AttendanceRecord[]
+  invoices      Invoice[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
@@ -183,4 +185,76 @@ model Notice {
 
   @@index([audience])
   @@index([sectionId])
+}
+
+// ── Fees ──────────────────────────────────────────────────────────────────────
+// All amounts are whole rupees (INR), stored as Int.
+
+enum InvoiceStatus {
+  PENDING
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  UPI
+  CARD
+  CHEQUE
+  ONLINE
+  OTHER
+}
+
+// A reusable fee head for a class, e.g. "Tuition - Term 1".
+model FeeStructure {
+  id        String   @id @default(cuid())
+  class     Class    @relation(fields: [classId], references: [id])
+  classId   String
+  name      String
+  amount    Int
+  createdAt DateTime @default(now())
+
+  @@index([classId])
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  student    Student       @relation(fields: [studentId], references: [id])
+  studentId  String
+  title      String // e.g. "Term 1 Fees 2026-27"
+  total      Int
+  amountPaid Int           @default(0)
+  status     InvoiceStatus @default(PENDING)
+  dueDate    DateTime?
+  items      InvoiceItem[]
+  payments   Payment[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([studentId])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id        String  @id @default(cuid())
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId String
+  name      String
+  amount    Int
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  invoice      Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId    String
+  amount       Int
+  method       PaymentMethod @default(CASH)
+  reference    String? // cheque no, txn id, note
+  paidAt       DateTime      @default(now())
+  recordedById String?
+  createdAt    DateTime      @default(now())
+
+  @@index([invoiceId])
 }

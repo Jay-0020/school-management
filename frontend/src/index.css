@@ -413,6 +413,91 @@ button.link {
   margin: 0 0 8px;
 }
 
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  width: auto;
+  margin: 0;
+  padding: 9px 18px;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+}
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ── Attendance marking ── */
+.mark-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.inline-field {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  gap: 6px;
+}
+.inline-field input {
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+}
+.att-buttons {
+  display: flex;
+  gap: 6px;
+}
+.att-btn {
+  width: 34px;
+  margin: 0;
+  padding: 6px 0;
+  background: var(--card);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-weight: 700;
+}
+.att-btn.selected.att-PRESENT {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+.att-btn.selected.att-ABSENT {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+.att-btn.selected.att-LATE {
+  background: #d97706;
+  border-color: #d97706;
+  color: #fff;
+}
+.att-btn.selected.att-EXCUSED {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.pct {
+  font-weight: 700;
+  color: #166534;
+}
+.pct-low {
+  color: #dc2626;
+}
+
 @media (max-width: 640px) {
   .form-grid {
     grid-template-columns: 1fr;

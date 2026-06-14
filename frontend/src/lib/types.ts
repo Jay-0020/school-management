@@ -83,3 +83,27 @@ export interface Paginated<T> {
   page: number;
   pageSize: number;
 }
+
+export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
+
+export interface RosterEntry {
+  studentId: string;
+  admissionNo: string;
+  firstName: string;
+  lastName: string;
+  status: AttendanceStatus | null;
+  note: string | null;
+}
+
+export interface AttendanceSummaryRow {
+  studentId: string;
+  admissionNo: string;
+  firstName: string;
+  lastName: string;
+  PRESENT: number;
+  ABSENT: number;
+  LATE: number;
+  EXCUSED: number;
+  marked: number;
+  percent: number | null;
+}

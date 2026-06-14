@@ -5,6 +5,7 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import { env } from "./config/env";
 import { errorHandler, notFoundHandler } from "./middleware/error";
+import { attendanceRouter } from "./modules/attendance/attendance.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
 import { schoolRouter } from "./modules/school/school.routes";
@@ -30,6 +31,7 @@ export function createApp() {
   app.use("/api/auth", authRouter);
   app.use("/api/school", schoolRouter);
   app.use("/api/classes", classesRouter);
+  app.use("/api/attendance", attendanceRouter);
   app.use("/api/students", studentsRouter);
   app.use("/api/teachers", teachersRouter);
 

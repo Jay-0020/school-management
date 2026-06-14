@@ -50,10 +50,12 @@ model User {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  teacher  Teacher?
-  student  Student?
-  notices  Notice[]
-  homework Homework[]
+  teacher           Teacher?
+  student           Student?
+  notices           Notice[]
+  homework          Homework[]
+  expensesSubmitted Expense[]  @relation("ExpenseSubmitter")
+  expensesDecided   Expense[]  @relation("ExpenseDecider")
 
   @@index([role])
 }
@@ -341,4 +343,33 @@ model Payslip {
 
   @@unique([teacherId, month])
   @@index([month])
+}
+
+// ── Expenses & approvals ──────────────────────────────────────────────────────
+enum ExpenseStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model Expense {
+  id            String        @id @default(cuid())
+  category      String
+  description   String
+  amount        Int // INR
+  expenseDate   DateTime?
+  status        ExpenseStatus @default(SUBMITTED)
+  submittedBy   User?         @relation("ExpenseSubmitter", fields: [submittedById], references: [id])
+  submittedById String?
+  decidedBy     User?         @relation("ExpenseDecider", fields: [decidedById], references: [id])
+  decidedById   String?
+  decisionNote  String?
+  decidedAt     DateTime?
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status])
+  @@index([submittedById])
 }

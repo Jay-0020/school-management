@@ -538,6 +538,47 @@ tr.clickable:hover td {
   min-width: 120px;
 }
 
+/* ── Expense summary + approval ── */
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0;
+}
+.summary-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 120px;
+}
+.summary-chip strong {
+  font-size: 17px;
+}
+.approve-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0;
+}
+.approve-box input {
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+}
+.approve-actions {
+  display: flex;
+  gap: 10px;
+}
+.danger-btn {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
 /* ── Row actions + hints ── */
 .row-actions {
   display: flex;

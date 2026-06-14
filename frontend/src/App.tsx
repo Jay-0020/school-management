@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AttendancePage } from "./pages/AttendancePage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ExpensesPage } from "./pages/ExpensesPage";
 import { FeesPage } from "./pages/FeesPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NoticesPage } from "./pages/NoticesPage";
@@ -102,6 +103,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER"]}>
             <PayrollPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expenses"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER"]}>
+            <ExpensesPage />
           </ProtectedRoute>
         }
       />

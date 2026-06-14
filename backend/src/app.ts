@@ -7,6 +7,7 @@ import { env } from "./config/env";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 import { attendanceRouter } from "./modules/attendance/attendance.routes";
 import { authRouter } from "./modules/auth/auth.routes";
+import { expensesRouter } from "./modules/expenses/expenses.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
 import { noticesRouter } from "./modules/notices/notices.routes";
@@ -39,6 +40,7 @@ export function createApp() {
   app.use("/api/classes", classesRouter);
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/fees", feesRouter);
+  app.use("/api/expenses", expensesRouter);
   app.use("/api/notices", noticesRouter);
   app.use("/api/payroll", payrollRouter);
   app.use("/api/students", studentsRouter);

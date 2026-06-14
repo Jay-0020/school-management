@@ -168,6 +168,29 @@ export interface InvoiceDetail extends Invoice {
   payments: Payment[];
 }
 
+export type ExpenseStatus = "SUBMITTED" | "APPROVED" | "REJECTED" | "PAID";
+
+export interface Expense {
+  id: string;
+  category: string;
+  description: string;
+  amount: number;
+  expenseDate: string | null;
+  status: ExpenseStatus;
+  decisionNote: string | null;
+  decidedAt: string | null;
+  paidAt: string | null;
+  createdAt: string;
+  submittedBy?: { id: string; email: string; role: Role } | null;
+  decidedBy?: { id: string; email: string } | null;
+}
+
+export interface ExpenseSummaryRow {
+  status: ExpenseStatus;
+  count: number;
+  total: number;
+}
+
 export interface SalaryStructure {
   id: string;
   teacherId: string;

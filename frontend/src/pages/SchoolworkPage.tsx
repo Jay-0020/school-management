@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import type { ClassWithSections, Homework, Subject } from "../lib/types";
 
@@ -24,9 +24,7 @@ export function SchoolworkPage() {
   const [tab, setTab] = useState<"homework" | "subjects">("homework");
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Schoolwork" />
-      <main className="content">
+    <AppShell title="Schoolwork">
         <h2>Schoolwork</h2>
 
         {isAdmin && (
@@ -47,8 +45,7 @@ export function SchoolworkPage() {
         )}
 
         {tab === "homework" ? <HomeworkTab isStaff={isStaff} /> : <SubjectsTab />}
-      </main>
-    </div>
+    </AppShell>
   );
 }
 

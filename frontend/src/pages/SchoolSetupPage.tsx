@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
 import { api } from "../api/client";
-import { useAuth } from "../context/AuthContext";
+import { AppShell } from "../components/AppShell";
 import { useBranding } from "../context/BrandingContext";
 import type { ClassWithSections, SchoolSettings } from "../lib/types";
 
@@ -14,29 +13,13 @@ function errMsg(err: unknown, fallback: string): string {
 }
 
 export function SchoolSetupPage() {
-  const { user, logout } = useAuth();
   const { settings, refresh } = useBranding();
 
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <Link className="link" to="/">
-          ← Dashboard
-        </Link>
-        <strong>School Setup</strong>
-        <span className="spacer" />
-        <span className="muted">{user?.email}</span>
-        <button className="link" onClick={logout}>
-          Sign out
-        </button>
-      </header>
-
-      <main className="content">
-        <h2>School Setup</h2>
-        <BrandingPanel settings={settings} onSaved={refresh} />
-        <ClassesPanel />
-      </main>
-    </div>
+    <AppShell title="School Setup">
+      <BrandingPanel settings={settings} onSaved={refresh} />
+      <ClassesPanel />
+    </AppShell>
   );
 }
 

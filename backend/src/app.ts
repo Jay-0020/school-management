@@ -7,6 +7,7 @@ import { env } from "./config/env";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 import { attendanceRouter } from "./modules/attendance/attendance.routes";
 import { authRouter } from "./modules/auth/auth.routes";
+import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { expensesRouter } from "./modules/expenses/expenses.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
@@ -33,6 +34,8 @@ export function createApp() {
   );
 
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+
+  app.use("/api/dashboard", dashboardRouter);
 
   app.use("/api/auth", authRouter);
   app.use("/api/school", schoolRouter);

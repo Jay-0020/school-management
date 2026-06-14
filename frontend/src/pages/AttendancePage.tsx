@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import type {
   AttendanceStatus,
   AttendanceSummaryRow,
@@ -48,9 +48,7 @@ export function AttendancePage() {
   }, [sectionOptions, sectionId]);
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Attendance" />
-      <main className="content">
+    <AppShell title="Attendance">
         <div className="page-head">
           <h2>Attendance</h2>
           <div className="controls">
@@ -91,8 +89,7 @@ export function AttendancePage() {
         ) : (
           <SummaryPanel sectionId={sectionId} />
         )}
-      </main>
-    </div>
+    </AppShell>
   );
 }
 

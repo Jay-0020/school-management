@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import type {
   Payslip,
@@ -34,9 +34,7 @@ export function PayrollPage() {
   const [tab, setTab] = useState<"payslips" | "structures">("payslips");
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Payroll" />
-      <main className="content">
+    <AppShell title="Payroll">
         <h2>{isManager ? "Payroll" : "My Payslips"}</h2>
 
         {isManager ? (
@@ -60,8 +58,7 @@ export function PayrollPage() {
         ) : (
           <PayslipsTab manager={false} />
         )}
-      </main>
-    </div>
+    </AppShell>
   );
 }
 

@@ -29,8 +29,11 @@ export function LoginPage() {
 
   return (
     <div className="auth-shell">
-      <form className="card" onSubmit={handleSubmit}>
-        <h1 className="brand">{branding?.name ?? "School Portal"}</h1>
+      <form className="auth-card" onSubmit={handleSubmit}>
+        <div className="auth-logo">
+          {(branding?.shortName ?? branding?.name ?? "S").slice(0, 1)}
+        </div>
+        <h1 className="auth-title">{branding?.name ?? "School Portal"}</h1>
         <p className="muted">Sign in to continue</p>
 
         <label>
@@ -54,7 +57,7 @@ export function LoginPage() {
 
         {error && <p className="error">{error}</p>}
 
-        <button type="submit" disabled={busy}>
+        <button type="submit" className="inline-btn btn-block" disabled={busy}>
           {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>

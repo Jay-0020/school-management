@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import type { Paginated, StaffType, Teacher } from "../lib/types";
 
@@ -33,9 +33,7 @@ export function TeachersPage() {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Teachers & Staff" />
-      <main className="content">
+    <AppShell title="Teachers & Staff">
         <div className="page-head">
           <h2>
             Teachers & Staff {data ? <span className="muted">({data.total})</span> : null}
@@ -117,8 +115,6 @@ export function TeachersPage() {
             </button>
           </div>
         )}
-      </main>
-
       {(creating || editing) && (
         <TeacherModal
           teacher={editing}
@@ -128,7 +124,7 @@ export function TeachersPage() {
           }}
         />
       )}
-    </div>
+    </AppShell>
   );
 }
 

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import type { ClassWithSections, Notice, NoticeAudience } from "../lib/types";
 
@@ -58,9 +58,7 @@ export function NoticesPage() {
   }
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Notices" />
-      <main className="content">
+    <AppShell title="Notices">
         <div className="page-head">
           <h2>Notices</h2>
           {isManager && (
@@ -118,8 +116,6 @@ export function NoticesPage() {
             </article>
           ))}
         </div>
-      </main>
-
       {(creating || editing) && (
         <NoticeModal
           notice={editing}
@@ -130,7 +126,7 @@ export function NoticesPage() {
           }}
         />
       )}
-    </div>
+    </AppShell>
   );
 }
 

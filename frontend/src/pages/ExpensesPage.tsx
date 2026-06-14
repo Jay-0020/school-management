@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import type { Expense, ExpenseStatus, ExpenseSummaryRow } from "../lib/types";
 
@@ -46,9 +46,7 @@ export function ExpensesPage() {
   });
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Expenses" />
-      <main className="content">
+    <AppShell title="Expenses">
         <div className="page-head">
           <h2>{isManager ? "Expense Approvals" : "My Expenses"}</h2>
           <div className="controls">
@@ -113,13 +111,11 @@ export function ExpensesPage() {
             </tbody>
           </table>
         )}
-      </main>
-
       {submitting && <SubmitModal onClose={() => setSubmitting(false)} />}
       {openId && (
         <ExpenseModal id={openId} isManager={isManager} onClose={() => setOpenId(null)} />
       )}
-    </div>
+    </AppShell>
   );
 }
 

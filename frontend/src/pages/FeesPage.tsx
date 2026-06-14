@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import type {
   ClassWithSections,
@@ -37,9 +37,7 @@ export function FeesPage() {
   const [tab, setTab] = useState<"invoices" | "structures">("invoices");
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Fees" />
-      <main className="content">
+    <AppShell title="Fees">
         <h2>{isManager ? "Fees" : "My Fees"}</h2>
 
         {isManager ? (
@@ -63,8 +61,7 @@ export function FeesPage() {
         ) : (
           <InvoicesTab manager={false} />
         )}
-      </main>
-    </div>
+    </AppShell>
   );
 }
 

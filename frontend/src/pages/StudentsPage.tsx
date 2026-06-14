@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import type {
   ClassWithSections,
@@ -53,9 +53,7 @@ export function StudentsPage() {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Students" />
-      <main className="content">
+    <AppShell title="Students">
         <div className="page-head">
           <h2>Students {data ? <span className="muted">({data.total})</span> : null}</h2>
           <div className="controls">
@@ -151,8 +149,6 @@ export function StudentsPage() {
             </button>
           </div>
         )}
-      </main>
-
       {(creating || editing) && (
         <StudentModal
           student={editing}
@@ -163,7 +159,7 @@ export function StudentsPage() {
           }}
         />
       )}
-    </div>
+    </AppShell>
   );
 }
 

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import type { ManagedUser, Role, Student, Teacher } from "../lib/types";
 
@@ -54,9 +54,7 @@ export function UsersPage() {
   }
 
   return (
-    <div className="app-shell">
-      <PageHeader title="Users" />
-      <main className="content">
+    <AppShell title="Users">
         <div className="page-head">
           <h2>Users {data ? <span className="muted">({data.length})</span> : null}</h2>
           <div className="controls">
@@ -124,10 +122,8 @@ export function UsersPage() {
             </tbody>
           </table>
         )}
-      </main>
-
       {creating && <UserModal onClose={() => setCreating(false)} />}
-    </div>
+    </AppShell>
   );
 }
 

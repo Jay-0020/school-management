@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { BrandingProvider } from "./context/BrandingContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -12,13 +13,15 @@ const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrandingProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </AuthProvider>
-      </BrandingProvider>
+      <ThemeProvider>
+        <BrandingProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </AuthProvider>
+        </BrandingProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

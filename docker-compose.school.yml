@@ -1,0 +1,41 @@
+# Per-school deployment stack: one Postgres + one app container.
+# Use the env file produced by `npm run provision`:
+#
+#   docker compose --env-file backend/instances/<db>.env -f docker-compose.school.yml up -d --build
+#
+# (DATABASE_URL in the env file should point at the `db` service host, e.g.
+#  postgresql://school:school@db:5432/<db>?schema=public)
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: school
+      POSTGRES_PASSWORD: school
+      POSTGRES_DB: ${POSTGRES_DB:-school}
+    volumes:
+      - school_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U school"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ${SCHOOL_ENV_FILE:-backend/instances/school.env}
+    ports:
+      - "${APP_PORT:-4000}:4000"
+    volumes:
+      - school_uploads:/app/backend/uploads
+
+volumes:
+  school_data:
+  school_uploads:

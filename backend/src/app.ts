@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -62,7 +64,16 @@ export function createApp() {
   app.use("/api/teachers", teachersRouter);
   app.use("/api/users", usersRouter);
 
-  app.use(notFoundHandler);
+  // Unknown API routes → JSON 404.
+  app.use("/api", notFoundHandler);
+
+  // In a packaged deploy, serve the built SPA from the same server.
+  const clientDir = process.env.CLIENT_DIR || join(__dirname, "..", "..", "frontend", "dist");
+  if (existsSync(clientDir)) {
+    app.use(express.static(clientDir));
+    app.get("*", (_req, res) => res.sendFile(join(clientDir, "index.html")));
+  }
+
   app.use(errorHandler);
 
   return app;

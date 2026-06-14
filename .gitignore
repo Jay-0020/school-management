@@ -27,3 +27,6 @@ backend/prisma/*.db
 
 # Uploads (local dev)
 uploads/
+
+# Provisioned per-school env files (secrets)
+backend/instances/

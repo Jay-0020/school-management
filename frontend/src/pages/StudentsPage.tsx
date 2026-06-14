@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { EmptyState, SkeletonRows } from "../components/EmptyState";
+import { IconStudents } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import type {
   ClassWithSections,
@@ -79,12 +81,18 @@ export function StudentsPage() {
           </div>
         </div>
 
-        {isLoading && <p className="muted">Loading…</p>}
+        {isLoading && <SkeletonRows />}
 
         {data && data.items.length === 0 && (
-          <div className="panel">
-            <p className="muted">No students found.</p>
-          </div>
+          <EmptyState
+            icon={IconStudents}
+            title="No students yet"
+            hint={
+              sectionId
+                ? "No students in this section. Try a different section or add one."
+                : "Add your first student to get started."
+            }
+          />
         )}
 
         {data && data.items.length > 0 && (

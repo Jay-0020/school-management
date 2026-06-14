@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ToastViewport } from "./components/ToastViewport";
 import { AttendancePage } from "./pages/AttendancePage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -16,7 +17,9 @@ import { UsersPage } from "./pages/UsersPage";
 
 export function App() {
   return (
-    <Routes>
+    <>
+      <ToastViewport />
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route
         path="/change-password"
@@ -115,6 +118,7 @@ export function App() {
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }

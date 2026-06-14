@@ -123,3 +123,26 @@ export const IconClose = (p: P) => (
     <path d="M18 6L6 18M6 6l12 12" />
   </svg>
 );
+export const IconCheck = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
+export const IconAlert = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 8v4M12 16h.01" />
+  </svg>
+);
+export const IconInbox = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+  </svg>
+);
+export const IconPanelLeft = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M9 3v18" />
+  </svg>
+);

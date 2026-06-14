@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { EmptyState, SkeletonRows } from "../components/EmptyState";
+import { IconTeacher } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import type { Paginated, StaffType, Teacher } from "../lib/types";
 
@@ -47,12 +49,14 @@ export function TeachersPage() {
           )}
         </div>
 
-        {isLoading && <p className="muted">Loading…</p>}
+        {isLoading && <SkeletonRows />}
 
         {data && data.items.length === 0 && (
-          <div className="panel">
-            <p className="muted">No staff yet.</p>
-          </div>
+          <EmptyState
+            icon={IconTeacher}
+            title="No staff yet"
+            hint="Add teaching and non-teaching staff to manage their records and payroll."
+          />
         )}
 
         {data && data.items.length > 0 && (

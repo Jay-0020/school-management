@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { EmptyState, SkeletonRows } from "../components/EmptyState";
+import { IconReceipt } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import type { Expense, ExpenseStatus, ExpenseSummaryRow } from "../lib/types";
 
@@ -78,8 +80,14 @@ export function ExpensesPage() {
           </div>
         )}
 
-        {isLoading && <p className="muted">Loading…</p>}
-        {data && data.length === 0 && <p className="muted">No expenses.</p>}
+        {isLoading && <SkeletonRows />}
+        {data && data.length === 0 && (
+          <EmptyState
+            icon={IconReceipt}
+            title="No expenses"
+            hint="Submit an expense claim — it'll route here for approval."
+          />
+        )}
 
         {data && data.length > 0 && (
           <table className="data-table">

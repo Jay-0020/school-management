@@ -11,6 +11,7 @@ import {
   IconLogout,
   IconMenu,
   IconMoon,
+  IconPanelLeft,
   IconSun,
 } from "./icons";
 
@@ -20,7 +21,18 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
   const { theme, toggle } = useTheme();
   const [navOpen, setNavOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(
+    () => localStorage.getItem("smp_sidebar") === "collapsed"
+  );
   const menuRef = useRef<HTMLDivElement>(null);
+
+  function toggleCollapsed() {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem("smp_sidebar", next ? "collapsed" : "open");
+      return next;
+    });
+  }
 
   const groups = user ? navForRole(user.role) : [];
   const initials = (user?.email ?? "?").slice(0, 2).toUpperCase();
@@ -34,7 +46,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
   }, []);
 
   return (
-    <div className="shell">
+    <div className={`shell ${collapsed ? "collapsed" : ""}`}>
       {navOpen && <div className="scrim" onClick={() => setNavOpen(false)} />}
 
       <aside className={`sidebar ${navOpen ? "open" : ""}`}>
@@ -59,6 +71,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
                   key={item.path}
                   to={item.path}
                   end={item.path === "/"}
+                  title={item.label}
                   className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
                   onClick={() => setNavOpen(false)}
                 >
@@ -75,6 +88,13 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
         <header className="topbar">
           <button className="icon-btn show-mobile" onClick={() => setNavOpen(true)}>
             <IconMenu />
+          </button>
+          <button
+            className="icon-btn hide-mobile"
+            onClick={toggleCollapsed}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <IconPanelLeft />
           </button>
           <h1 className="page-title">{title}</h1>
           <span className="spacer" />

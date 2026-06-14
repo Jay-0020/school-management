@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "../lib/toast";
 
 const TOKEN_KEY = "smp_token";
 
@@ -14,10 +15,15 @@ api.interceptors.request.use((config) => {
 });
 
 // On 401, drop the token so the app falls back to the login screen.
+// Surface unexpected failures (network / server) as a toast; leave 4xx
+// (validation, conflicts) to the components that show inline messages.
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error?.response?.status === 401) clearToken();
+    const status = error?.response?.status;
+    if (status === 401) clearToken();
+    else if (!error?.response) toast.error("Network error — check your connection");
+    else if (status >= 500) toast.error("Something went wrong. Please try again.");
     return Promise.reject(error);
   }
 );

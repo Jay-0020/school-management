@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { SkeletonStats } from "../components/EmptyState";
 import { IconBell } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import { useBranding } from "../context/BrandingContext";
@@ -47,16 +48,19 @@ export function DashboardPage() {
         <p className="muted">Here's what's happening at {greeting}.</p>
       </div>
 
-      <div className="stat-grid">
-        {(data?.stats ?? []).map((s) => (
-          <div className="stat-card" key={s.key}>
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value">{s.value}</div>
-            {s.hint && <div className="stat-hint">{s.hint}</div>}
-          </div>
-        ))}
-        {!data && <div className="stat-card muted">Loading…</div>}
-      </div>
+      {!data ? (
+        <SkeletonStats count={5} />
+      ) : (
+        <div className="stat-grid">
+          {data.stats.map((s) => (
+            <div className="stat-card" key={s.key}>
+              <div className="stat-label">{s.label}</div>
+              <div className="stat-value">{s.value}</div>
+              {s.hint && <div className="stat-hint">{s.hint}</div>}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="dash-cols">
         <div className="widget">

@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "../lib/toast";
 import type { ManagedUser, Role, Student, Teacher } from "../lib/types";
 
 const ROLES: Role[] = ["ADMIN", "ACCOUNTANT", "TEACHER", "STUDENT", "PARENT", "SUPER_ADMIN"];
@@ -32,7 +33,10 @@ export function UsersPage() {
 
   const del = useMutation({
     mutationFn: (id: string) => api.delete(`/users/${id}`),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success("User deleted");
+    },
   });
 
   const resetPw = useMutation({
@@ -44,12 +48,15 @@ export function UsersPage() {
     const pw = window.prompt(`New temporary password for ${u.email} (min 8 chars):`);
     if (!pw) return;
     if (pw.length < 8) {
-      alert("Password must be at least 8 characters");
+      toast.error("Password must be at least 8 characters");
       return;
     }
     resetPw.mutate(
       { id: u.id, newPassword: pw },
-      { onSuccess: () => alert("Password reset. They'll be asked to change it on next login.") }
+      {
+        onSuccess: () =>
+          toast.success("Password reset — they'll change it on next login"),
+      }
     );
   }
 
@@ -172,6 +179,7 @@ function UserModal({ onClose }: { onClose: () => void }) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User created");
       onClose();
     },
     onError: (err: unknown) => {

@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { EmptyState, SkeletonRows } from "../components/EmptyState";
+import { IconBell } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import type { ClassWithSections, Notice, NoticeAudience } from "../lib/types";
 
@@ -70,11 +72,17 @@ export function NoticesPage() {
           )}
         </div>
 
-        {isLoading && <p className="muted">Loading…</p>}
+        {isLoading && <SkeletonRows />}
         {data && data.length === 0 && (
-          <div className="panel">
-            <p className="muted">No notices yet.</p>
-          </div>
+          <EmptyState
+            icon={IconBell}
+            title="No notices yet"
+            hint={
+              isManager
+                ? "Post an announcement for staff, students, or a specific section."
+                : "Announcements from your school will appear here."
+            }
+          />
         )}
 
         <div className="notice-list">

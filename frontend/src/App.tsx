@@ -11,6 +11,7 @@ import { LeavePage } from "./pages/LeavePage";
 import { LoginPage } from "./pages/LoginPage";
 import { NoticesPage } from "./pages/NoticesPage";
 import { NotesPage } from "./pages/NotesPage";
+import { ParentPage } from "./pages/ParentPage";
 import { PeoplePage } from "./pages/PeoplePage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { PayrollPage } from "./pages/PayrollPage";
@@ -55,6 +56,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"]}>
             <PeoplePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/children"
+        element={
+          <ProtectedRoute roles={["PARENT", "ADMIN", "SUPER_ADMIN"]}>
+            <ParentPage />
           </ProtectedRoute>
         }
       />

@@ -16,6 +16,7 @@ import { classesRouter } from "./modules/classes/classes.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
 import { noticesRouter } from "./modules/notices/notices.routes";
 import { notesRouter } from "./modules/notes/notes.routes";
+import { parentRouter } from "./modules/parent/parent.routes";
 import { notificationsRouter } from "./modules/notifications/notifications.routes";
 import { payrollRouter } from "./modules/payroll/payroll.routes";
 import { schoolRouter } from "./modules/school/school.routes";
@@ -55,6 +56,7 @@ export function createApp() {
   app.use("/api/notices", noticesRouter);
   app.use("/api/notes", notesRouter);
   app.use("/api/notifications", notificationsRouter);
+  app.use("/api/parent", parentRouter);
   app.use("/api/payroll", payrollRouter);
   app.use("/api/students", studentsRouter);
   app.use("/api/teachers", teachersRouter);

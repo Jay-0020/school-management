@@ -43,6 +43,7 @@ const createSchema = z
     role: z.enum(["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "STUDENT", "PARENT"]),
     teacherId: z.string().nullish(),
     studentId: z.string().nullish(),
+    childId: z.string().nullish(), // for PARENT: the student they're a parent of
   })
   .refine((d) => !(d.teacherId && d.studentId), {
     message: "Link to a teacher or a student, not both",
@@ -54,6 +55,10 @@ const createSchema = z
   })
   .refine((d) => !d.studentId || d.role === "STUDENT", {
     message: "Student link requires the STUDENT role",
+    path: ["role"],
+  })
+  .refine((d) => !d.childId || d.role === "PARENT", {
+    message: "Child link requires the PARENT role",
     path: ["role"],
   });
 
@@ -74,6 +79,10 @@ usersRouter.post(
       const s = await prisma.student.findUnique({ where: { id: data.studentId } });
       if (!s) throw ApiError.notFound("Student not found");
       if (s.userId) throw ApiError.conflict("That student already has a login");
+    }
+    if (data.childId) {
+      const c = await prisma.student.findUnique({ where: { id: data.childId } });
+      if (!c) throw ApiError.notFound("Student (child) not found");
     }
 
     const passwordHash = await argon2.hash(data.password);
@@ -97,6 +106,12 @@ usersRouter.post(
         await tx.student.update({
           where: { id: data.studentId },
           data: { userId: created.id },
+        });
+      }
+      if (data.childId) {
+        await tx.student.update({
+          where: { id: data.childId },
+          data: { parentId: created.id },
         });
       }
       return created.id;

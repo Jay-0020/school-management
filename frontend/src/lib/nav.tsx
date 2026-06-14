@@ -34,6 +34,7 @@ export const NAV: NavGroup[] = [
     label: "",
     items: [
       { label: "Dashboard", path: "/", icon: IconHome, roles: ALL },
+      { label: "My Children", path: "/children", icon: IconStudents, roles: ["PARENT"] },
       { label: "My Profile", path: "/profile", icon: IconUser, roles: ALL },
       { label: "Leave", path: "/leave", icon: IconCalendar, roles: ALL },
     ],
@@ -86,7 +87,7 @@ export const NAV: NavGroup[] = [
         label: "Exams",
         path: "/exams",
         icon: IconBook,
-        roles: ["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER", "STUDENT", "PARENT"],
+        roles: ["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER", "STUDENT"],
       },
       {
         label: "Notes",

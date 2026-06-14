@@ -132,10 +132,13 @@ feesRouter.get(
     const pageSize = Math.min(100, Number(req.query.pageSize) || 25);
 
     const where: Prisma.InvoiceWhereInput = {};
-    if (role === "STUDENT" || role === "PARENT") {
-      // Own invoices only (via the linked student record).
+    if (role === "STUDENT") {
       const student = await prisma.student.findUnique({ where: { userId: sub } });
       where.studentId = student?.id ?? "__none__";
+    } else if (role === "PARENT") {
+      // A parent sees their children's invoices.
+      const children = await prisma.student.findMany({ where: { parentId: sub }, select: { id: true } });
+      where.studentId = { in: children.length ? children.map((c) => c.id) : ["__none__"] };
     } else {
       if (req.query.status) where.status = req.query.status as Prisma.InvoiceWhereInput["status"];
       if (req.query.sectionId) where.student = { sectionId: String(req.query.sectionId) };
@@ -176,7 +179,7 @@ feesRouter.get(
         items: true,
         payments: { orderBy: { paidAt: "desc" } },
         student: {
-          select: { id: true, firstName: true, lastName: true, admissionNo: true, userId: true },
+          select: { id: true, firstName: true, lastName: true, admissionNo: true, userId: true, parentId: true },
         },
       },
     });
@@ -184,7 +187,7 @@ feesRouter.get(
 
     // Students/parents may only see their own invoice.
     const { role, sub } = req.user!;
-    if ((role === "STUDENT" || role === "PARENT") && invoice.student.userId !== sub) {
+    if ((role === "STUDENT" || role === "PARENT") && invoice.student.userId !== sub && invoice.student.parentId !== sub) {
       throw ApiError.forbidden();
     }
     res.json(invoice);
@@ -201,13 +204,13 @@ feesRouter.get(
         items: true,
         payments: { orderBy: { paidAt: "desc" } },
         student: {
-          select: { firstName: true, lastName: true, admissionNo: true, userId: true },
+          select: { firstName: true, lastName: true, admissionNo: true, userId: true, parentId: true },
         },
       },
     });
     if (!invoice) throw ApiError.notFound("Invoice not found");
     const { role, sub } = req.user!;
-    if ((role === "STUDENT" || role === "PARENT") && invoice.student.userId !== sub) {
+    if ((role === "STUDENT" || role === "PARENT") && invoice.student.userId !== sub && invoice.student.parentId !== sub) {
       throw ApiError.forbidden();
     }
     const balance = invoice.total - invoice.amountPaid;

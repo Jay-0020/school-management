@@ -222,16 +222,17 @@ function UserModal({ onClose }: { onClose: () => void }) {
       (await api.get<{ items: (Student & { userId: string | null })[] }>("/students", {
         params: { pageSize: 100 },
       })).data.items,
-    enabled: role === "STUDENT",
+    enabled: role === "STUDENT" || role === "PARENT",
   });
 
   const teacherOpts = useMemo(
     () => (teachers ?? []).filter((t) => !t.userId),
     [teachers]
   );
+  // For a student login: only unlinked students. For a parent: any student (the child).
   const studentOpts = useMemo(
-    () => (students ?? []).filter((s) => !s.userId),
-    [students]
+    () => (role === "PARENT" ? (students ?? []) : (students ?? []).filter((s) => !s.userId)),
+    [students, role]
   );
 
   const mutation = useMutation({
@@ -239,6 +240,7 @@ function UserModal({ onClose }: { onClose: () => void }) {
       const payload: Record<string, unknown> = { email, password, role };
       if (role === "TEACHER" && linkId) payload.teacherId = linkId;
       if (role === "STUDENT" && linkId) payload.studentId = linkId;
+      if (role === "PARENT" && linkId) payload.childId = linkId;
       return api.post("/users", payload);
     },
     onSuccess: () => {
@@ -319,6 +321,19 @@ function UserModal({ onClose }: { onClose: () => void }) {
                 Link to student
                 <select value={linkId} onChange={(e) => setLinkId(e.target.value)}>
                   <option value="">Unlinked</option>
+                  {studentOpts.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.firstName} {s.lastName} ({s.admissionNo})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {role === "PARENT" && (
+              <label>
+                Child (student)
+                <select value={linkId} onChange={(e) => setLinkId(e.target.value)}>
+                  <option value="">Not linked</option>
                   {studentOpts.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.firstName} {s.lastName} ({s.admissionNo})

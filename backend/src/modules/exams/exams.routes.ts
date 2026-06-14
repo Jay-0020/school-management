@@ -273,16 +273,22 @@ async function buildReport(examId: string, studentId: string) {
   };
 }
 
+/** Can this user see this student's published report card? */
+async function canViewReport(role: string, sub: string, examId: string, studentId: string) {
+  if (["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"].includes(role)) return true;
+  if (role !== "STUDENT" && role !== "PARENT") return false;
+  const where = role === "PARENT" ? { id: studentId, parentId: sub } : { id: studentId, userId: sub };
+  const student = await prisma.student.findFirst({ where });
+  if (!student) return false;
+  const exam = await prisma.exam.findUnique({ where: { id: examId } });
+  return exam?.status === "PUBLISHED";
+}
+
 examsRouter.get(
   "/:id/report/:studentId",
   asyncHandler(async (req, res) => {
     const { role, sub } = req.user!;
-    if (role === "STUDENT" || role === "PARENT") {
-      const me = await prisma.student.findUnique({ where: { userId: sub } });
-      if (me?.id !== req.params.studentId) throw ApiError.forbidden();
-      const exam = await prisma.exam.findUnique({ where: { id: req.params.id } });
-      if (exam?.status !== "PUBLISHED") throw ApiError.forbidden();
-    } else if (!["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"].includes(role)) {
+    if (!(await canViewReport(role, sub, req.params.id, req.params.studentId))) {
       throw ApiError.forbidden();
     }
     res.json(await buildReport(req.params.id, req.params.studentId));
@@ -294,12 +300,7 @@ examsRouter.get(
   "/:id/report/:studentId/pdf",
   asyncHandler(async (req, res) => {
     const { role, sub } = req.user!;
-    if (role === "STUDENT" || role === "PARENT") {
-      const me = await prisma.student.findUnique({ where: { userId: sub } });
-      if (me?.id !== req.params.studentId) throw ApiError.forbidden();
-      const exam = await prisma.exam.findUnique({ where: { id: req.params.id } });
-      if (exam?.status !== "PUBLISHED") throw ApiError.forbidden();
-    } else if (!["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"].includes(role)) {
+    if (!(await canViewReport(role, sub, req.params.id, req.params.studentId))) {
       throw ApiError.forbidden();
     }
     const r = await buildReport(req.params.id, req.params.studentId);

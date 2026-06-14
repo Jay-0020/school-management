@@ -189,6 +189,23 @@ export interface Subject {
   code: string | null;
 }
 
+export interface ChildSummary {
+  id: string;
+  name: string;
+  admissionNo: string;
+  className: string | null;
+}
+export interface ChildOverview {
+  student: ChildSummary;
+  attendance: { year: string; present: number; absent: number; late: number; excused: number; total: number; percent: number | null }[];
+  fees: {
+    due: number;
+    invoices: { id: string; title: string; total: number; amountPaid: number; status: InvoiceStatus; dueDate: string | null; balance: number }[];
+  };
+  homework: { id: string; title: string; subject: string | null; dueDate: string | null }[];
+  exams: { id: string; name: string; term: string | null }[];
+}
+
 export type NoteStatus = "PENDING" | "APPROVED" | "REJECTED";
 export interface SharedNote {
   id: string;

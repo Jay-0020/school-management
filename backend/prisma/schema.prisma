@@ -55,7 +55,8 @@ model User {
   updatedAt          DateTime @updatedAt
 
   teacher           Teacher?
-  student           Student?
+  student           Student?       @relation("StudentLogin")
+  children          Student[]      @relation("ParentChildren")
   notices           Notice[]
   homework          Homework[]
   expensesSubmitted Expense[]      @relation("ExpenseSubmitter")
@@ -132,8 +133,10 @@ enum EnrollmentStatus {
 
 model Student {
   id            String           @id @default(cuid())
-  user          User?            @relation(fields: [userId], references: [id])
+  user          User?            @relation("StudentLogin", fields: [userId], references: [id])
   userId        String?          @unique
+  parent        User?            @relation("ParentChildren", fields: [parentId], references: [id])
+  parentId      String?
   admissionNo   String           @unique
   firstName     String
   lastName      String

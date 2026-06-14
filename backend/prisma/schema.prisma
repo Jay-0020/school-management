@@ -74,6 +74,7 @@ model Class {
   order         Int            @default(0) // for sorting / promotion
   sections      Section[]
   feeStructures FeeStructure[]
+  exams         Exam[]
   createdAt     DateTime       @default(now())
 
   @@unique([name])
@@ -144,6 +145,7 @@ model Student {
   status        EnrollmentStatus   @default(ACTIVE)
   attendance    AttendanceRecord[]
   invoices      Invoice[]
+  marks         Mark[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
@@ -274,11 +276,12 @@ model Payment {
 
 // ── Schoolwork ────────────────────────────────────────────────────────────────
 model Subject {
-  id        String     @id @default(cuid())
-  name      String     @unique
-  code      String?    @unique
-  homework  Homework[]
-  createdAt DateTime   @default(now())
+  id         String      @id @default(cuid())
+  name       String      @unique
+  code       String?     @unique
+  homework   Homework[]
+  examPapers ExamPaper[]
+  createdAt  DateTime    @default(now())
 }
 
 model Homework {
@@ -433,4 +436,54 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, read])
+}
+
+// ── Exams, marks & report cards ───────────────────────────────────────────────
+enum ExamStatus {
+  DRAFT // marks being entered; not visible to students
+  PUBLISHED // report cards visible to students/parents
+}
+
+model Exam {
+  id        String      @id @default(cuid())
+  name      String // e.g. "Term 1 Examination"
+  class     Class       @relation(fields: [classId], references: [id])
+  classId   String
+  term      String? // e.g. "Term 1"
+  examDate  DateTime?
+  status    ExamStatus  @default(DRAFT)
+  papers    ExamPaper[]
+  marks     Mark[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([classId])
+}
+
+model ExamPaper {
+  id        String  @id @default(cuid())
+  exam      Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  examId    String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  subjectId String
+  maxMarks  Int
+  passMarks Int     @default(33)
+  marks     Mark[]
+
+  @@unique([examId, subjectId])
+}
+
+model Mark {
+  id            String    @id @default(cuid())
+  exam          Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  examId        String
+  paper         ExamPaper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  paperId       String
+  student       Student   @relation(fields: [studentId], references: [id])
+  studentId     String
+  marksObtained Int
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([paperId, studentId])
+  @@index([examId, studentId])
 }

@@ -189,6 +189,49 @@ export interface Subject {
   code: string | null;
 }
 
+export type ExamStatus = "DRAFT" | "PUBLISHED";
+export interface ExamPaper {
+  id: string;
+  subjectId: string;
+  maxMarks: number;
+  passMarks: number;
+  subject: { id: string; name: string };
+}
+export interface Exam {
+  id: string;
+  name: string;
+  classId: string;
+  term: string | null;
+  examDate: string | null;
+  status: ExamStatus;
+  class: { id: string; name: string };
+  papers: ExamPaper[];
+}
+export interface MarkRosterEntry {
+  studentId: string;
+  admissionNo: string;
+  name: string;
+  marksObtained: number | null;
+}
+export interface ReportCard {
+  exam: { id: string; name: string; term: string | null; status: ExamStatus };
+  student: { id: string; name: string; admissionNo: string; className: string | null };
+  subjects: {
+    subject: string;
+    maxMarks: number;
+    passMarks: number;
+    marksObtained: number | null;
+    percent: number | null;
+    grade: string | null;
+    passed: boolean | null;
+  }[];
+  totalObtained: number;
+  totalMax: number;
+  overallPercent: number | null;
+  overallGrade: string | null;
+  result: "PASS" | "FAIL" | null;
+}
+
 export interface Homework {
   id: string;
   title: string;

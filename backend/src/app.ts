@@ -8,6 +8,7 @@ import { errorHandler, notFoundHandler } from "./middleware/error";
 import { attendanceRouter } from "./modules/attendance/attendance.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
+import { examsRouter } from "./modules/exams/exams.routes";
 import { expensesRouter } from "./modules/expenses/expenses.routes";
 import { leaveRouter } from "./modules/leave/leave.routes";
 import { profileRouter } from "./modules/profile/profile.routes";
@@ -45,6 +46,7 @@ export function createApp() {
   app.use("/api/schoolwork", schoolworkRouter);
   app.use("/api/classes", classesRouter);
   app.use("/api/attendance", attendanceRouter);
+  app.use("/api/exams", examsRouter);
   app.use("/api/fees", feesRouter);
   app.use("/api/expenses", expensesRouter);
   app.use("/api/leave", leaveRouter);

@@ -5,6 +5,7 @@ import { AppShell } from "../components/AppShell";
 import { EmptyState, SkeletonRows } from "../components/EmptyState";
 import { IconBook } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
+import { downloadPdf } from "../lib/download";
 import { toast } from "../lib/toast";
 import type {
   ClassWithSections,
@@ -407,7 +408,13 @@ function ReportCardModal({ examId, studentId, onClose }: { examId: string; stude
               </tbody>
             </table>
             <div className="form-actions">
-              <button className="inline-btn ghost" onClick={onClose}>Close</button>
+              <button
+                className="inline-btn ghost"
+                onClick={() => downloadPdf(`/exams/${examId}/report/${studentId}/pdf`, `report-${r.student.admissionNo}.pdf`)}
+              >
+                Download PDF
+              </button>
+              <button className="inline-btn" onClick={onClose}>Close</button>
             </div>
           </>
         )}

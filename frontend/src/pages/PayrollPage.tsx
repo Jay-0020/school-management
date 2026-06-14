@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
+import { downloadPdf } from "../lib/download";
 import type {
   Payslip,
   SalaryStructure,
@@ -424,7 +425,13 @@ function PayslipModal({ id, onClose }: { id: string; onClose: () => void }) {
             </div>
 
             <div className="form-actions">
-              <button className="inline-btn ghost" onClick={onClose}>
+              <button
+                className="inline-btn ghost"
+                onClick={() => downloadPdf(`/payroll/payslips/${p.id}/pdf`, `payslip-${p.month}.pdf`)}
+              >
+                Download PDF
+              </button>
+              <button className="inline-btn" onClick={onClose}>
                 Close
               </button>
             </div>

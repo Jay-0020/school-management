@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { SalaryStructure } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
+import { streamPdf, field, table, inr } from "../../lib/pdf";
 import { authenticate, requireRole } from "../../middleware/auth";
 
 export const payrollRouter = Router();
@@ -184,5 +185,66 @@ payrollRouter.post(
       include: payslipInclude,
     });
     res.json(updated);
+  })
+);
+
+// Payslip as a branded PDF (managers; teachers their own).
+payrollRouter.get(
+  "/payslips/:id/pdf",
+  asyncHandler(async (req, res) => {
+    const p = await prisma.payslip.findUnique({
+      where: { id: req.params.id },
+      include: payslipInclude,
+    });
+    if (!p) throw ApiError.notFound("Payslip not found");
+    const { role, sub } = req.user!;
+    if (role === "TEACHER" && p.teacher.userId !== sub) throw ApiError.forbidden();
+    if (!["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER"].includes(role)) {
+      throw ApiError.forbidden();
+    }
+    await streamPdf(
+      res,
+      {
+        filename: `payslip-${p.teacher.employeeNo}-${p.month}.pdf`,
+        title: "Payslip",
+        subtitle: p.month,
+      },
+      (doc) => {
+        field(doc, "Employee", `${p.teacher.firstName} ${p.teacher.lastName}`);
+        field(doc, "Employee No", p.teacher.employeeNo);
+        field(doc, "Month", p.month);
+        doc.moveDown(0.5);
+        table(
+          doc,
+          ["Earnings", "Amount"],
+          [
+            ["Basic", inr(p.basic)],
+            ["HRA", inr(p.hra)],
+            ["DA", inr(p.da)],
+            ["Conveyance", inr(p.conveyance)],
+            ["Special allowance", inr(p.specialAllowance)],
+            ["Gross", inr(p.gross)],
+          ],
+          [300, 200],
+          "#000"
+        );
+        table(
+          doc,
+          ["Deductions", "Amount"],
+          [
+            ["PF", inr(p.pf)],
+            ["ESI", inr(p.esi)],
+            ["Professional Tax", inr(p.professionalTax)],
+            ["TDS", inr(p.tds)],
+            ["Total deductions", inr(p.totalDeductions)],
+          ],
+          [300, 200],
+          "#000"
+        );
+        doc.moveDown(0.5);
+        field(doc, "Net Pay", inr(p.net));
+        field(doc, "Status", p.status);
+      }
+    );
   })
 );

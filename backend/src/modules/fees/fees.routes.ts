@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
+import { streamPdf, field, table, inr } from "../../lib/pdf";
 import { authenticate, requireRole } from "../../middleware/auth";
 
 export const feesRouter = Router();
@@ -187,6 +188,72 @@ feesRouter.get(
       throw ApiError.forbidden();
     }
     res.json(invoice);
+  })
+);
+
+// Invoice / receipt as a branded PDF (students/parents own; staff any).
+feesRouter.get(
+  "/invoices/:id/pdf",
+  asyncHandler(async (req, res) => {
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: req.params.id },
+      include: {
+        items: true,
+        payments: { orderBy: { paidAt: "desc" } },
+        student: {
+          select: { firstName: true, lastName: true, admissionNo: true, userId: true },
+        },
+      },
+    });
+    if (!invoice) throw ApiError.notFound("Invoice not found");
+    const { role, sub } = req.user!;
+    if ((role === "STUDENT" || role === "PARENT") && invoice.student.userId !== sub) {
+      throw ApiError.forbidden();
+    }
+    const balance = invoice.total - invoice.amountPaid;
+    await streamPdf(
+      res,
+      {
+        filename: `fees-${invoice.student.admissionNo}-${invoice.id.slice(-6)}.pdf`,
+        title: invoice.status === "PAID" ? "Fee Receipt" : "Fee Invoice",
+        subtitle: invoice.title,
+      },
+      (doc) => {
+        field(doc, "Student", `${invoice.student.firstName} ${invoice.student.lastName}`);
+        field(doc, "Admission No", invoice.student.admissionNo);
+        if (invoice.dueDate) field(doc, "Due Date", invoice.dueDate.toISOString().slice(0, 10));
+        field(doc, "Status", invoice.status);
+        doc.moveDown(0.5);
+        table(
+          doc,
+          ["Fee item", "Amount"],
+          invoice.items.map((it) => [it.name, inr(it.amount)]),
+          [340, 160],
+          "#000"
+        );
+        doc.moveDown(0.3);
+        field(doc, "Total", inr(invoice.total));
+        field(doc, "Paid", inr(invoice.amountPaid));
+        field(doc, "Balance", inr(balance));
+        if (invoice.payments.length) {
+          doc.moveDown(0.5);
+          doc.fillColor("#101828").fontSize(12).font("Helvetica-Bold").text("Payments", 48, doc.y);
+          doc.moveDown(0.2);
+          table(
+            doc,
+            ["Date", "Amount", "Method", "Ref"],
+            invoice.payments.map((p) => [
+              p.paidAt.toISOString().slice(0, 10),
+              inr(p.amount),
+              p.method,
+              p.reference ?? "—",
+            ]),
+            [110, 130, 130, 130],
+            "#000"
+          );
+        }
+      }
+    );
   })
 );
 

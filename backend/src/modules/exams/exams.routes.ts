@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
+import { streamPdf, field, table } from "../../lib/pdf";
 import { authenticate, requireRole } from "../../middleware/auth";
 
 export const examsRouter = Router();
@@ -285,6 +286,55 @@ examsRouter.get(
       throw ApiError.forbidden();
     }
     res.json(await buildReport(req.params.id, req.params.studentId));
+  })
+);
+
+// Report card as a branded PDF (same access rules as the JSON report).
+examsRouter.get(
+  "/:id/report/:studentId/pdf",
+  asyncHandler(async (req, res) => {
+    const { role, sub } = req.user!;
+    if (role === "STUDENT" || role === "PARENT") {
+      const me = await prisma.student.findUnique({ where: { userId: sub } });
+      if (me?.id !== req.params.studentId) throw ApiError.forbidden();
+      const exam = await prisma.exam.findUnique({ where: { id: req.params.id } });
+      if (exam?.status !== "PUBLISHED") throw ApiError.forbidden();
+    } else if (!["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"].includes(role)) {
+      throw ApiError.forbidden();
+    }
+    const r = await buildReport(req.params.id, req.params.studentId);
+    await streamPdf(
+      res,
+      {
+        filename: `report-${r.student.admissionNo}-${r.exam.name.replace(/\s+/g, "-")}.pdf`,
+        title: "Report Card",
+        subtitle: r.exam.name + (r.exam.term ? ` · ${r.exam.term}` : ""),
+      },
+      (doc) => {
+        field(doc, "Student", r.student.name);
+        field(doc, "Admission No", r.student.admissionNo);
+        if (r.student.className) field(doc, "Class", r.student.className);
+        doc.moveDown(0.5);
+        table(
+          doc,
+          ["Subject", "Max", "Marks", "%", "Grade"],
+          r.subjects.map((s) => [
+            s.subject,
+            String(s.maxMarks),
+            s.marksObtained == null ? "—" : String(s.marksObtained),
+            s.percent == null ? "—" : `${s.percent}%`,
+            s.grade ?? "—",
+          ]),
+          [200, 70, 80, 70, 80],
+          "#000"
+        );
+        doc.moveDown(0.5);
+        field(doc, "Total", `${r.totalObtained} / ${r.totalMax}`);
+        if (r.overallPercent != null) field(doc, "Percentage", `${r.overallPercent}%`);
+        if (r.overallGrade) field(doc, "Grade", r.overallGrade);
+        if (r.result) field(doc, "Result", r.result);
+      }
+    );
   })
 );
 

@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
+import { downloadPdf } from "../lib/download";
 import type {
   ClassWithSections,
   FeeStructure,
@@ -538,7 +539,13 @@ function InvoiceModal({
             {error && <p className="error">{error}</p>}
 
             <div className="form-actions">
-              <button className="inline-btn ghost" onClick={onClose}>
+              <button
+                className="inline-btn ghost"
+                onClick={() => downloadPdf(`/fees/invoices/${id}/pdf`, `fees-${id.slice(-6)}.pdf`)}
+              >
+                Download PDF
+              </button>
+              <button className="inline-btn" onClick={onClose}>
                 Close
               </button>
             </div>

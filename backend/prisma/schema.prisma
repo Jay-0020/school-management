@@ -52,6 +52,7 @@ model User {
 
   teacher Teacher?
   student Student?
+  notices Notice[]
 
   @@index([role])
 }
@@ -75,6 +76,7 @@ model Section {
   classTeacher Teacher?  @relation("ClassTeacher", fields: [classTeacherId], references: [id])
   classTeacherId String?
   students     Student[]
+  notices      Notice[]
   createdAt    DateTime  @default(now())
 
   @@unique([classId, name])
@@ -156,4 +158,29 @@ model AttendanceRecord {
 
   @@unique([studentId, date])
   @@index([sectionId, date])
+}
+
+// ── Notices / announcements ───────────────────────────────────────────────────
+enum NoticeAudience {
+  ALL // everyone
+  STUDENTS // students (and parents)
+  STAFF // teachers + accountants + admins
+  SECTION // a specific class-section
+}
+
+model Notice {
+  id        String         @id @default(cuid())
+  title     String
+  body      String
+  audience  NoticeAudience @default(ALL)
+  section   Section?       @relation(fields: [sectionId], references: [id])
+  sectionId String? // required when audience = SECTION
+  pinned    Boolean        @default(false)
+  author    User?          @relation(fields: [authorId], references: [id])
+  authorId  String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([audience])
+  @@index([sectionId])
 }

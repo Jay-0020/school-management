@@ -8,6 +8,7 @@ import { errorHandler, notFoundHandler } from "./middleware/error";
 import { attendanceRouter } from "./modules/attendance/attendance.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
+import { noticesRouter } from "./modules/notices/notices.routes";
 import { schoolRouter } from "./modules/school/school.routes";
 import { studentsRouter } from "./modules/students/students.routes";
 import { teachersRouter } from "./modules/teachers/teachers.routes";
@@ -32,6 +33,7 @@ export function createApp() {
   app.use("/api/school", schoolRouter);
   app.use("/api/classes", classesRouter);
   app.use("/api/attendance", attendanceRouter);
+  app.use("/api/notices", noticesRouter);
   app.use("/api/students", studentsRouter);
   app.use("/api/teachers", teachersRouter);
 

@@ -9,6 +9,7 @@ const MODULES: Record<string, { label: string; roles: Role[]; path?: string }> =
   students: { label: "Students", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "ACCOUNTANT"], path: "/students" },
   teachers: { label: "Teachers & Staff", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"], path: "/teachers" },
   attendance: { label: "Attendance", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER"], path: "/attendance" },
+  notices: { label: "Notices", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "STUDENT", "PARENT"], path: "/notices" },
   notes: { label: "Notes", roles: ["STUDENT", "TEACHER"] },
   schoolwork: { label: "Schoolwork", roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"] },
   fees: { label: "Fees", roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "STUDENT", "PARENT"] },

@@ -95,6 +95,21 @@ export interface RosterEntry {
   note: string | null;
 }
 
+export type NoticeAudience = "ALL" | "STUDENTS" | "STAFF" | "SECTION";
+
+export interface Notice {
+  id: string;
+  title: string;
+  body: string;
+  audience: NoticeAudience;
+  sectionId: string | null;
+  pinned: boolean;
+  authorId: string | null;
+  createdAt: string;
+  author?: { id: string; email: string; role: Role } | null;
+  section?: { id: string; name: string; class: { name: string } } | null;
+}
+
 export interface AttendanceSummaryRow {
   studentId: string;
   admissionNo: string;

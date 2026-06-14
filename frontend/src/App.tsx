@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AttendancePage } from "./pages/AttendancePage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
+import { NoticesPage } from "./pages/NoticesPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
 import { StudentsPage } from "./pages/StudentsPage";
 import { TeachersPage } from "./pages/TeachersPage";
@@ -48,6 +49,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "TEACHER"]}>
             <AttendancePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notices"
+        element={
+          <ProtectedRoute>
+            <NoticesPage />
           </ProtectedRoute>
         }
       />

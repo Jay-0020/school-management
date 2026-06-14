@@ -10,6 +10,7 @@ import { authRouter } from "./modules/auth/auth.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
 import { noticesRouter } from "./modules/notices/notices.routes";
+import { payrollRouter } from "./modules/payroll/payroll.routes";
 import { schoolRouter } from "./modules/school/school.routes";
 import { schoolworkRouter } from "./modules/schoolwork/schoolwork.routes";
 import { studentsRouter } from "./modules/students/students.routes";
@@ -39,6 +40,7 @@ export function createApp() {
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/fees", feesRouter);
   app.use("/api/notices", noticesRouter);
+  app.use("/api/payroll", payrollRouter);
   app.use("/api/students", studentsRouter);
   app.use("/api/teachers", teachersRouter);
   app.use("/api/users", usersRouter);

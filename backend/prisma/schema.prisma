@@ -103,10 +103,12 @@ model Teacher {
   joiningDate    DateTime?
   phone          String?
   email          String?
-  isActive       Boolean   @default(true)
-  classTeacherOf Section[] @relation("ClassTeacher")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  isActive        Boolean          @default(true)
+  classTeacherOf  Section[]        @relation("ClassTeacher")
+  salaryStructure SalaryStructure?
+  payslips        Payslip[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 enum EnrollmentStatus {
@@ -286,4 +288,57 @@ model Homework {
 
   @@index([sectionId])
   @@index([subjectId])
+}
+
+// ── Payroll ─────────────────────────────────────────────────────────────────
+// Monthly amounts in whole rupees (INR). India statutory deductions: PF and ESI
+// are derived at run time; Professional Tax and TDS are configured per staff.
+
+model SalaryStructure {
+  id               String   @id @default(cuid())
+  teacher          Teacher  @relation(fields: [teacherId], references: [id])
+  teacherId        String   @unique
+  basic            Int
+  hra              Int      @default(0)
+  da               Int      @default(0)
+  conveyance       Int      @default(0)
+  specialAllowance Int      @default(0)
+  pfApplicable     Boolean  @default(true)
+  esiApplicable    Boolean  @default(false)
+  professionalTax  Int      @default(0) // state-wise monthly amount
+  tdsMonthly       Int      @default(0) // monthly TDS deduction
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+enum PayslipStatus {
+  GENERATED
+  PAID
+}
+
+model Payslip {
+  id               String        @id @default(cuid())
+  teacher          Teacher       @relation(fields: [teacherId], references: [id])
+  teacherId        String
+  month            String // "YYYY-MM"
+  // Earnings snapshot
+  basic            Int
+  hra              Int
+  da               Int
+  conveyance       Int
+  specialAllowance Int
+  gross            Int
+  // Deductions snapshot
+  pf               Int
+  esi              Int
+  professionalTax  Int
+  tds              Int
+  totalDeductions  Int
+  net              Int
+  status           PayslipStatus @default(GENERATED)
+  paidAt           DateTime?
+  createdAt        DateTime      @default(now())
+
+  @@unique([teacherId, month])
+  @@index([month])
 }

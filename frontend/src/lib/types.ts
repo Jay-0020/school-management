@@ -168,6 +168,52 @@ export interface InvoiceDetail extends Invoice {
   payments: Payment[];
 }
 
+export interface SalaryStructure {
+  id: string;
+  teacherId: string;
+  basic: number;
+  hra: number;
+  da: number;
+  conveyance: number;
+  specialAllowance: number;
+  pfApplicable: boolean;
+  esiApplicable: boolean;
+  professionalTax: number;
+  tdsMonthly: number;
+}
+
+export interface StaffWithStructure {
+  id: string;
+  firstName: string;
+  lastName: string;
+  employeeNo: string;
+  staffType: StaffType;
+  salaryStructure: SalaryStructure | null;
+}
+
+export type PayslipStatus = "GENERATED" | "PAID";
+
+export interface Payslip {
+  id: string;
+  teacherId: string;
+  month: string;
+  basic: number;
+  hra: number;
+  da: number;
+  conveyance: number;
+  specialAllowance: number;
+  gross: number;
+  pf: number;
+  esi: number;
+  professionalTax: number;
+  tds: number;
+  totalDeductions: number;
+  net: number;
+  status: PayslipStatus;
+  paidAt: string | null;
+  teacher?: { id: string; firstName: string; lastName: string; employeeNo: string };
+}
+
 export interface ManagedUser {
   id: string;
   email: string;

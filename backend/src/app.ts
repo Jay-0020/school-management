@@ -12,6 +12,7 @@ import { noticesRouter } from "./modules/notices/notices.routes";
 import { schoolRouter } from "./modules/school/school.routes";
 import { studentsRouter } from "./modules/students/students.routes";
 import { teachersRouter } from "./modules/teachers/teachers.routes";
+import { usersRouter } from "./modules/users/users.routes";
 
 export function createApp() {
   const app = express();
@@ -36,6 +37,7 @@ export function createApp() {
   app.use("/api/notices", noticesRouter);
   app.use("/api/students", studentsRouter);
   app.use("/api/teachers", teachersRouter);
+  app.use("/api/users", usersRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

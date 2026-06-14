@@ -7,6 +7,7 @@ import { NoticesPage } from "./pages/NoticesPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
 import { StudentsPage } from "./pages/StudentsPage";
 import { TeachersPage } from "./pages/TeachersPage";
+import { UsersPage } from "./pages/UsersPage";
 
 export function App() {
   return (
@@ -57,6 +58,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <NoticesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}>
+            <UsersPage />
           </ProtectedRoute>
         }
       />

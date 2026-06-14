@@ -95,6 +95,19 @@ export interface RosterEntry {
   note: string | null;
 }
 
+export interface ManagedUser {
+  id: string;
+  email: string;
+  phone?: string | null;
+  role: Role;
+  isActive: boolean;
+  mustChangePassword: boolean;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  teacher?: { id: string; firstName: string; lastName: string; employeeNo: string } | null;
+  student?: { id: string; firstName: string; lastName: string; admissionNo: string } | null;
+}
+
 export type NoticeAudience = "ALL" | "STUDENTS" | "STAFF" | "SECTION";
 
 export interface Notice {

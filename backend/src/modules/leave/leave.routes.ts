@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import type { Prisma, Role } from "@prisma/client";
+import type { LeaveCategory, Prisma, Role, User } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { notify, notifyMany } from "../../lib/notify";
@@ -25,11 +25,28 @@ function academicYearRange(now = new Date()) {
   };
 }
 
-/** Approved leave days used this academic year. */
-async function usedDays(userId: string): Promise<number> {
+const QUOTA_CATEGORIES = ["CASUAL", "SICK", "EARNED"] as const;
+
+/** This user's quota for a category (UNPAID is unlimited → null). */
+function categoryQuota(user: User, category: LeaveCategory): number | null {
+  switch (category) {
+    case "CASUAL": return user.casualQuota;
+    case "SICK": return user.sickQuota;
+    case "EARNED": return user.earnedQuota;
+    case "UNPAID": return null;
+  }
+}
+
+/** Approved leave days used this academic year, by category. */
+async function usedDays(userId: string, category: LeaveCategory): Promise<number> {
   const { start, end } = academicYearRange();
   const approved = await prisma.leaveRequest.findMany({
-    where: { applicantId: userId, status: "APPROVED", fromDate: { gte: start, lte: end } },
+    where: {
+      applicantId: userId,
+      category,
+      status: "APPROVED",
+      fromDate: { gte: start, lte: end },
+    },
     select: { fromDate: true, toDate: true },
   });
   return approved.reduce((sum, r) => sum + dayCount(r.fromDate, r.toDate), 0);
@@ -99,6 +116,7 @@ async function classTeacherSectionIds(userId: string): Promise<string[]> {
 const createSchema = z
   .object({
     kind: z.enum(["ADVANCE", "JUSTIFICATION"]),
+    category: z.enum(["CASUAL", "SICK", "EARNED", "UNPAID"]).default("CASUAL"),
     fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     reason: z.string().min(1),
@@ -116,15 +134,16 @@ leaveRouter.post(
     const to = parseDay(data.toDate);
     const requested = dayCount(from, to);
 
-    // Advance permission is checked against the annual quota; a justification
-    // for a past absence is recorded regardless (the day was already missed).
-    if (data.kind === "ADVANCE") {
+    // Advance permission is checked against the category quota; a justification
+    // for a past absence (or unpaid leave) is recorded regardless.
+    if (data.kind === "ADVANCE" && data.category !== "UNPAID") {
       const me = await prisma.user.findUnique({ where: { id: req.user!.sub } });
-      const used = await usedDays(req.user!.sub);
-      const remaining = (me?.leaveQuota ?? 0) - used;
+      const quota = me ? categoryQuota(me, data.category) : 0;
+      const used = await usedDays(req.user!.sub, data.category);
+      const remaining = (quota ?? 0) - used;
       if (requested > remaining) {
         throw ApiError.badRequest(
-          `Exceeds your leave balance — ${remaining} day(s) remaining this year`
+          `Exceeds your ${data.category.toLowerCase()} leave balance — ${remaining} day(s) left this year`
         );
       }
     }
@@ -133,6 +152,7 @@ leaveRouter.post(
       data: {
         applicantId: req.user!.sub,
         kind: data.kind,
+        category: data.category,
         fromDate: from,
         toDate: to,
         reason: data.reason,
@@ -154,14 +174,19 @@ leaveRouter.post(
   })
 );
 
-// Current user's leave balance for the academic year.
+// Current user's leave balance per category for the academic year.
 leaveRouter.get(
   "/balance",
   asyncHandler(async (req, res) => {
     const me = await prisma.user.findUnique({ where: { id: req.user!.sub } });
-    const used = await usedDays(req.user!.sub);
-    const quota = me?.leaveQuota ?? 0;
-    res.json({ quota, used, remaining: Math.max(0, quota - used) });
+    const balances = await Promise.all(
+      QUOTA_CATEGORIES.map(async (category) => {
+        const quota = me ? (categoryQuota(me, category) ?? 0) : 0;
+        const used = await usedDays(req.user!.sub, category);
+        return { category, quota, used, remaining: Math.max(0, quota - used) };
+      })
+    );
+    res.json({ balances });
   })
 );
 

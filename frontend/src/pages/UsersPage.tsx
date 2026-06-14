@@ -44,25 +44,7 @@ export function UsersPage() {
       api.post(`/users/${vars.id}/reset-password`, { newPassword: vars.newPassword }),
   });
 
-  const setQuota = useMutation({
-    mutationFn: (vars: { id: string; leaveQuota: number }) =>
-      api.patch(`/users/${vars.id}`, { leaveQuota: vars.leaveQuota }),
-    onSuccess: () => {
-      invalidate();
-      toast.success("Leave quota updated");
-    },
-  });
-
-  function handleQuota(u: ManagedUser) {
-    const v = window.prompt(`Annual leave days for ${u.email}:`, String(u.leaveQuota));
-    if (v === null) return;
-    const n = Number(v);
-    if (!Number.isInteger(n) || n < 0 || n > 365) {
-      toast.error("Enter a whole number of days (0–365)");
-      return;
-    }
-    setQuota.mutate({ id: u.id, leaveQuota: n });
-  }
+  const [quotaUser, setQuotaUser] = useState<ManagedUser | null>(null);
 
   function handleReset(u: ManagedUser) {
     const pw = window.prompt(`New temporary password for ${u.email} (min 8 chars):`);
@@ -117,7 +99,9 @@ export function UsersPage() {
                     <span className="badge">{u.role}</span>
                   </td>
                   <td>{linkedLabel(u)}</td>
-                  <td>{u.leaveQuota}</td>
+                  <td title="Casual / Sick / Earned">
+                    {u.casualQuota}/{u.sickQuota}/{u.earnedQuota}
+                  </td>
                   <td>{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "—"}</td>
                   <td>
                     <span className={`status status-${u.isActive ? "active" : "inactive"}`}>
@@ -129,7 +113,7 @@ export function UsersPage() {
                       <button className="link" onClick={() => handleReset(u)}>
                         Reset pw
                       </button>
-                      <button className="link" onClick={() => handleQuota(u)}>
+                      <button className="link" onClick={() => setQuotaUser(u)}>
                         Quota
                       </button>
                       {u.id !== me?.id && (
@@ -155,7 +139,62 @@ export function UsersPage() {
           </table>
         )}
       {creating && <UserModal onClose={() => setCreating(false)} />}
+      {quotaUser && <QuotaModal user={quotaUser} onClose={() => setQuotaUser(null)} />}
     </AppShell>
+  );
+}
+
+// ── Leave quota modal ─────────────────────────────────────────────────────
+function QuotaModal({ user, onClose }: { user: ManagedUser; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [casual, setCasual] = useState(String(user.casualQuota));
+  const [sick, setSick] = useState(String(user.sickQuota));
+  const [earned, setEarned] = useState(String(user.earnedQuota));
+
+  const save = useMutation({
+    mutationFn: () =>
+      api.patch(`/users/${user.id}`, {
+        casualQuota: Number(casual),
+        sickQuota: Number(sick),
+        earnedQuota: Number(earned),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users"] });
+      toast.success("Leave quota updated");
+      onClose();
+    },
+    onError: () => toast.error("Could not update quota"),
+  });
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Leave quota</h3>
+        <p className="muted hint">{user.email} — annual days per category</p>
+        <div className="form-grid">
+          <label>
+            Casual
+            <input type="number" value={casual} onChange={(e) => setCasual(e.target.value)} />
+          </label>
+          <label>
+            Sick
+            <input type="number" value={sick} onChange={(e) => setSick(e.target.value)} />
+          </label>
+          <label>
+            Earned
+            <input type="number" value={earned} onChange={(e) => setEarned(e.target.value)} />
+          </label>
+        </div>
+        <div className="form-actions">
+          <button className="inline-btn ghost" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="inline-btn" onClick={() => save.mutate()} disabled={save.isPending}>
+            {save.isPending ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

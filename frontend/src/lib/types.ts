@@ -15,7 +15,10 @@ export interface AppNotification {
   createdAt: string;
 }
 
+export type LeaveCategory = "CASUAL" | "SICK" | "EARNED" | "UNPAID";
+
 export interface LeaveBalance {
+  category: Exclude<LeaveCategory, "UNPAID">;
   quota: number;
   used: number;
   remaining: number;
@@ -27,6 +30,7 @@ export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 export interface LeaveRequest {
   id: string;
   kind: LeaveKind;
+  category: LeaveCategory;
   fromDate: string;
   toDate: string;
   reason: string;
@@ -328,7 +332,9 @@ export interface ManagedUser {
   role: Role;
   isActive: boolean;
   mustChangePassword: boolean;
-  leaveQuota: number;
+  casualQuota: number;
+  sickQuota: number;
+  earnedQuota: number;
   lastLoginAt?: string | null;
   createdAt: string;
   teacher?: { id: string; firstName: string; lastName: string; employeeNo: string } | null;

@@ -16,7 +16,9 @@ const userSelect = {
   role: true,
   isActive: true,
   mustChangePassword: true,
-  leaveQuota: true,
+  casualQuota: true,
+  sickQuota: true,
+  earnedQuota: true,
   lastLoginAt: true,
   createdAt: true,
   teacher: { select: { id: true, firstName: true, lastName: true, employeeNo: true } },
@@ -126,7 +128,9 @@ usersRouter.post(
 
 const patchSchema = z.object({
   isActive: z.boolean().optional(),
-  leaveQuota: z.number().int().min(0).max(365).optional(),
+  casualQuota: z.number().int().min(0).max(365).optional(),
+  sickQuota: z.number().int().min(0).max(365).optional(),
+  earnedQuota: z.number().int().min(0).max(365).optional(),
 });
 
 usersRouter.patch(

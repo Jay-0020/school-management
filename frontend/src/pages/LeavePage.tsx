@@ -6,7 +6,20 @@ import { EmptyState, SkeletonRows } from "../components/EmptyState";
 import { IconCalendar } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "../lib/toast";
-import type { LeaveBalance, LeaveKind, LeaveRequest, LeaveStatus } from "../lib/types";
+import type {
+  LeaveBalance,
+  LeaveCategory,
+  LeaveKind,
+  LeaveRequest,
+  LeaveStatus,
+} from "../lib/types";
+
+const categoryLabel: Record<LeaveCategory, string> = {
+  CASUAL: "Casual",
+  SICK: "Sick",
+  EARNED: "Earned",
+  UNPAID: "Unpaid",
+};
 
 const statusClass: Record<LeaveStatus, string> = {
   PENDING: "inv-pending",
@@ -59,23 +72,20 @@ export function LeavePage() {
 function BalanceStrip() {
   const { data } = useQuery({
     queryKey: ["leave-balance"],
-    queryFn: async () => (await api.get<LeaveBalance>("/leave/balance")).data,
+    queryFn: async () => (await api.get<{ balances: LeaveBalance[] }>("/leave/balance")).data.balances,
   });
   if (!data) return null;
   return (
     <div className="summary-strip">
-      <div className="summary-chip">
-        <span className="muted">Annual quota</span>
-        <strong>{data.quota} days</strong>
-      </div>
-      <div className="summary-chip">
-        <span className="muted">Used this year</span>
-        <strong>{data.used} days</strong>
-      </div>
-      <div className="summary-chip">
-        <span className="muted">Remaining</span>
-        <strong className={data.remaining <= 0 ? "pct-low" : "pct"}>{data.remaining} days</strong>
-      </div>
+      {data.map((b) => (
+        <div className="summary-chip" key={b.category}>
+          <span className="muted">{categoryLabel[b.category]} leave</span>
+          <strong className={b.remaining <= 0 ? "pct-low" : "pct"}>
+            {b.remaining}/{b.quota}
+          </strong>
+          <span className="muted">{b.used} used</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -146,6 +156,9 @@ function LeaveList({ scope }: { scope: "mine" | "inbox" }) {
           <article className="notice-card" key={r.id}>
             <div className="notice-top">
               <h3>
+                <span className="audience-badge" style={{ marginRight: 8 }}>
+                  {categoryLabel[r.category]}
+                </span>
                 {kindLabel[r.kind]} · {fmt(r.fromDate)}
                 {r.toDate !== r.fromDate ? ` – ${fmt(r.toDate)}` : ""}
               </h3>
@@ -195,13 +208,14 @@ function RequestModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);
   const [kind, setKind] = useState<LeaveKind>("ADVANCE");
+  const [category, setCategory] = useState<LeaveCategory>("CASUAL");
   const [fromDate, setFrom] = useState(today);
   const [toDate, setTo] = useState(today);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const submit = useMutation({
-    mutationFn: () => api.post("/leave", { kind, fromDate, toDate, reason }),
+    mutationFn: () => api.post("/leave", { kind, category, fromDate, toDate, reason }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leave"] });
       qc.invalidateQueries({ queryKey: ["leave-balance"] });
@@ -229,6 +243,18 @@ function RequestModal({ onClose }: { onClose: () => void }) {
               <select value={kind} onChange={(e) => setKind(e.target.value as LeaveKind)}>
                 <option value="ADVANCE">Advance permission (future)</option>
                 <option value="JUSTIFICATION">Justify a past absence</option>
+              </select>
+            </label>
+            <label>
+              Category
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as LeaveCategory)}
+              >
+                <option value="CASUAL">Casual</option>
+                <option value="SICK">Sick</option>
+                <option value="EARNED">Earned</option>
+                <option value="UNPAID">Unpaid</option>
               </select>
             </label>
             <label>

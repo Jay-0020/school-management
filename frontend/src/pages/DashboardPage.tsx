@@ -33,6 +33,9 @@ export function DashboardPage() {
         <span className="spacer" />
         <span className="muted">{user.email}</span>
         <span className="badge">{user.role}</span>
+        <Link className="link" to="/change-password">
+          Change password
+        </Link>
         <button className="link" onClick={logout}>
           Sign out
         </button>
@@ -41,7 +44,8 @@ export function DashboardPage() {
       <main className="content">
         {user.mustChangePassword && (
           <div className="notice">
-            You're using a temporary password — please change it from Settings.
+            You're using a temporary password —{" "}
+            <Link to="/change-password">change it now</Link>.
           </div>
         )}
 

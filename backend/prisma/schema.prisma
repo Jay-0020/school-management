@@ -32,6 +32,7 @@ model SchoolSettings {
 enum Role {
   SUPER_ADMIN
   ADMIN
+  DEAN
   ACCOUNTANT
   TEACHER
   STUDENT
@@ -54,8 +55,10 @@ model User {
   student           Student?
   notices           Notice[]
   homework          Homework[]
-  expensesSubmitted Expense[]  @relation("ExpenseSubmitter")
-  expensesDecided   Expense[]  @relation("ExpenseDecider")
+  expensesSubmitted Expense[]      @relation("ExpenseSubmitter")
+  expensesDecided   Expense[]      @relation("ExpenseDecider")
+  leaveRequests     LeaveRequest[] @relation("LeaveApplicant")
+  leaveDecisions    LeaveRequest[] @relation("LeaveApprover")
 
   @@index([role])
 }
@@ -372,4 +375,37 @@ model Expense {
 
   @@index([status])
   @@index([submittedById])
+}
+
+// ── Leave (hierarchical approvals) ────────────────────────────────────────────
+enum LeaveKind {
+  ADVANCE // permission for a future day off
+  JUSTIFICATION // reason for a past unannounced absence
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model LeaveRequest {
+  id           String      @id @default(cuid())
+  applicant    User        @relation("LeaveApplicant", fields: [applicantId], references: [id])
+  applicantId  String
+  kind         LeaveKind
+  fromDate     DateTime
+  toDate       DateTime
+  reason       String
+  status       LeaveStatus @default(PENDING)
+  approver     User?       @relation("LeaveApprover", fields: [approverId], references: [id])
+  approverId   String?
+  decisionNote String?
+  decidedAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([applicantId])
+  @@index([status])
 }

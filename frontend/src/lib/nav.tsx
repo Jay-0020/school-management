@@ -3,12 +3,14 @@ import {
   IconAttendance,
   IconBell,
   IconBook,
+  IconCalendar,
   IconHome,
   IconReceipt,
   IconRupee,
   IconSettings,
   IconStudents,
   IconTeacher,
+  IconUser,
   IconUsers,
   IconWallet,
 } from "../components/icons";
@@ -25,16 +27,26 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-const ALL: Role[] = ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "STUDENT", "PARENT"];
+const ALL: Role[] = ["SUPER_ADMIN", "ADMIN", "DEAN", "ACCOUNTANT", "TEACHER", "STUDENT", "PARENT"];
 
 export const NAV: NavGroup[] = [
   {
     label: "",
-    items: [{ label: "Dashboard", path: "/", icon: IconHome, roles: ALL }],
+    items: [
+      { label: "Dashboard", path: "/", icon: IconHome, roles: ALL },
+      { label: "My Profile", path: "/profile", icon: IconUser, roles: ALL },
+      { label: "Leave", path: "/leave", icon: IconCalendar, roles: ALL },
+    ],
   },
   {
     label: "People",
     items: [
+      {
+        label: "Overview",
+        path: "/people",
+        icon: IconUsers,
+        roles: ["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"],
+      },
       {
         label: "Students",
         path: "/students",

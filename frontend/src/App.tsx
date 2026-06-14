@@ -6,8 +6,11 @@ import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ExpensesPage } from "./pages/ExpensesPage";
 import { FeesPage } from "./pages/FeesPage";
+import { LeavePage } from "./pages/LeavePage";
 import { LoginPage } from "./pages/LoginPage";
 import { NoticesPage } from "./pages/NoticesPage";
+import { PeoplePage } from "./pages/PeoplePage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { PayrollPage } from "./pages/PayrollPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
 import { SchoolworkPage } from "./pages/SchoolworkPage";
@@ -26,6 +29,30 @@ export function App() {
         element={
           <ProtectedRoute>
             <ChangePasswordPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leave"
+        element={
+          <ProtectedRoute>
+            <LeavePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/people"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"]}>
+            <PeoplePage />
           </ProtectedRoute>
         }
       />

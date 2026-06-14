@@ -9,6 +9,8 @@ import { attendanceRouter } from "./modules/attendance/attendance.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { expensesRouter } from "./modules/expenses/expenses.routes";
+import { leaveRouter } from "./modules/leave/leave.routes";
+import { profileRouter } from "./modules/profile/profile.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
 import { noticesRouter } from "./modules/notices/notices.routes";
@@ -44,6 +46,8 @@ export function createApp() {
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/fees", feesRouter);
   app.use("/api/expenses", expensesRouter);
+  app.use("/api/leave", leaveRouter);
+  app.use("/api/profile", profileRouter);
   app.use("/api/notices", noticesRouter);
   app.use("/api/payroll", payrollRouter);
   app.use("/api/students", studentsRouter);

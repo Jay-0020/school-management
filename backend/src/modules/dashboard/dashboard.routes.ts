@@ -52,6 +52,24 @@ dashboardRouter.get(
         },
         { key: "classes", label: "Classes", value: String(classes) }
       );
+    } else if (role === "DEAN") {
+      const [students, staff, pendingLeave] = await Promise.all([
+        prisma.student.count({ where: { status: "ACTIVE" } }),
+        prisma.teacher.count({ where: { isActive: true } }),
+        prisma.leaveRequest.count({
+          where: { status: "PENDING", applicant: { role: { in: ["TEACHER", "ACCOUNTANT"] } } },
+        }),
+      ]);
+      stats.push(
+        { key: "students", label: "Students", value: String(students) },
+        { key: "staff", label: "Staff", value: String(staff) },
+        {
+          key: "leave",
+          label: "Staff leave to review",
+          value: String(pendingLeave),
+          hint: "pending approval",
+        }
+      );
     } else if (role === "ACCOUNTANT") {
       const [outstanding, pendingExp, staff] = await Promise.all([
         feesOutstanding(),

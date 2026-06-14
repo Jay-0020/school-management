@@ -1,10 +1,80 @@
 export type Role =
   | "SUPER_ADMIN"
   | "ADMIN"
+  | "DEAN"
   | "ACCOUNTANT"
   | "TEACHER"
   | "STUDENT"
   | "PARENT";
+
+export type LeaveKind = "ADVANCE" | "JUSTIFICATION";
+export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+
+export interface LeaveRequest {
+  id: string;
+  kind: LeaveKind;
+  fromDate: string;
+  toDate: string;
+  reason: string;
+  status: LeaveStatus;
+  decisionNote: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+  applicant?: {
+    id: string;
+    email: string;
+    role: Role;
+    student?: { id: string; firstName: string; lastName: string } | null;
+    teacher?: { id: string; firstName: string; lastName: string } | null;
+  };
+  approver?: { id: string; email: string } | null;
+}
+
+export interface AttendanceYear {
+  year: string;
+  present: number;
+  absent: number;
+  late: number;
+  excused: number;
+  total: number;
+  percent: number | null;
+}
+export interface ProfileMe {
+  type: "student" | "staff" | "none";
+  id?: string;
+  name?: string;
+  admissionNo?: string;
+  className?: string | null;
+  role?: Role;
+  employeeNo?: string | null;
+  message?: string;
+  attendance?: {
+    years: AttendanceYear[];
+    monthly: { month: string; present: number; total: number; percent: number | null }[];
+  };
+  leave?: {
+    approvedDays: number;
+    pending: number;
+    recent: { id: string; kind: LeaveKind; from: string; to: string; status: LeaveStatus; reason: string }[];
+  };
+}
+export interface PeopleDirectory {
+  students: {
+    type: "student";
+    id: string;
+    name: string;
+    admissionNo: string;
+    className: string;
+    attendancePercent: number | null;
+  }[];
+  staff: {
+    type: "staff";
+    id: string;
+    name: string;
+    employeeNo: string;
+    staffType: string;
+  }[];
+}
 
 export interface User {
   id: string;

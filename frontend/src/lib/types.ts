@@ -189,6 +189,21 @@ export interface Subject {
   code: string | null;
 }
 
+export type NoteStatus = "PENDING" | "APPROVED" | "REJECTED";
+export interface SharedNote {
+  id: string;
+  title: string;
+  description: string | null;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  status: NoteStatus;
+  createdAt: string;
+  subject?: { id: string; name: string } | null;
+  section?: { id: string; name: string; class: { name: string } } | null;
+  uploadedBy?: { id: string; email: string; role: Role } | null;
+}
+
 export type ExamStatus = "DRAFT" | "PUBLISHED";
 export interface ExamPaper {
   id: string;

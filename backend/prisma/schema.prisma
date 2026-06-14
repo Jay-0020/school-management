@@ -63,6 +63,7 @@ model User {
   leaveRequests     LeaveRequest[] @relation("LeaveApplicant")
   leaveDecisions    LeaveRequest[] @relation("LeaveApprover")
   notifications     Notification[]
+  uploadedNotes     Note[]
 
   @@index([role])
 }
@@ -90,6 +91,7 @@ model Section {
   students     Student[]
   notices      Notice[]
   homework     Homework[]
+  notes        Note[]
   createdAt    DateTime  @default(now())
 
   @@unique([classId, name])
@@ -281,6 +283,7 @@ model Subject {
   code       String?     @unique
   homework   Homework[]
   examPapers ExamPaper[]
+  notes      Note[]
   createdAt  DateTime    @default(now())
 }
 
@@ -486,4 +489,31 @@ model Mark {
 
   @@unique([paperId, studentId])
   @@index([examId, studentId])
+}
+
+// ── Notes sharing (file uploads) ──────────────────────────────────────────────
+enum NoteStatus {
+  PENDING // student upload awaiting moderation
+  APPROVED
+  REJECTED
+}
+
+model Note {
+  id           String     @id @default(cuid())
+  title        String
+  description  String?
+  subject      Subject?   @relation(fields: [subjectId], references: [id])
+  subjectId    String?
+  section      Section?   @relation(fields: [sectionId], references: [id])
+  sectionId    String? // null = shared school-wide
+  uploadedBy   User?      @relation(fields: [uploadedById], references: [id])
+  uploadedById String?
+  fileName     String // stored filename on disk
+  originalName String
+  mimeType     String
+  size         Int
+  status       NoteStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+
+  @@index([sectionId, status])
 }

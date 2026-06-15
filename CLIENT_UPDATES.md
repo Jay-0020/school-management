@@ -12,13 +12,13 @@ requirement is completed.
 |---|-------------|--------|
 | 1 | Staff attendance (geofenced) + academic calendar | ✅ Done |
 | 2 | Expense approval → Dean + fixed categories | ✅ Done |
-| 3 | Dean dashboard: student fees pending | ⏳ Pending |
-| 4 | Dean dashboard: staff payments pending | ⏳ Pending |
-| 5 | Dean dashboard: salary paid to date | ⏳ Pending |
+| 3 | Dean dashboard: student fees pending | ✅ Done |
+| 4 | Dean dashboard: staff payments pending | ✅ Done |
+| 5 | Dean dashboard: salary paid to date | ✅ Done |
 | 6 | Full & Final settlement (Dean approval) | ⏳ Pending |
 | 7 | Teacher performance + parent/student feedback | ⏳ Pending |
 | 8 | Student onboarding & retention (per academic year) | ⏳ Pending |
-| 9 | Dean dashboard: overall expenditure | ⏳ Pending |
+| 9 | Dean dashboard: overall expenditure | ✅ Done |
 | 10 | Combine Students & Parents into one profile | ⏳ Pending |
 | 11 | Feedback section (students/parents) | ⏳ Pending |
 | 12 | Leave categories → Casual / Sick only | ⏳ Pending |
@@ -96,5 +96,32 @@ Admin (mark paid).
 
 ---
 
-*Remaining requirements (#3–#13) are tracked in the status table above and will
-be appended here as each is completed.*
+## Update 3 — Dean financial overview (fees, payroll, salary, expenditure)
+*Completed: 15 Jun 2026 — covers requirements #3, #4, #5, #9*
+
+**Requested:** The Dean should see, on their dashboard, the overall fees
+pending from students, how much payment is pending to staff, how much salary
+has been paid to teachers so far, and the overall expenditure to date.
+
+**Delivered:** a **Financial overview** panel on the Dean's (and Admin's)
+dashboard with four live figures:
+- **Student fees pending** — total outstanding across all unpaid/partial
+  invoices.
+- **Staff payments pending** — total of payslips that are generated but not
+  yet paid.
+- **Salary paid to date** — total of payslips already paid.
+- **Total expenditure** — total of expenses marked paid, plus a **breakdown by
+  category**.
+
+**How it flows:**
+1. The figures are computed live from existing invoices, payslips and expenses
+   — nothing extra to maintain.
+2. When the Dean opens their dashboard, the **Financial overview** panel shows
+   the four totals at a glance, with the expenditure split by category beneath.
+
+**Who/where:** Dean + Admin (dashboard).
+
+---
+
+*Remaining requirements are tracked in the status table above and will be
+appended here as each is completed.*

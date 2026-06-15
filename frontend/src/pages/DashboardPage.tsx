@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { FinanceOverview } from "../components/FinanceOverview";
 import { SchoolCalendar } from "../components/SchoolCalendar";
 import { StaffAttendanceOverview, StaffCheckInCard } from "../components/StaffCheckIn";
 import { SkeletonStats } from "../components/EmptyState";
@@ -78,6 +79,8 @@ export function DashboardPage() {
       )}
 
       {isStaff && <StaffCheckInCard />}
+
+      {isManager && <FinanceOverview />}
 
       <div className="dash-cols">
         <div className="widget">

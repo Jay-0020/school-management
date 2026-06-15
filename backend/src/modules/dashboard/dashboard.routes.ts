@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/http";
-import { authenticate } from "../../middleware/auth";
+import { authenticate, requireRole } from "../../middleware/auth";
 
 export const dashboardRouter = Router();
 
@@ -24,6 +24,41 @@ async function feesOutstanding(): Promise<number> {
   });
   return (agg._sum.total ?? 0) - (agg._sum.amountPaid ?? 0);
 }
+
+/**
+ * Dean / Admin financial overview — fees pending, staff payments pending,
+ * salary paid to date, and total expenditure (with a category breakdown).
+ */
+dashboardRouter.get(
+  "/finance",
+  requireRole("SUPER_ADMIN", "ADMIN", "DEAN"),
+  asyncHandler(async (_req, res) => {
+    const [feesAgg, staffPending, salaryPaid, expPaid, expByCat] = await Promise.all([
+      prisma.invoice.aggregate({
+        where: { status: { in: ["PENDING", "PARTIAL"] } },
+        _sum: { total: true, amountPaid: true },
+      }),
+      prisma.payslip.aggregate({ where: { status: "GENERATED" }, _sum: { net: true } }),
+      prisma.payslip.aggregate({ where: { status: "PAID" }, _sum: { net: true } }),
+      prisma.expense.aggregate({ where: { status: "PAID" }, _sum: { amount: true } }),
+      prisma.expense.groupBy({
+        by: ["category"],
+        where: { status: "PAID" },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    res.json({
+      feesPending: (feesAgg._sum.total ?? 0) - (feesAgg._sum.amountPaid ?? 0),
+      staffPaymentsPending: staffPending._sum.net ?? 0,
+      salaryPaidToDate: salaryPaid._sum.net ?? 0,
+      totalExpenditure: expPaid._sum.amount ?? 0,
+      expenditureByCategory: expByCat
+        .map((c) => ({ category: c.category, total: c._sum.amount ?? 0 }))
+        .sort((a, b) => b.total - a.total),
+    });
+  })
+);
 
 /** Role-aware dashboard: a set of headline stats plus recent notices. */
 dashboardRouter.get(

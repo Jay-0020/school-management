@@ -146,6 +146,13 @@ export interface StaffAttendanceRow {
   percentage: number | null;
   present: boolean;
 }
+export interface FinanceOverview {
+  feesPending: number;
+  staffPaymentsPending: number;
+  salaryPaidToDate: number;
+  totalExpenditure: number;
+  expenditureByCategory: { category: string; total: number }[];
+}
 
 export interface SectionSummary {
   id: string;

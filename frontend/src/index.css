@@ -1122,6 +1122,14 @@ tr.clickable:hover td {
   font-size: 12px;
   color: var(--muted);
 }
+.dash-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.dash-stack > .stat-grid {
+  margin-bottom: 0; /* spacing handled by the stack gap */
+}
 .dash-cols {
   display: grid;
   grid-template-columns: 2fr 1fr;

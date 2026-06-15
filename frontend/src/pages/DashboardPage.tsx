@@ -62,6 +62,7 @@ export function DashboardPage() {
         <p className="muted">Here's what's happening at {greeting}.</p>
       </div>
 
+      <div className="dash-stack">
       {!data ? (
         <SkeletonStats count={5} />
       ) : (
@@ -117,6 +118,7 @@ export function DashboardPage() {
           <SchoolCalendar cal={cal} readOnly />
         </div>
       )}
+      </div>
     </AppShell>
   );
 }

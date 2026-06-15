@@ -166,7 +166,7 @@ export function App() {
       <Route
         path="/expenses"
         element={
-          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER"]}>
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "DEAN"]}>
             <ExpensesPage />
           </ProtectedRoute>
         }

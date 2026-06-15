@@ -9,7 +9,14 @@ import type { Expense, ExpenseStatus, ExpenseSummaryRow } from "../lib/types";
 
 const money = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 const STATUSES: ExpenseStatus[] = ["SUBMITTED", "APPROVED", "REJECTED", "PAID"];
-const CATEGORIES = ["Stationery", "Maintenance", "Travel", "Utilities", "Events", "Supplies"];
+const CATEGORIES = [
+  "Travel",
+  "Student activity",
+  "Professional development",
+  "Technology & equipment",
+  "Communication",
+  "Miscellaneous office",
+];
 const statusClass: Record<ExpenseStatus, string> = {
   SUBMITTED: "inv-pending",
   APPROVED: "inv-partial",
@@ -26,7 +33,10 @@ function errMsg(err: unknown, fallback: string): string {
 export function ExpensesPage() {
   const { user } = useAuth();
   const isManager =
-    user?.role === "ADMIN" || user?.role === "SUPER_ADMIN" || user?.role === "ACCOUNTANT";
+    user?.role === "ADMIN" ||
+    user?.role === "SUPER_ADMIN" ||
+    user?.role === "ACCOUNTANT" ||
+    user?.role === "DEAN";
 
   const [status, setStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -170,16 +180,14 @@ function SubmitModal({ onClose }: { onClose: () => void }) {
           <div className="form-grid">
             <label>
               Category
-              <input
-                list="expense-cats"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              />
-              <datalist id="expense-cats">
+              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="">Select a category…</option>
                 {CATEGORIES.map((c) => (
-                  <option key={c} value={c} />
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
-              </datalist>
+              </select>
             </label>
             <label>
               Amount ₹
@@ -233,7 +241,10 @@ function ExpenseModal({
   onClose: () => void;
 }) {
   const { user } = useAuth();
-  const isApprover = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const isApprover =
+    user?.role === "ADMIN" || user?.role === "SUPER_ADMIN" || user?.role === "DEAN";
+  const isPayer =
+    user?.role === "ADMIN" || user?.role === "SUPER_ADMIN" || user?.role === "ACCOUNTANT";
   const qc = useQueryClient();
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -310,7 +321,7 @@ function ExpenseModal({
               </div>
             )}
 
-            {isManager && exp.status === "APPROVED" && (
+            {isPayer && exp.status === "APPROVED" && (
               <div className="form-actions">
                 <button className="inline-btn" onClick={() => pay.mutate()} disabled={pay.isPending}>
                   Mark paid / reimbursed

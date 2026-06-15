@@ -9,22 +9,33 @@ export const expensesRouter = Router();
 
 expensesRouter.use(authenticate);
 
-const STAFF = ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER"] as const;
-const APPROVERS = ["SUPER_ADMIN", "ADMIN"] as const;
+const STAFF = ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "DEAN"] as const;
+const APPROVERS = ["SUPER_ADMIN", "ADMIN", "DEAN"] as const;
 const PAYERS = ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"] as const;
+
+// Fixed expense categories (client-defined). Exported for the dashboard/reports.
+export const EXPENSE_CATEGORIES = [
+  "Travel",
+  "Student activity",
+  "Professional development",
+  "Technology & equipment",
+  "Communication",
+  "Miscellaneous office",
+] as const;
 
 const include = {
   submittedBy: { select: { id: true, email: true, role: true } },
   decidedBy: { select: { id: true, email: true } },
 } satisfies Prisma.ExpenseInclude;
 
+// Managers see every expense (Dean/Admin approve; Accountant pays).
 function isManager(role: string) {
-  return role === "SUPER_ADMIN" || role === "ADMIN" || role === "ACCOUNTANT";
+  return role === "SUPER_ADMIN" || role === "ADMIN" || role === "ACCOUNTANT" || role === "DEAN";
 }
 
 // ── Submit ──────────────────────────────────────────────────────────────────
 const createSchema = z.object({
-  category: z.string().min(1),
+  category: z.enum(EXPENSE_CATEGORIES),
   description: z.string().min(1),
   amount: z.number().int().positive(),
   expenseDate: z.coerce.date().nullish(),
@@ -45,6 +56,22 @@ expensesRouter.post(
       },
       include,
     });
+
+    // Notify the approvers (Deans) that an expense is waiting.
+    const deans = await prisma.user.findMany({
+      where: { role: "DEAN", isActive: true },
+      select: { id: true },
+    });
+    if (deans.length) {
+      await prisma.notification.createMany({
+        data: deans.map((d) => ({
+          userId: d.id,
+          message: `New expense to review: ${data.category} — ₹${data.amount.toLocaleString("en-IN")}`,
+          link: "/expenses",
+        })),
+      });
+    }
+
     res.status(201).json(expense);
   })
 );
@@ -72,7 +99,7 @@ expensesRouter.get(
 
 expensesRouter.get(
   "/summary",
-  requireRole(...PAYERS),
+  requireRole("SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "DEAN"),
   asyncHandler(async (_req, res) => {
     const grouped = await prisma.expense.groupBy({
       by: ["status"],
@@ -126,6 +153,18 @@ expensesRouter.post(
       },
       include,
     });
+
+    // Notify the submitter of the decision.
+    if (expense.submittedById) {
+      await prisma.notification.create({
+        data: {
+          userId: expense.submittedById,
+          message: `Your expense (${expense.category} — ₹${expense.amount.toLocaleString("en-IN")}) was ${decision.toLowerCase()}.`,
+          link: "/expenses",
+        },
+      });
+    }
+
     res.json(updated);
   })
 );

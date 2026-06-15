@@ -25,7 +25,26 @@ model SchoolSettings {
   currency      String   @default("INR")
   timezone      String   @default("Asia/Kolkata")
   academicYear  String?  // e.g. "2026-2027"
+
+  // Geofence for staff on-campus check-in (set by Admin in School Setup)
+  latitude       Float?
+  longitude      Float?
+  geofenceRadius Int          @default(150) // metres
+
+  // Academic session — single source of truth for working days,
+  // attendance % and student onboarding/retention.
+  sessionStart   DateTime?
+  sessionEnd     DateTime?
+  saturdayRule   SaturdayRule @default(NONE)
+
   updatedAt     DateTime @updatedAt
+}
+
+// How Saturdays are treated for working-day counts.
+enum SaturdayRule {
+  NONE      // all Saturdays are working days
+  ALL       // every Saturday is a holiday
+  ALTERNATE // 2nd & 4th Saturday of each month are holidays
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────
@@ -65,6 +84,7 @@ model User {
   leaveDecisions    LeaveRequest[] @relation("LeaveApprover")
   notifications     Notification[]
   uploadedNotes     Note[]
+  staffAttendance   StaffAttendance[]
 
   @@index([role])
 }
@@ -180,6 +200,34 @@ model AttendanceRecord {
 
   @@unique([studentId, date])
   @@index([sectionId, date])
+}
+
+// ── Academic calendar holidays ────────────────────────────────────────────
+// Explicitly-marked holidays (a date the Admin/Dean toggled off). Sundays and
+// Saturdays-by-rule are computed, not stored. `note` (if set) is shown on the
+// notice board the day before, then auto-disappears.
+model Holiday {
+  id        String   @id @default(cuid())
+  date      DateTime @unique // normalised to UTC midnight
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([date])
+}
+
+// ── Staff on-campus attendance (geofenced self check-in) ──────────────────
+model StaffAttendance {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  date      DateTime // normalised to UTC midnight (one check-in per day)
+  checkInAt DateTime @default(now())
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([date])
 }
 
 // ── Notices / announcements ───────────────────────────────────────────────────

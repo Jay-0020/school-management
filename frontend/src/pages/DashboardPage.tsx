@@ -2,11 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { SchoolCalendar } from "../components/SchoolCalendar";
+import { StaffAttendanceOverview, StaffCheckInCard } from "../components/StaffCheckIn";
 import { SkeletonStats } from "../components/EmptyState";
 import { IconBell } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import { useBranding } from "../context/BrandingContext";
 import { navForRole } from "../lib/nav";
+import type { SchoolCalendar as Cal } from "../lib/types";
 
 interface Stat {
   key: string;
@@ -21,6 +24,9 @@ interface NoticeBrief {
   createdAt: string;
 }
 
+const STAFF_ROLES = ["TEACHER", "DEAN", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"];
+const MANAGER_ROLES = ["DEAN", "ADMIN", "SUPER_ADMIN"];
+
 export function DashboardPage() {
   const { user } = useAuth();
   const { settings } = useBranding();
@@ -31,7 +37,15 @@ export function DashboardPage() {
       (await api.get<{ stats: Stat[]; notices: NoticeBrief[] }>("/dashboard")).data,
   });
 
+  const { data: cal } = useQuery({
+    queryKey: ["calendar"],
+    queryFn: async () => (await api.get<Cal>("/school/calendar")).data,
+  });
+
   if (!user) return null;
+
+  const isStaff = STAFF_ROLES.includes(user.role);
+  const isManager = MANAGER_ROLES.includes(user.role);
 
   // Quick actions = the user's nav items (minus Dashboard itself).
   const actions = navForRole(user.role)
@@ -62,6 +76,8 @@ export function DashboardPage() {
         </div>
       )}
 
+      {isStaff && <StaffCheckInCard />}
+
       <div className="dash-cols">
         <div className="widget">
           <p className="widget-title">Quick actions</p>
@@ -86,14 +102,21 @@ export function DashboardPage() {
                   {n.pinned && "📌 "}
                   {n.title}
                 </span>
-                <span className="mini-date">
-                  {new Date(n.createdAt).toLocaleDateString()}
-                </span>
+                <span className="mini-date">{new Date(n.createdAt).toLocaleDateString()}</span>
               </Link>
             ))}
           </div>
         </div>
       </div>
+
+      {isManager && <StaffAttendanceOverview />}
+
+      {cal && (
+        <div className="widget">
+          <p className="widget-title">Academic calendar</p>
+          <SchoolCalendar cal={cal} readOnly />
+        </div>
+      )}
     </AppShell>
   );
 }

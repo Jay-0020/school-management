@@ -113,6 +113,38 @@ export interface SchoolSettings {
   currency: string;
   timezone: string;
   academicYear?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  geofenceRadius?: number | null;
+}
+
+export type SaturdayRule = "NONE" | "ALL" | "ALTERNATE";
+export interface SchoolCalendar {
+  sessionStart: string | null;
+  sessionEnd: string | null;
+  saturdayRule: SaturdayRule;
+  latitude: number | null;
+  longitude: number | null;
+  geofenceRadius: number;
+  holidays: { date: string; note: string | null }[];
+  workingDays: number;
+  workingDaysToDate: number;
+}
+export interface StaffAttendanceMe {
+  checkedInToday: boolean;
+  checkInAt: string | null;
+  attended: number;
+  workingDays: number;
+  percentage: number | null;
+}
+export interface StaffAttendanceRow {
+  employeeNo: string;
+  name: string;
+  staffType: StaffType;
+  attended: number;
+  workingDays: number;
+  percentage: number | null;
+  present: boolean;
 }
 
 export interface SectionSummary {

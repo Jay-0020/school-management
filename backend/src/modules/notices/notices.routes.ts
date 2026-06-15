@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { utcMidnight } from "../../lib/calendar";
 
 export const noticesRouter = Router();
 
@@ -48,7 +49,33 @@ noticesRouter.get(
       orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
       include: authorSelect,
     });
-    res.json({ items: notices });
+
+    // Auto-surface upcoming-holiday notes (shown the day before and on the day,
+    // then they disappear). Visible to everyone, regardless of role.
+    const today = utcMidnight(new Date());
+    const tomorrow = new Date(today);
+    tomorrow.setUTCDate(today.getUTCDate() + 1);
+    const holidays = await prisma.holiday.findMany({
+      where: { date: { in: [today, tomorrow] }, note: { not: null } },
+      orderBy: { date: "asc" },
+    });
+    const fmt = (d: Date) =>
+      d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+    const holidayNotices = holidays.map((h) => ({
+      id: `holiday-${h.date.toISOString().slice(0, 10)}`,
+      title: `🎉 Holiday — ${fmt(h.date)}`,
+      body: h.note as string,
+      audience: "ALL" as const,
+      sectionId: null,
+      pinned: true,
+      author: null,
+      section: null,
+      createdAt: h.date,
+      updatedAt: h.date,
+      isHolidayNotice: true,
+    }));
+
+    res.json({ items: [...holidayNotices, ...notices] });
   })
 );
 

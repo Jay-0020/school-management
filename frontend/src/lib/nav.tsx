@@ -128,7 +128,7 @@ export const NAV: NavGroup[] = [
         label: "School Setup",
         path: "/setup",
         icon: IconSettings,
-        roles: ["SUPER_ADMIN", "ADMIN"],
+        roles: ["SUPER_ADMIN", "ADMIN", "DEAN"],
       },
     ],
   },

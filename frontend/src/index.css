@@ -1640,3 +1640,62 @@ tr.clickable:hover td {
     overflow-x: auto;
   }
 }
+
+/* ── Campus map picker (Leaflet) ─────────────────────────────────────────── */
+.map-picker {
+  height: 300px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  z-index: 0;
+}
+.leaflet-container { font: inherit; background: var(--surface-2); }
+
+/* ── Saturday rule radios ─────────────────────────────────────────────────── */
+.radio-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 10px 0; }
+.radio { display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+.radio input { width: auto; }
+
+/* ── Academic calendar ────────────────────────────────────────────────────── */
+.cal { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; background: var(--surface); }
+.cal-head { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
+.cal-nav {
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; line-height: 1;
+}
+.cal-nav:hover { background: var(--surface-3); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-weekdays { margin-bottom: 4px; }
+.cal-wd { text-align: center; font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+.cal-cell {
+  position: relative; aspect-ratio: 1 / 1; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--surface); color: var(--text);
+  display: flex; align-items: center; justify-content: center; font-size: 0.82rem; padding: 0;
+}
+.cal-cell.empty { border: 0; background: transparent; }
+.cal-cell.clickable { cursor: pointer; }
+.cal-cell.clickable:hover { border-color: var(--primary); }
+.cal-cell.holiday { background: var(--success-bg); color: var(--success-fg); border-color: transparent; }
+.cal-cell.today { outline: 2px solid var(--primary); outline-offset: -2px; }
+.cal-cell.out { opacity: 0.4; }
+.cal-cell:disabled { cursor: default; }
+.cal-dot { position: absolute; bottom: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--warning-fg); }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 0.78rem; color: var(--text-2); align-items: center; }
+.cal-legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
+.cal-legend .sw.holiday { background: var(--success-bg); }
+.cal-legend .sw.dot { background: var(--warning-fg); border-radius: 50%; }
+
+.cal-pop-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.cal-pop { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; width: min(420px, 92vw); box-shadow: var(--shadow-lg); }
+.cal-pop h4 { margin: 0 0 12px; }
+.cal-pop label { display: block; font-size: 0.85rem; color: var(--text-2); }
+.cal-pop input { width: 100%; margin-top: 4px; }
+.cal-pop-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+
+/* ── Staff on-campus check-in ─────────────────────────────────────────────── */
+.checkin-card { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.checkin-status { font-size: 0.9rem; color: var(--text-2); }
+.checkin-pct { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+.badge-ok { background: var(--success-bg); color: var(--success-fg); padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+.badge-warn { background: var(--warning-bg); color: var(--warning-fg); padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }

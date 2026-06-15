@@ -78,7 +78,7 @@ export function App() {
       <Route
         path="/setup"
         element={
-          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}>
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "DEAN"]}>
             <SchoolSetupPage />
           </ProtectedRoute>
         }

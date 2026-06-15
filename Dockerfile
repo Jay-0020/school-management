@@ -35,6 +35,11 @@ RUN npx prisma generate
 # Compiled API + built SPA (served by the API — see app.ts CLIENT_DIR)
 COPY --from=backend /app/backend/dist ./dist
 COPY --from=frontend /app/frontend/dist /app/frontend/dist
+# TS source + tsconfig so `npx tsx prisma/seed.ts` can run inside the image.
+# Lets a remote deploy (Render/Fly/Railway) self-seed branding + admin on boot,
+# with no local provision step — see render.yaml dockerCommand.
+COPY backend/src ./src
+COPY backend/tsconfig.json ./
 RUN mkdir -p uploads/notes
 EXPOSE 4000
 # Apply migrations, then start. (Branding/admin are seeded by provision.mjs.)

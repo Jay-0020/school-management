@@ -1,0 +1,51 @@
+# Render Blueprint — free, public DEMO of the school-management portal.
+# Stands up ONE web service (the Docker image) + ONE free Postgres, wired together.
+#
+# Deploy:  Render Dashboard → New → Blueprint → connect this repo → Apply.
+#
+# Free-tier notes (fine for a disposable sales demo):
+#   • the web service sleeps after ~15 min idle (wakes in ~30-60s on next visit)
+#   • the free Postgres expires after 30 days (re-deploy to re-seed any time)
+#   • no persistent disk on free, so file uploads are ephemeral
+# For a real paying school, use a non-expiring DB (Neon/Supabase) + a paid disk.
+
+databases:
+  - name: school-demo-db
+    plan: free
+    region: singapore        # closest free region to India; change if unavailable
+    databaseName: school_demo
+    user: school
+
+services:
+  - type: web
+    name: school-demo
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    # Apply migrations, seed branding + admin (idempotent), then start the API.
+    dockerCommand: sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts && node dist/index.js"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: school-demo-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true          # Render generates a strong secret
+      - key: NODE_ENV
+        value: production
+      # --- demo branding (edit these to rebrand the demo) ---
+      - key: SCHOOL_NAME
+        value: Greenwood High School
+      - key: SCHOOL_SHORT_NAME
+        value: GHS
+      - key: SCHOOL_PRIMARY_COLOR
+        value: "#4f46e5"
+      - key: SCHOOL_CURRENCY
+        value: INR
+      # --- demo admin login (you'll be prompted to change it on first sign-in) ---
+      - key: SEED_ADMIN_EMAIL
+        value: admin@greenwood.demo
+      - key: SEED_ADMIN_PASSWORD
+        value: Demo@1234

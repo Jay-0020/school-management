@@ -42,5 +42,8 @@ COPY backend/src ./src
 COPY backend/tsconfig.json ./
 RUN mkdir -p uploads/notes
 EXPOSE 4000
-# Apply migrations, then start. (Branding/admin are seeded by provision.mjs.)
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+# Apply migrations, seed branding + admin (idempotent), then start.
+# Self-seeding so a bare `docker run`/PaaS deploy (Render/Fly) comes up ready,
+# with no separate provision step. Re-runs are safe: schoolSettings is an
+# upsert with no-op update, and the admin create is guarded by a lookup.
+CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts && node dist/index.js"]

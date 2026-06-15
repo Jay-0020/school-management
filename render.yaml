@@ -24,8 +24,8 @@ services:
     region: singapore
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
-    # Apply migrations, seed branding + admin (idempotent), then start the API.
-    dockerCommand: sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts && node dist/index.js"
+    # Start command (migrate + seed + serve) is baked into the Dockerfile CMD —
+    # do NOT set dockerCommand here; Render's parser mishandles "&&" chains.
     envVars:
       - key: DATABASE_URL
         fromDatabase:

@@ -17,6 +17,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { PayrollPage } from "./pages/PayrollPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
 import { SchoolworkPage } from "./pages/SchoolworkPage";
+import { SettlementsPage } from "./pages/SettlementsPage";
 import { StudentsPage } from "./pages/StudentsPage";
 import { TeachersPage } from "./pages/TeachersPage";
 import { UsersPage } from "./pages/UsersPage";
@@ -168,6 +169,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "DEAN"]}>
             <ExpensesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settlements"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "DEAN", "ACCOUNTANT"]}>
+            <SettlementsPage />
           </ProtectedRoute>
         }
       />

@@ -15,7 +15,7 @@ requirement is completed.
 | 3 | Dean dashboard: student fees pending | ✅ Done |
 | 4 | Dean dashboard: staff payments pending | ✅ Done |
 | 5 | Dean dashboard: salary paid to date | ✅ Done |
-| 6 | Full & Final settlement (Dean approval) | ⏳ Pending |
+| 6 | Full & Final settlement (Dean approval) | ✅ Done |
 | 7 | Teacher performance + parent/student feedback | ⏳ Pending |
 | 8 | Student onboarding & retention (per academic year) | ✅ Done |
 | 9 | Dean dashboard: overall expenditure | ✅ Done |
@@ -201,6 +201,33 @@ all of their children in one place** (which the system already supports via a
 
 **Who/where:** Admin (link parents in the student editor / Students list);
 Parent (one account → all children).
+
+---
+
+## Update 7 — Full & Final settlement
+*Completed: 15 Jun 2026 — requirement #6*
+
+**Requested:** When a staff member leaves, the Dean should see and approve their
+full-and-final settlement, with a total and a breakdown.
+
+**Delivered:** a new **Settlements** page (Finance) where:
+- An **Admin or Dean** creates a settlement for a staff member — the system
+  auto-fills **pending salary** (their unpaid payslips); they add a
+  **gratuity/bonus** and any **deductions** + a last working day and notes.
+- The **breakdown** is shown live: *Pending salary + Bonus − Deductions = Net
+  payable*.
+- The **Dean (or Admin) approves or rejects**; approving marks the staff member
+  as having **left** (inactive).
+- The **Accountant (or Admin)** then **marks it paid**.
+
+**How it flows:**
+1. Admin/Dean → Settlements → New settlement → pick the staff member (their
+   pending salary appears) → enter bonus/deductions → create (status Pending).
+2. Dean reviews the breakdown and **Approves** → the staff member goes inactive.
+3. Accountant **marks it paid**.
+
+**Who/where:** Admin + Dean (create, approve/reject); Accountant + Admin (mark
+paid); all three can view the Settlements page.
 
 ---
 

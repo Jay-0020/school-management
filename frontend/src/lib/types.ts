@@ -96,6 +96,37 @@ export interface PeopleDirectory {
   }[];
 }
 
+export type SettlementStatus = "PENDING" | "APPROVED" | "REJECTED" | "PAID";
+export interface Settlement {
+  id: string;
+  teacherId: string;
+  teacher: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    employeeNo: string;
+    staffType: StaffType;
+  };
+  lastWorkingDay: string | null;
+  pendingSalary: number;
+  bonus: number;
+  deductions: number;
+  netPayable: number;
+  notes: string | null;
+  status: SettlementStatus;
+  decisionNote: string | null;
+  decidedAt: string | null;
+  paidAt: string | null;
+  createdAt: string;
+}
+export interface SettlementStaff {
+  id: string;
+  name: string;
+  employeeNo: string;
+  staffType: StaffType;
+  pendingSalary: number;
+}
+
 export interface EnrolmentOverview {
   sessionConfigured: boolean;
   sessionStart: string | null;

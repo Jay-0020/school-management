@@ -119,6 +119,12 @@ export const NAV: NavGroup[] = [
         icon: IconReceipt,
         roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "DEAN"],
       },
+      {
+        label: "Settlements",
+        path: "/settlements",
+        icon: IconWallet,
+        roles: ["SUPER_ADMIN", "ADMIN", "DEAN", "ACCOUNTANT"],
+      },
     ],
   },
   {

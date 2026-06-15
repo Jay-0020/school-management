@@ -139,6 +139,7 @@ model Teacher {
   classTeacherOf  Section[]        @relation("ClassTeacher")
   salaryStructure SalaryStructure?
   payslips        Payslip[]
+  settlements     Settlement[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -408,6 +409,37 @@ model Payslip {
 
   @@unique([teacherId, month])
   @@index([month])
+}
+
+// ── Full & Final settlement (staff exit dues) ────────────────────────────────
+enum SettlementStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model Settlement {
+  id             String           @id @default(cuid())
+  teacher        Teacher          @relation(fields: [teacherId], references: [id])
+  teacherId      String
+  lastWorkingDay DateTime?
+  pendingSalary  Int              // snapshot of unpaid payslips at creation
+  bonus          Int              @default(0) // gratuity / one-off
+  deductions     Int              @default(0) // advances, recoveries, notice shortfall
+  netPayable     Int
+  notes          String?
+  status         SettlementStatus @default(PENDING)
+  createdById    String?
+  decidedById    String?
+  decisionNote   String?
+  decidedAt      DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([teacherId])
+  @@index([status])
 }
 
 // ── Expenses & approvals ──────────────────────────────────────────────────────

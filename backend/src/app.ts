@@ -22,6 +22,7 @@ import { parentRouter } from "./modules/parent/parent.routes";
 import { notificationsRouter } from "./modules/notifications/notifications.routes";
 import { payrollRouter } from "./modules/payroll/payroll.routes";
 import { schoolRouter } from "./modules/school/school.routes";
+import { settlementsRouter } from "./modules/settlements/settlements.routes";
 import { staffAttendanceRouter } from "./modules/staff-attendance/staff-attendance.routes";
 import { schoolworkRouter } from "./modules/schoolwork/schoolwork.routes";
 import { studentsRouter } from "./modules/students/students.routes";
@@ -62,6 +63,7 @@ export function createApp() {
   app.use("/api/notifications", notificationsRouter);
   app.use("/api/parent", parentRouter);
   app.use("/api/payroll", payrollRouter);
+  app.use("/api/settlements", settlementsRouter);
   app.use("/api/students", studentsRouter);
   app.use("/api/teachers", teachersRouter);
   app.use("/api/users", usersRouter);

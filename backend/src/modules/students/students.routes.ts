@@ -24,12 +24,37 @@ studentsRouter.get(
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: "desc" },
-        include: { section: { include: { class: true } } },
+        include: { section: { include: { class: true } }, parent: { select: { id: true, email: true } } },
       }),
       prisma.student.count({ where }),
     ]);
 
     res.json({ items, total, page, pageSize });
+  })
+);
+
+// Parent accounts available to link in the student editor.
+// (Defined before "/:id" so it isn't captured as an id.)
+studentsRouter.get(
+  "/parents",
+  requireRole("SUPER_ADMIN", "ADMIN"),
+  asyncHandler(async (_req, res) => {
+    const parents = await prisma.user.findMany({
+      where: { role: "PARENT" },
+      select: {
+        id: true,
+        email: true,
+        children: { select: { firstName: true, lastName: true } },
+      },
+      orderBy: { email: "asc" },
+    });
+    res.json({
+      items: parents.map((p) => ({
+        id: p.id,
+        email: p.email,
+        children: p.children.map((c) => `${c.firstName} ${c.lastName}`),
+      })),
+    });
   })
 );
 
@@ -44,6 +69,7 @@ const createSchema = z.object({
   guardianPhone: z.string().nullish(),
   address: z.string().nullish(),
   admissionDate: z.coerce.date().nullish(),
+  parentId: z.string().nullish(),
   status: z.enum(["ACTIVE", "INACTIVE", "ALUMNI", "TRANSFERRED"]).optional(),
 });
 
@@ -70,7 +96,7 @@ studentsRouter.get(
   asyncHandler(async (req, res) => {
     const student = await prisma.student.findUnique({
       where: { id: req.params.id },
-      include: { section: { include: { class: true } } },
+      include: { section: { include: { class: true } }, parent: { select: { id: true, email: true } } },
     });
     if (!student) throw ApiError.notFound("Student not found");
     res.json(student);
@@ -87,6 +113,7 @@ const updateSchema = z.object({
   guardianPhone: z.string().nullish(),
   address: z.string().nullish(),
   admissionDate: z.coerce.date().nullish(),
+  parentId: z.string().nullish(),
   status: z.enum(["ACTIVE", "INACTIVE", "ALUMNI", "TRANSFERRED"]).optional(),
 });
 

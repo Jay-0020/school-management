@@ -103,6 +103,7 @@ export function StudentsPage() {
                 <th>Name</th>
                 <th>Class · Section</th>
                 <th>Guardian</th>
+                <th>Parent account</th>
                 <th>Status</th>
                 {canEdit && <th></th>}
               </tr>
@@ -118,6 +119,7 @@ export function StudentsPage() {
                     {s.section ? `${s.section.class.name} · ${s.section.name}` : "—"}
                   </td>
                   <td>{s.guardianName ?? "—"}</td>
+                  <td>{s.parent?.email ?? <span className="muted">—</span>}</td>
                   <td>
                     <span className={`status status-${s.status.toLowerCase()}`}>
                       {s.status}
@@ -183,6 +185,7 @@ type FormState = {
   address: string;
   status: EnrollmentStatus;
   admissionDate: string;
+  parentId: string;
 };
 
 function StudentModal({
@@ -208,6 +211,15 @@ function StudentModal({
     address: student?.address ?? "",
     status: student?.status ?? "ACTIVE",
     admissionDate: student?.admissionDate ? student.admissionDate.slice(0, 10) : "",
+    parentId: student?.parentId ?? "",
+  });
+
+  const { data: parents } = useQuery({
+    queryKey: ["parent-accounts"],
+    queryFn: async () =>
+      (await api.get<{ items: { id: string; email: string; children: string[] }[] }>(
+        "/students/parents"
+      )).data.items,
   });
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -224,6 +236,7 @@ function StudentModal({
         guardianPhone: form.guardianPhone || null,
         address: form.address || null,
         admissionDate: form.admissionDate || null,
+        parentId: form.parentId || null,
       };
       if (isEdit) {
         // admissionNo isn't editable; status changes drive retention (leftAt)
@@ -322,6 +335,18 @@ function StudentModal({
               value={form.admissionDate}
               onChange={(e) => set("admissionDate", e.target.value)}
             />
+          </label>
+          <label>
+            Parent account
+            <select value={form.parentId} onChange={(e) => set("parentId", e.target.value)}>
+              <option value="">No parent linked</option>
+              {parents?.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.email}
+                  {p.children.length ? ` — ${p.children.join(", ")}` : ""}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Guardian name

@@ -19,7 +19,7 @@ requirement is completed.
 | 7 | Teacher performance + parent/student feedback | ⏳ Pending |
 | 8 | Student onboarding & retention (per academic year) | ✅ Done |
 | 9 | Dean dashboard: overall expenditure | ✅ Done |
-| 10 | Combine Students & Parents into one profile | ⏳ Pending |
+| 10 | Parents & Students — one parent account, all kids | ✅ Done |
 | 11 | Feedback section (students/parents) | ⏳ Pending |
 | 12 | Leave categories → Casual / Sick only | ✅ Done |
 | 13 | Teacher ratings (students + parents) | ⏳ Pending |
@@ -173,6 +173,34 @@ students/staff and filter by grade & section.
 
 **Who/where:** Dean + Admin (enrolment widget + filters); Admin (mark students
 left / set admission dates).
+
+---
+
+## Update 6 — Parent ↔ children linking (no merge)
+*Completed: 15 Jun 2026 — requirement #10*
+
+**Decision:** The original idea was to *merge* student and parent into one
+profile. On review we **did not** do that — a parent with two children would
+then need two logins. Instead we kept **parents as their own account that shows
+all of their children in one place** (which the system already supports via a
+"My Children" view).
+
+**Delivered:**
+- A **Parent account** picker in the student editor — assign an existing parent
+  to a student (or leave unlinked). Point several students at the same parent
+  and that one parent account sees them all.
+- The **Students list** now shows each student's **linked parent**.
+- Confirmed: linking a second child to a parent makes both appear under that
+  parent's **My Children** automatically.
+
+**How it flows:**
+1. Admin opens a student, picks the **Parent account** (shows the parent's
+   email + the children already linked), saves.
+2. The parent logs into their single account and sees **every** linked child's
+   attendance, report cards and fees from the "My Children" page.
+
+**Who/where:** Admin (link parents in the student editor / Students list);
+Parent (one account → all children).
 
 ---
 

@@ -197,6 +197,8 @@ export interface Student {
   status: EnrollmentStatus;
   admissionDate?: string | null;
   leftAt?: string | null;
+  parentId?: string | null;
+  parent?: { id: string; email: string } | null;
   section?: {
     id: string;
     name: string;

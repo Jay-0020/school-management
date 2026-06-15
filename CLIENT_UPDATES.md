@@ -21,7 +21,7 @@ requirement is completed.
 | 9 | Dean dashboard: overall expenditure | ✅ Done |
 | 10 | Combine Students & Parents into one profile | ⏳ Pending |
 | 11 | Feedback section (students/parents) | ⏳ Pending |
-| 12 | Leave categories → Casual / Sick only | ⏳ Pending |
+| 12 | Leave categories → Casual / Sick only | ✅ Done |
 | 13 | Teacher ratings (students + parents) | ⏳ Pending |
 | 14 | Accountant section | ✅ No change needed |
 
@@ -120,6 +120,27 @@ dashboard with four live figures:
    the four totals at a glance, with the expenditure split by category beneath.
 
 **Who/where:** Dean + Admin (dashboard).
+
+---
+
+## Update 4 — Leave categories simplified to Casual / Sick
+*Completed: 15 Jun 2026 — requirement #12*
+
+**Requested:** Leave requests should only be **Casual** or **Sick** (the earlier
+Earned and Unpaid options are removed).
+
+**Delivered:**
+- The leave form now offers just **Casual** and **Sick**.
+- The Earned-leave quota has been removed everywhere (staff quotas are now
+  Casual + Sick only).
+- Any historical Earned/Unpaid requests were safely re-labelled (Earned →
+  Casual, Unpaid → Sick) so nothing was lost.
+
+**How it flows:**
+1. A staff member raises a leave request and picks **Casual** or **Sick**.
+2. Advance requests are still checked against that category's annual quota.
+
+**Who/where:** all staff (leave form); Admin (per-user leave quotas under Users).
 
 ---
 

@@ -17,8 +17,6 @@ import type {
 const categoryLabel: Record<LeaveCategory, string> = {
   CASUAL: "Casual",
   SICK: "Sick",
-  EARNED: "Earned",
-  UNPAID: "Unpaid",
 };
 
 const statusClass: Record<LeaveStatus, string> = {
@@ -253,8 +251,6 @@ function RequestModal({ onClose }: { onClose: () => void }) {
               >
                 <option value="CASUAL">Casual</option>
                 <option value="SICK">Sick</option>
-                <option value="EARNED">Earned</option>
-                <option value="UNPAID">Unpaid</option>
               </select>
             </label>
             <label>

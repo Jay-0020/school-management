@@ -99,8 +99,8 @@ export function UsersPage() {
                     <span className="badge">{u.role}</span>
                   </td>
                   <td>{linkedLabel(u)}</td>
-                  <td title="Casual / Sick / Earned">
-                    {u.casualQuota}/{u.sickQuota}/{u.earnedQuota}
+                  <td title="Casual / Sick">
+                    {u.casualQuota}/{u.sickQuota}
                   </td>
                   <td>{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "—"}</td>
                   <td>
@@ -149,14 +149,12 @@ function QuotaModal({ user, onClose }: { user: ManagedUser; onClose: () => void 
   const qc = useQueryClient();
   const [casual, setCasual] = useState(String(user.casualQuota));
   const [sick, setSick] = useState(String(user.sickQuota));
-  const [earned, setEarned] = useState(String(user.earnedQuota));
 
   const save = useMutation({
     mutationFn: () =>
       api.patch(`/users/${user.id}`, {
         casualQuota: Number(casual),
         sickQuota: Number(sick),
-        earnedQuota: Number(earned),
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
@@ -179,10 +177,6 @@ function QuotaModal({ user, onClose }: { user: ManagedUser; onClose: () => void 
           <label>
             Sick
             <input type="number" value={sick} onChange={(e) => setSick(e.target.value)} />
-          </label>
-          <label>
-            Earned
-            <input type="number" value={earned} onChange={(e) => setEarned(e.target.value)} />
           </label>
         </div>
         <div className="form-actions">

@@ -25,16 +25,11 @@ function academicYearRange(now = new Date()) {
   };
 }
 
-const QUOTA_CATEGORIES = ["CASUAL", "SICK", "EARNED"] as const;
+const QUOTA_CATEGORIES = ["CASUAL", "SICK"] as const;
 
-/** This user's quota for a category (UNPAID is unlimited → null). */
-function categoryQuota(user: User, category: LeaveCategory): number | null {
-  switch (category) {
-    case "CASUAL": return user.casualQuota;
-    case "SICK": return user.sickQuota;
-    case "EARNED": return user.earnedQuota;
-    case "UNPAID": return null;
-  }
+/** This user's quota for a leave category. */
+function categoryQuota(user: User, category: LeaveCategory): number {
+  return category === "SICK" ? user.sickQuota : user.casualQuota;
 }
 
 /** Approved leave days used this academic year, by category. */
@@ -116,7 +111,7 @@ async function classTeacherSectionIds(userId: string): Promise<string[]> {
 const createSchema = z
   .object({
     kind: z.enum(["ADVANCE", "JUSTIFICATION"]),
-    category: z.enum(["CASUAL", "SICK", "EARNED", "UNPAID"]).default("CASUAL"),
+    category: z.enum(["CASUAL", "SICK"]).default("CASUAL"),
     fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     reason: z.string().min(1),
@@ -135,12 +130,12 @@ leaveRouter.post(
     const requested = dayCount(from, to);
 
     // Advance permission is checked against the category quota; a justification
-    // for a past absence (or unpaid leave) is recorded regardless.
-    if (data.kind === "ADVANCE" && data.category !== "UNPAID") {
+    // for a past absence is recorded regardless.
+    if (data.kind === "ADVANCE") {
       const me = await prisma.user.findUnique({ where: { id: req.user!.sub } });
       const quota = me ? categoryQuota(me, data.category) : 0;
       const used = await usedDays(req.user!.sub, data.category);
-      const remaining = (quota ?? 0) - used;
+      const remaining = quota - used;
       if (requested > remaining) {
         throw ApiError.badRequest(
           `Exceeds your ${data.category.toLowerCase()} leave balance — ${remaining} day(s) left this year`

@@ -18,7 +18,6 @@ const userSelect = {
   mustChangePassword: true,
   casualQuota: true,
   sickQuota: true,
-  earnedQuota: true,
   lastLoginAt: true,
   createdAt: true,
   teacher: { select: { id: true, firstName: true, lastName: true, employeeNo: true } },
@@ -145,7 +144,6 @@ const patchSchema = z.object({
   isActive: z.boolean().optional(),
   casualQuota: z.number().int().min(0).max(365).optional(),
   sickQuota: z.number().int().min(0).max(365).optional(),
-  earnedQuota: z.number().int().min(0).max(365).optional(),
 });
 
 usersRouter.patch(

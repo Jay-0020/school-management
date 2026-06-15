@@ -68,7 +68,6 @@ model User {
   mustChangePassword Boolean  @default(true)
   casualQuota        Int      @default(12) // annual leave days, by category
   sickQuota          Int      @default(8)
-  earnedQuota        Int      @default(15)
   lastLoginAt        DateTime?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -447,8 +446,6 @@ enum LeaveKind {
 enum LeaveCategory {
   CASUAL
   SICK
-  EARNED
-  UNPAID // no quota; never blocked
 }
 
 enum LeaveStatus {

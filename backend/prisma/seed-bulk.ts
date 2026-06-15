@@ -319,7 +319,7 @@ async function main() {
     data: [
       { applicantId: teacherUser.id, kind: "ADVANCE", category: "CASUAL", fromDate: dayUTC(4), toDate: dayUTC(4), reason: "Family function", status: "PENDING" },
       { applicantId: teacherUser.id, kind: "JUSTIFICATION", category: "SICK", fromDate: dayUTC(-3), toDate: dayUTC(-3), reason: "Fever, could not inform in advance", status: "APPROVED", approverId: dean.id, decidedAt: dayUTC(-2), decisionNote: "Approved. Get well soon." },
-      { applicantId: dean.id, kind: "ADVANCE", category: "EARNED", fromDate: dayUTC(10), toDate: dayUTC(12), reason: "Personal travel", status: "PENDING" },
+      { applicantId: dean.id, kind: "ADVANCE", category: "CASUAL", fromDate: dayUTC(10), toDate: dayUTC(12), reason: "Personal travel", status: "PENDING" },
       { applicantId: accountant.id, kind: "ADVANCE", category: "CASUAL", fromDate: dayUTC(6), toDate: dayUTC(6), reason: "Bank work", status: "REJECTED", approverId: admin.id, decidedAt: dayUTC(-1), decisionNote: "Month-end closing; please reschedule." },
     ],
   });

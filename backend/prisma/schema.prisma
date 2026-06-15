@@ -112,6 +112,7 @@ model Section {
   notices      Notice[]
   homework     Homework[]
   notes        Note[]
+  teachingAssignments TeachingAssignment[]
   createdAt    DateTime  @default(now())
 
   @@unique([classId, name])
@@ -140,6 +141,7 @@ model Teacher {
   salaryStructure SalaryStructure?
   payslips        Payslip[]
   settlements     Settlement[]
+  teachingAssignments TeachingAssignment[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -337,7 +339,24 @@ model Subject {
   homework   Homework[]
   examPapers ExamPaper[]
   notes      Note[]
+  teachingAssignments TeachingAssignment[]
   createdAt  DateTime    @default(now())
+}
+
+// ── Teaching assignments (which teacher teaches which subject in a section) ──
+model TeachingAssignment {
+  id        String   @id @default(cuid())
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId String
+  createdAt DateTime @default(now())
+
+  @@unique([sectionId, subjectId]) // one teacher per subject per section
+  @@index([teacherId])
+  @@index([sectionId])
 }
 
 model Homework {

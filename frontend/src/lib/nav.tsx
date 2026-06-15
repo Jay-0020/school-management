@@ -96,6 +96,12 @@ export const NAV: NavGroup[] = [
         roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"],
       },
       { label: "Notices", path: "/notices", icon: IconBell, roles: ALL },
+      {
+        label: "Teaching Assignments",
+        path: "/assignments",
+        icon: IconTeacher,
+        roles: ["SUPER_ADMIN", "ADMIN", "DEAN"],
+      },
     ],
   },
   {

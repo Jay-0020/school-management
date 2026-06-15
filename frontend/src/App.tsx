@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ToastViewport } from "./components/ToastViewport";
+import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { AttendancePage } from "./pages/AttendancePage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -169,6 +170,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "DEAN"]}>
             <ExpensesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/assignments"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "DEAN"]}>
+            <AssignmentsPage />
           </ProtectedRoute>
         }
       />

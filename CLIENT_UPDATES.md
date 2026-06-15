@@ -17,7 +17,7 @@ requirement is completed.
 | 5 | Dean dashboard: salary paid to date | ✅ Done |
 | 6 | Full & Final settlement (Dean approval) | ⏳ Pending |
 | 7 | Teacher performance + parent/student feedback | ⏳ Pending |
-| 8 | Student onboarding & retention (per academic year) | ⏳ Pending |
+| 8 | Student onboarding & retention (per academic year) | ✅ Done |
 | 9 | Dean dashboard: overall expenditure | ✅ Done |
 | 10 | Combine Students & Parents into one profile | ⏳ Pending |
 | 11 | Feedback section (students/parents) | ⏳ Pending |
@@ -141,6 +141,38 @@ Earned and Unpaid options are removed).
 2. Advance requests are still checked against that category's annual quota.
 
 **Who/where:** all staff (leave form); Admin (per-user leave quotas under Users).
+
+---
+
+## Update 5 — Student onboarding & retention + filterable people view
+*Completed: 15 Jun 2026 — requirement #8 (+ a Dean people-filter enhancement)*
+
+**Requested:** The Dean should see how many new students joined during a
+session and how many left; and (from follow-up) be able to browse all
+students/staff and filter by grade & section.
+
+**Delivered:**
+- Each student now has an **admission date** (when they joined) and, if they
+  leave, a **leaving date** — recorded via a **"Mark as left"** action that
+  also captures the reason (Transferred / Graduated / Withdrawn).
+- A Dean/Admin dashboard widget **"Enrolment this session"**:
+  **new admissions**, **students left**, **currently active**, **net change**,
+  plus a **departures-by-reason** breakdown. Counts use the session dates set
+  in School Setup.
+- The **People Overview** now has **Grade + Section** filters for students and
+  a **Teaching / Non-teaching** filter for staff, alongside the search box.
+
+**How it flows:**
+1. When a student is admitted, their admission date is recorded (today by
+   default; editable).
+2. When a student leaves, an admin opens the student, sets the status
+   (Transferred/Graduated/Withdrawn) → the leaving date is recorded and they go
+   inactive.
+3. The **Dean** sees, on their dashboard, how many joined vs left this session
+   and the net change; and can filter the People Overview by grade/section.
+
+**Who/where:** Dean + Admin (enrolment widget + filters); Admin (mark students
+left / set admission dates).
 
 ---
 

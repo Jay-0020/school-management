@@ -167,6 +167,8 @@ model Student {
   guardianPhone String?
   address       String?
   status        EnrollmentStatus   @default(ACTIVE)
+  admissionDate DateTime?          // when they actually joined (onboarding)
+  leftAt        DateTime?          // set when the student leaves (retention)
   attendance    AttendanceRecord[]
   invoices      Invoice[]
   marks         Mark[]

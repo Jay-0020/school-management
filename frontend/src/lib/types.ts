@@ -83,6 +83,8 @@ export interface PeopleDirectory {
     name: string;
     admissionNo: string;
     className: string;
+    grade: string | null;
+    section: string | null;
     attendancePercent: number | null;
   }[];
   staff: {
@@ -92,6 +94,17 @@ export interface PeopleDirectory {
     employeeNo: string;
     staffType: string;
   }[];
+}
+
+export interface EnrolmentOverview {
+  sessionConfigured: boolean;
+  sessionStart: string | null;
+  sessionEnd: string | null;
+  currentActive: number;
+  newAdmissions: number;
+  leftCount: number;
+  leftByReason: { reason: string; count: number }[];
+  netChange: number;
 }
 
 export interface User {
@@ -182,6 +195,8 @@ export interface Student {
   guardianPhone?: string | null;
   address?: string | null;
   status: EnrollmentStatus;
+  admissionDate?: string | null;
+  leftAt?: string | null;
   section?: {
     id: string;
     name: string;

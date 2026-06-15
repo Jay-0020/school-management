@@ -189,6 +189,8 @@ profileRouter.get(
         name: `${s.firstName} ${s.lastName}`,
         admissionNo: s.admissionNo,
         className: s.section ? `${s.section.class.name} · ${s.section.name}` : "—",
+        grade: s.section?.class.name ?? null,
+        section: s.section?.name ?? null,
         attendancePercent: t.total ? Math.round((t.present / t.total) * 100) : null,
       };
     });

@@ -182,6 +182,7 @@ type FormState = {
   guardianPhone: string;
   address: string;
   status: EnrollmentStatus;
+  admissionDate: string;
 };
 
 function StudentModal({
@@ -206,6 +207,7 @@ function StudentModal({
     guardianPhone: student?.guardianPhone ?? "",
     address: student?.address ?? "",
     status: student?.status ?? "ACTIVE",
+    admissionDate: student?.admissionDate ? student.admissionDate.slice(0, 10) : "",
   });
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -221,12 +223,19 @@ function StudentModal({
         guardianName: form.guardianName || null,
         guardianPhone: form.guardianPhone || null,
         address: form.address || null,
+        admissionDate: form.admissionDate || null,
       };
       if (isEdit) {
-        // admissionNo isn't editable
-        const { admissionNo: _drop, ...rest } = payload;
+        // admissionNo isn't editable; status changes drive retention (leftAt)
+        // via the dedicated leave/reactivate endpoints.
+        const { admissionNo: _drop, status, ...rest } = payload;
         void _drop;
-        return api.patch(`/students/${student!.id}`, rest);
+        await api.patch(`/students/${student!.id}`, rest);
+        if (status !== student!.status) {
+          if (status === "ACTIVE") await api.post(`/students/${student!.id}/reactivate`);
+          else await api.post(`/students/${student!.id}/leave`, { status });
+        }
+        return;
       }
       return api.post("/students", payload);
     },
@@ -305,6 +314,14 @@ function StudentModal({
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            Admission date
+            <input
+              type="date"
+              value={form.admissionDate}
+              onChange={(e) => set("admissionDate", e.target.value)}
+            />
           </label>
           <label>
             Guardian name

@@ -60,6 +60,61 @@ dashboardRouter.get(
   })
 );
 
+/**
+ * Student onboarding & retention for the current academic session.
+ * Counts new admissions and departures whose dates fall inside the session
+ * window set in School Setup. (Dean / Admin.)
+ */
+dashboardRouter.get(
+  "/enrolment",
+  requireRole("SUPER_ADMIN", "ADMIN", "DEAN"),
+  asyncHandler(async (_req, res) => {
+    const s = await prisma.schoolSettings.findFirst();
+    const start = s?.sessionStart ?? null;
+    const end = s?.sessionEnd ?? null;
+    // Make the end boundary inclusive of the whole last day.
+    const endExclusive = end ? new Date(end) : null;
+    if (endExclusive) endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
+    const inSession = !!(start && endExclusive);
+
+    const [currentActive, newAdmissions, leftRows] = await Promise.all([
+      prisma.student.count({ where: { status: "ACTIVE" } }),
+      inSession
+        ? prisma.student.count({ where: { admissionDate: { gte: start!, lt: endExclusive! } } })
+        : Promise.resolve(0),
+      inSession
+        ? prisma.student.groupBy({
+            by: ["status"],
+            where: { leftAt: { gte: start!, lt: endExclusive! } },
+            _count: true,
+          })
+        : Promise.resolve([] as { status: string; _count: number }[]),
+    ]);
+
+    const reasonLabel: Record<string, string> = {
+      TRANSFERRED: "Transferred",
+      ALUMNI: "Graduated",
+      INACTIVE: "Withdrawn",
+    };
+    const leftByReason = (leftRows as { status: string; _count: number }[]).map((r) => ({
+      reason: reasonLabel[r.status] ?? r.status,
+      count: r._count,
+    }));
+    const leftCount = leftByReason.reduce((a, b) => a + b.count, 0);
+
+    res.json({
+      sessionConfigured: inSession,
+      sessionStart: start,
+      sessionEnd: end,
+      currentActive,
+      newAdmissions,
+      leftCount,
+      leftByReason,
+      netChange: newAdmissions - leftCount,
+    });
+  })
+);
+
 /** Role-aware dashboard: a set of headline stats plus recent notices. */
 dashboardRouter.get(
   "/",

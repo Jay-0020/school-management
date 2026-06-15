@@ -43,6 +43,7 @@ const createSchema = z.object({
   guardianName: z.string().nullish(),
   guardianPhone: z.string().nullish(),
   address: z.string().nullish(),
+  admissionDate: z.coerce.date().nullish(),
   status: z.enum(["ACTIVE", "INACTIVE", "ALUMNI", "TRANSFERRED"]).optional(),
 });
 
@@ -55,7 +56,10 @@ studentsRouter.post(
       where: { admissionNo: data.admissionNo },
     });
     if (clash) throw ApiError.conflict("Admission number already in use");
-    const student = await prisma.student.create({ data });
+    // Default the admission date to today so onboarding counts are accurate.
+    const student = await prisma.student.create({
+      data: { ...data, admissionDate: data.admissionDate ?? new Date() },
+    });
     res.status(201).json(student);
   })
 );
@@ -82,6 +86,7 @@ const updateSchema = z.object({
   guardianName: z.string().nullish(),
   guardianPhone: z.string().nullish(),
   address: z.string().nullish(),
+  admissionDate: z.coerce.date().nullish(),
   status: z.enum(["ACTIVE", "INACTIVE", "ALUMNI", "TRANSFERRED"]).optional(),
 });
 
@@ -95,6 +100,42 @@ studentsRouter.patch(
     const student = await prisma.student.update({
       where: { id: req.params.id },
       data,
+    });
+    res.json(student);
+  })
+);
+
+// ── Mark a student as left (retention) ───────────────────────────────────────
+const leaveSchema = z.object({
+  // Transferred to another school / Graduated (alumni) / Withdrawn (inactive).
+  status: z.enum(["TRANSFERRED", "ALUMNI", "INACTIVE"]),
+  leftAt: z.coerce.date().nullish(),
+});
+
+studentsRouter.post(
+  "/:id/leave",
+  requireRole("SUPER_ADMIN", "ADMIN"),
+  asyncHandler(async (req, res) => {
+    const { status, leftAt } = leaveSchema.parse(req.body);
+    const exists = await prisma.student.findUnique({ where: { id: req.params.id } });
+    if (!exists) throw ApiError.notFound("Student not found");
+    const student = await prisma.student.update({
+      where: { id: req.params.id },
+      data: { status, leftAt: leftAt ?? new Date() },
+    });
+    res.json(student);
+  })
+);
+
+studentsRouter.post(
+  "/:id/reactivate",
+  requireRole("SUPER_ADMIN", "ADMIN"),
+  asyncHandler(async (req, res) => {
+    const exists = await prisma.student.findUnique({ where: { id: req.params.id } });
+    if (!exists) throw ApiError.notFound("Student not found");
+    const student = await prisma.student.update({
+      where: { id: req.params.id },
+      data: { status: "ACTIVE", leftAt: null },
     });
     res.json(student);
   })

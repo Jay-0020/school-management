@@ -11,6 +11,9 @@ export function PeoplePage() {
   const showStaff = user?.role !== "TEACHER"; // dean/admin see staff too
   const [tab, setTab] = useState<"students" | "staff">("students");
   const [q, setQ] = useState("");
+  const [grade, setGrade] = useState("");
+  const [section, setSection] = useState("");
+  const [staffType, setStaffType] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -18,16 +21,40 @@ export function PeoplePage() {
     queryFn: async () => (await api.get<PeopleDirectory>("/profile/people")).data,
   });
 
+  // Distinct grades (numeric order) and sections for the filter dropdowns.
+  const grades = useMemo(() => {
+    const set = new Set((data?.students ?? []).map((s) => s.grade).filter(Boolean) as string[]);
+    return [...set].sort(
+      (a, b) => (parseInt(a.replace(/\D/g, "")) || 0) - (parseInt(b.replace(/\D/g, "")) || 0)
+    );
+  }, [data]);
+  const sections = useMemo(() => {
+    const set = new Set(
+      (data?.students ?? [])
+        .filter((s) => !grade || s.grade === grade)
+        .map((s) => s.section)
+        .filter(Boolean) as string[]
+    );
+    return [...set].sort();
+  }, [data, grade]);
+
   const students = useMemo(
     () =>
-      (data?.students ?? []).filter((s) =>
-        (s.name + s.admissionNo + s.className).toLowerCase().includes(q.toLowerCase())
+      (data?.students ?? []).filter(
+        (s) =>
+          (s.name + s.admissionNo + s.className).toLowerCase().includes(q.toLowerCase()) &&
+          (!grade || s.grade === grade) &&
+          (!section || s.section === section)
       ),
-    [data, q]
+    [data, q, grade, section]
   );
   const staff = useMemo(
-    () => (data?.staff ?? []).filter((s) => s.name.toLowerCase().includes(q.toLowerCase())),
-    [data, q]
+    () =>
+      (data?.staff ?? []).filter(
+        (s) =>
+          s.name.toLowerCase().includes(q.toLowerCase()) && (!staffType || s.staffType === staffType)
+      ),
+    [data, q, staffType]
   );
 
   return (
@@ -57,6 +84,42 @@ export function PeoplePage() {
       )}
 
       {isLoading && <SkeletonRows />}
+
+      <div className="controls" style={{ marginBottom: 14 }}>
+        {(tab === "students" || !showStaff) && (
+          <>
+            <select
+              value={grade}
+              onChange={(e) => {
+                setGrade(e.target.value);
+                setSection("");
+              }}
+            >
+              <option value="">All grades</option>
+              {grades.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+            <select value={section} onChange={(e) => setSection(e.target.value)}>
+              <option value="">All sections</option>
+              {sections.map((s) => (
+                <option key={s} value={s}>
+                  Section {s}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
+        {showStaff && tab === "staff" && (
+          <select value={staffType} onChange={(e) => setStaffType(e.target.value)}>
+            <option value="">All staff</option>
+            <option value="TEACHING">Teaching</option>
+            <option value="NON_TEACHING">Non-teaching</option>
+          </select>
+        )}
+      </div>
 
       {!isLoading && (tab === "students" || !showStaff) && (
         <table className="data-table">

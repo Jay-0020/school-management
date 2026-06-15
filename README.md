@@ -5,6 +5,22 @@ deployment** from a single template codebase. Market: **India**. Web-first.
 
 See [REQUIREMENTS.md](./REQUIREMENTS.md) for the full spec.
 
+## 🏫 Onboard a new school (one command)
+
+Each customer school is its own isolated, branded instance. To create one:
+
+```bash
+cd backend
+npm run provision -- \
+  --name "Springfield High" --short SHS --color "#7c3aed" \
+  --admin admin@springfield.edu --password "Temp@1234" --db school_springfield
+```
+
+This creates the school's database, applies migrations, seeds its branding +
+admin login, and writes `backend/instances/<db>.env`. Then run it (Node on a
+spare port, or as a container). **Full step-by-step + production deploy:
+[ONBOARDING.md](./ONBOARDING.md).**
+
 ## Stack
 
 | Layer | Tech |

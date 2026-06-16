@@ -16,14 +16,20 @@ requirement is completed.
 | 4 | Dean dashboard: staff payments pending | ✅ Done |
 | 5 | Dean dashboard: salary paid to date | ✅ Done |
 | 6 | Full & Final settlement (Dean approval) | ✅ Done |
-| 7 | Teacher performance + parent/student feedback | ⏳ Pending |
+| 7 | Teacher performance + parent/student feedback | ✅ Done |
 | 8 | Student onboarding & retention (per academic year) | ✅ Done |
 | 9 | Dean dashboard: overall expenditure | ✅ Done |
 | 10 | Parents & Students — one parent account, all kids | ✅ Done |
-| 11 | Feedback section (students/parents) | ⏳ Pending |
+| 11 | Feedback section (students/parents) | ✅ Done |
 | 12 | Leave categories → Casual / Sick only | ✅ Done |
-| 13 | Teacher ratings (students + parents) | ⏳ Pending |
+| 13 | Teacher ratings (students + parents) | ✅ Done |
 | 14 | Accountant section | ✅ No change needed |
+
+### Additional features (requested during the build, beyond the original 14)
+| Teaching assignments (teacher × subject × section) | ✅ Done |
+| Teacher → student feedback (+ history) | ✅ Done |
+| Commendations to parents | ✅ Done |
+| Complaints about staff (anonymous optional) | ✅ Done |
 
 ---
 
@@ -231,5 +237,51 @@ paid); all three can view the Settlements page.
 
 ---
 
-*Remaining requirements are tracked in the status table above and will be
-appended here as each is completed.*
+## Update 8 — Teaching assignments, ratings, feedback, commendations & complaints
+*Completed: 16 Jun 2026 — requirements #7, #11, #13 (+ teacher→student feedback,
+commendations and complaints, added during the build)*
+
+This was built as one connected block.
+
+**Teaching assignments (foundation):** since a class has many teachers, an
+**Admin/Dean** now assigns a teacher to each **subject** in each **section**
+(a "Teaching Assignments" screen). This defines a student's set of teachers.
+
+**Teacher ratings (#13, #7):** students and parents give each of their section's
+teachers a **1–5★ rating + optional comment**. Ratings are **anonymous** — the
+teacher sees only their **average** (on their dashboard); the **Dean/Admin** see
+a **Teacher Performance** view (everyone ranked, with comments).
+
+**Teacher → student feedback:** any staff member can record **feedback** about a
+student (category + message); the teacher sees that student's **history**, and
+the **student + parent** see it.
+
+**Commendations:** staff can post a positive **commendation** ("doing great at
+…") — the **parent** is notified and sees it in their **Feedback** area
+(students see it too).
+
+**Complaints (#11 area):** students, teachers and parents can **file a complaint
+about a staff member**, optionally **fully anonymous** (no identity stored).
+**Only the Dean** (and Super-Admin) see and resolve them (Open → Resolved).
+
+**How it flows:**
+1. Admin/Dean set up **Teaching Assignments** (teacher per subject per section).
+2. Students/parents open **Feedback** → rate their teachers and read feedback &
+   commendations about themselves/their children.
+3. Staff open a student (People Overview) → add **feedback or a commendation**
+   and see the student's history.
+4. Teachers see their **average rating**; the Dean sees **Teacher Performance**.
+5. Anyone can file a **Complaint** (optionally anonymous); the **Dean** reviews
+   and resolves it.
+
+**Who/where:** Admin+Dean (assignments, performance); students/parents (rate +
+read feedback); any staff (post feedback/commendations); Dean+Super-Admin
+(complaints).
+
+---
+
+🎉 **All 14 of the client's original requirements are now complete**, plus the
+extra feedback/commendation/complaint features requested along the way.
+
+*Next: refresh the live demo with the new modules + sample data, and update the
+demo guide.*

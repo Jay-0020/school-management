@@ -238,6 +238,21 @@ bullets([
   "Parents & students :: one parent account now shows all of their children; leave is simplified to Casual / Sick.",
 ]);
 
+// ── How to use the new features (step by step) ───────────────────────────────
+doc.addPage();
+band("Using the New Features", "Step by step");
+para("Every login below uses the password Demo@1234. Switch roles by logging out and back in.");
+steps([
+  "Set teaching assignments — Admin / Dean :: Sidebar → Teaching Assignments → pick a class-section → assign a teacher to each subject. This defines which teachers a student can rate.",
+  "Rate teachers — Student & Parent :: Sidebar → Feedback → \"Rate your teachers\" → click 1–5 stars + an optional comment → Save. Ratings are anonymous.",
+  "See ratings — Teacher & Dean :: Teacher: Dashboard → \"My rating\" (your average). Dean: Dashboard → \"Teacher performance\" — every teacher ranked, with comments.",
+  "Give feedback or a commendation — any staff :: Sidebar → Overview → Students → open a student → \"Feedback & commendations\" → choose Feedback or Commendation, a category and a message → Add.",
+  "Read feedback — Student & Parent :: Sidebar → Feedback → \"Feedback & commendations\" (the 👏 badge marks a commendation).",
+  "File / resolve a complaint :: Student / Teacher / Parent: Sidebar → Complaints → pick a staff member, category, message, tick Anonymous if you wish → Submit. Dean: Complaints → open one → Mark resolved.",
+  "Staff attendance & calendar :: Admin: School Setup → set the campus location (map) + academic calendar. Staff: Dashboard → \"On Campus\" check-in — works only inside the geofence (use a phone for real GPS).",
+  "Dean dashboards & settlements :: Dean: Dashboard shows the Financial overview + Enrolment. Admin/Dean: Settlements → create → approve; the Accountant marks it paid.",
+]);
+
 // ── Footer on every page (margin disabled so it never spills to a new page) ──
 const range = doc.bufferedPageRange();
 for (let i = 0; i < range.count; i++) {

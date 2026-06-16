@@ -27,7 +27,7 @@ const subjectSchema = z.object({
 
 schoolworkRouter.post(
   "/subjects",
-  requireRole("SUPER_ADMIN", "ADMIN"),
+  requireRole("SUPER_ADMIN", "ADMIN", "DEAN"),
   asyncHandler(async (req, res) => {
     const data = subjectSchema.parse(req.body);
     const clash = await prisma.subject.findUnique({ where: { name: data.name } });
@@ -41,10 +41,18 @@ schoolworkRouter.post(
 
 schoolworkRouter.delete(
   "/subjects/:id",
-  requireRole("SUPER_ADMIN", "ADMIN"),
+  requireRole("SUPER_ADMIN", "ADMIN", "DEAN"),
   asyncHandler(async (req, res) => {
-    const used = await prisma.homework.count({ where: { subjectId: req.params.id } });
-    if (used > 0) throw ApiError.badRequest("Subject is used by existing homework");
+    const [hw, ta, ep] = await Promise.all([
+      prisma.homework.count({ where: { subjectId: req.params.id } }),
+      prisma.teachingAssignment.count({ where: { subjectId: req.params.id } }),
+      prisma.examPaper.count({ where: { subjectId: req.params.id } }),
+    ]);
+    if (hw || ta || ep) {
+      throw ApiError.badRequest(
+        "Subject is in use (homework, teaching assignments or exams) — reassign those first."
+      );
+    }
     await prisma.subject.delete({ where: { id: req.params.id } });
     res.status(204).end();
   })

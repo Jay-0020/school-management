@@ -1722,3 +1722,8 @@ tr.clickable:hover td {
 .star { font-size: 1.5rem; line-height: 1; color: var(--border-strong); padding: 0 1px; }
 .star.on { color: #f5b301; }
 .rate-card textarea { margin-top: 4px; }
+
+/* ── Teaching-assignment tools (bulk assign + add subject) ────────────────── */
+.assign-tools { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; margin: 8px 0 18px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+.assign-tool { display: flex; align-items: center; gap: 8px; }
+.assign-tool select, .assign-tool input { width: auto; min-width: 180px; }

@@ -50,6 +50,26 @@ export function AssignmentsPage() {
     onSuccess: invalidate,
   });
 
+  // One teacher for every subject in the section (primary-grade shortcut).
+  const [allTeacher, setAllTeacher] = useState("");
+  const assignAll = useMutation({
+    mutationFn: () => api.post("/assignments/all", { sectionId, teacherId: allTeacher }),
+    onSuccess: () => {
+      setAllTeacher("");
+      invalidate();
+    },
+  });
+
+  // Add a new subject (Admin + Dean).
+  const [newSubject, setNewSubject] = useState("");
+  const addSubject = useMutation({
+    mutationFn: () => api.post("/schoolwork/subjects", { name: newSubject.trim() }),
+    onSuccess: () => {
+      setNewSubject("");
+      qc.invalidateQueries({ queryKey: ["assign-options"] });
+    },
+  });
+
   function onChange(subjectId: string, teacherId: string) {
     if (teacherId) assign.mutate({ subjectId, teacherId });
     else {
@@ -76,6 +96,43 @@ export function AssignmentsPage() {
         Assign a teacher to each subject for the selected class-section. This defines a student's
         teachers (used for ratings and feedback).
       </p>
+
+      <div className="assign-tools">
+        <div className="assign-tool">
+          <span className="muted">One teacher for all subjects:</span>
+          <select value={allTeacher} onChange={(e) => setAllTeacher(e.target.value)}>
+            <option value="">Select teacher…</option>
+            {options?.teachers.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name} · {t.employeeNo}
+              </option>
+            ))}
+          </select>
+          <button
+            className="inline-btn"
+            disabled={!allTeacher || assignAll.isPending}
+            onClick={() => assignAll.mutate()}
+          >
+            {assignAll.isPending ? "Assigning…" : "Apply to all"}
+          </button>
+        </div>
+        <form
+          className="assign-tool"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (newSubject.trim()) addSubject.mutate();
+          }}
+        >
+          <input
+            placeholder="New subject (e.g. Geography)"
+            value={newSubject}
+            onChange={(e) => setNewSubject(e.target.value)}
+          />
+          <button className="inline-btn ghost" type="submit" disabled={!newSubject.trim() || addSubject.isPending}>
+            + Add subject
+          </button>
+        </form>
+      </div>
 
       {isLoading && <SkeletonRows />}
       {options && options.subjects.length === 0 && (

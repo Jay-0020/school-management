@@ -280,6 +280,20 @@ read feedback); any staff (post feedback/commendations); Dean+Super-Admin
 
 ---
 
+## Update 9 — Teaching assignments: add subjects + one-teacher-for-all
+*Completed: 16 Jun 2026*
+
+Two refinements to Teaching Assignments:
+- **Add/remove subjects** is now available to **Admin *and* Dean**, right on the
+  Teaching Assignments screen — subjects aren't a fixed list. (Deleting a
+  subject is blocked if it's used by homework, an assignment or an exam.)
+- **"One teacher for all subjects"** shortcut — for primary grades where a
+  single teacher takes the whole class: pick a teacher → assign them to every
+  subject in the section in one click (individual subjects can still be changed
+  afterward).
+
+---
+
 🎉 **All 14 of the client's original requirements are now complete**, plus the
 extra feedback/commendation/complaint features requested along the way.
 

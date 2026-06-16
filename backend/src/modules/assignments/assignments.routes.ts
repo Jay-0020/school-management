@@ -86,6 +86,25 @@ assignmentsRouter.post(
   })
 );
 
+// Assign one teacher to EVERY subject in a section (primary-grade shortcut).
+const bulkSchema = z.object({ sectionId: z.string(), teacherId: z.string() });
+assignmentsRouter.post(
+  "/all",
+  requireRole(...MANAGE),
+  asyncHandler(async (req, res) => {
+    const { sectionId, teacherId } = bulkSchema.parse(req.body);
+    const subjects = await prisma.subject.findMany({ select: { id: true } });
+    for (const s of subjects) {
+      await prisma.teachingAssignment.upsert({
+        where: { sectionId_subjectId: { sectionId, subjectId: s.id } },
+        update: { teacherId },
+        create: { sectionId, subjectId: s.id, teacherId },
+      });
+    }
+    res.json({ ok: true, count: subjects.length });
+  })
+);
+
 assignmentsRouter.delete(
   "/:id",
   requireRole(...MANAGE),

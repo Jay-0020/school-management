@@ -243,7 +243,7 @@ doc.addPage();
 band("Using the New Features", "Step by step");
 para("Every login below uses the password Demo@1234. Switch roles by logging out and back in.");
 steps([
-  "Set teaching assignments — Admin / Dean :: Sidebar → Teaching Assignments → pick a class-section → assign a teacher to each subject. This defines which teachers a student can rate.",
+  "Set teaching assignments — Admin / Dean :: Sidebar → Teaching Assignments → pick a class-section → assign a teacher to each subject. Add subjects right there if needed, or use \"One teacher for all subjects\" for primary classes. This defines which teachers a student can rate.",
   "Rate teachers — Student & Parent :: Sidebar → Feedback → \"Rate your teachers\" → click 1–5 stars + an optional comment → Save. Ratings are anonymous.",
   "See ratings — Teacher & Dean :: Teacher: Dashboard → \"My rating\" (your average). Dean: Dashboard → \"Teacher performance\" — every teacher ranked, with comments.",
   "Give feedback or a commendation — any staff :: Sidebar → Overview → Students → open a student → \"Feedback & commendations\" → choose Feedback or Commendation, a category and a message → Add.",

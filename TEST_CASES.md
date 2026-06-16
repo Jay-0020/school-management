@@ -1,157 +1,183 @@
-# School Management Portal — Browser Test Plan
+# School Management Portal — Full Browser Test Plan
 
-**Instructions for the testing agent:** You are testing a live web app. Work
-through every test case below **in order**. For each one, perform the steps,
-check the **Expected** result, and record **PASS / FAIL / N-A** with a one-line
-note. At the very end, output a **summary table** (ID · result · note) and a
-count of pass/fail. Do not stop on a failure — continue and report it.
+**Instructions for the testing agent:** You are testing a live web app end to
+end. Work through every case **in order**. For each: do the steps, check the
+**Expected** result, and record **PASS / FAIL / N-A** with a one-line note.
+Never stop on a failure — note it and continue. At the very end output a
+**summary table** (ID · result · note), list FAILs first (what you saw vs.
+expected), and give pass/fail/N-A counts.
+
+This plan is organised so that **every role is fully exercised** (Part 2 walks
+each role through every page it can open) plus the **cross-role workflows**
+(Part 3) and **access-control checks** (Part 4).
 
 ## Environment
 - **URL:** https://school-demo-nnfb.onrender.com
-- **First load may take 30–60 seconds** (the demo server wakes from sleep) — wait, don't fail.
+- **First load can take 30–60s** (server waking) — wait, don't fail.
 - **All logins use password:** `Demo@1234`
-- **Switch roles** by logging out (top-right user menu) and logging back in.
+- **Switch roles** via the top-right user menu → Log out, then log in again.
 
-| Role | Email |
-|---|---|
-| Super Admin | superadmin@greenwood.demo |
-| Admin | admin@greenwood.demo |
-| Dean | dean@greenwood.demo |
-| Accountant | accountant@greenwood.demo |
-| Teacher (class teacher, Grade 1-A) | teacher@greenwood.demo |
-| Student (Pooja Bose, Grade 1-A) | student@greenwood.demo |
-| Parent (children: Pooja Bose, Diya Pillai) | parent@greenwood.demo |
+| Role | Email | Notes |
+|---|---|---|
+| Super Admin | superadmin@greenwood.demo | full system access |
+| Admin | admin@greenwood.demo | runs the school |
+| Dean | dean@greenwood.demo | oversight + approvals |
+| Accountant | accountant@greenwood.demo | money |
+| Teacher | teacher@greenwood.demo | class teacher of Grade 1-A |
+| Student | student@greenwood.demo | Pooja Bose, Grade 1-A |
+| Parent | parent@greenwood.demo | children: Pooja Bose, Diya Pillai |
 
-## Notes before you start
-- Several tests **change data** (approvals, ratings, complaints, marking a
-  student left, etc.). That is **expected** on this demo.
-- Tests changing the same record may interact — follow the order given.
-- A "first sign-in password change" prompt should **not** appear (these accounts
-  are pre-set); if it does, note it.
+**Heads-up:** Many cases **change data** (approvals, ratings, complaints, marking
+a student left, etc.) — that is expected on this demo. Follow the given order so
+multi-step chains line up.
 
 ---
 
-## A. Authentication
-- **TC-01 — Login (valid):** Go to the URL → log in as `admin@greenwood.demo`.
-  **Expected:** lands on a Dashboard showing the school name ("Greenwood High School").
-- **TC-02 — Login (invalid):** Log out → try `admin@greenwood.demo` with password `wrong`.
-  **Expected:** an error message; not logged in.
-- **TC-03 — Logout:** From a logged-in session, use the top-right menu to log out.
-  **Expected:** returns to the login screen.
-
-## B. Role dashboards
-- **TC-04 — Admin dashboard:** Login as Admin.
-  **Expected:** headline stats (students, staff, fees, etc.) + Financial overview + Enrolment + Teacher-performance + a read-only calendar.
-- **TC-05 — Dean dashboard:** Login as Dean.
-  **Expected:** "Financial overview" (fees pending, staff payments pending, salary paid, total expenditure), "Enrolment this session", "Teacher performance", and an academic calendar.
-- **TC-06 — Teacher dashboard:** Login as Teacher.
-  **Expected:** a "My attendance" / On-Campus card and a "My rating" card.
-- **TC-07 — Student dashboard:** Login as Student.
-  **Expected:** student-relevant stats (fees due, homework) and the calendar; no staff/admin sections.
-
-## C. School Setup — location & calendar (Admin)
-- **TC-08 — Map loads:** Admin → sidebar **School Setup** → "Campus location" panel.
-  **Expected:** an OpenStreetMap map renders with a marker + a radius circle (no broken-image/CSP errors in console).
-- **TC-09 — Recenter on edit:** Change the **Radius** number, then click **Use my current location**.
-  **Expected:** the pin moves and the **map recenters** so the pin stays centered.
-- **TC-10 — Academic calendar:** "Academic calendar" panel → set a **Session start** and **end**, pick a **Saturday rule**, click **Save calendar**; then click a weekday in the grid and mark it a holiday with a note.
-  **Expected:** Sundays are green/locked; the marked day turns green; "Working days" count shown.
-
-## D. Staff attendance
-- **TC-11 — On-Campus check-in (EXPECTED N-A):** Teacher → Dashboard → "My attendance" card.
-  **Expected:** since the agent is **not physically at the school**, it should show **"Not on campus (… m away)"** and the check-in button should be disabled. Record **N-A** (this needs a real phone on site). If it lets you check in, note it.
-
-## E. Students & Parents (Admin)
-- **TC-12 — Students list + filters:** Admin → **Students** → filter by **Grade 1 / Section A**.
-  **Expected:** the list filters to Grade 1-A students (incl. Pooja Bose, Diya Pillai).
-- **TC-13 — Linked parent shown:** In the Students list, find Pooja Bose.
-  **Expected:** a "Parent account" column shows `parent@greenwood.demo`.
-- **TC-14 — Mark a student left:** Open any **Grade 5** student → set Status to **Transferred** (or Graduated/Withdrawn) → save.
-  **Expected:** saved; status shows the new value. (Dean's Enrolment "students left" should later reflect this.)
-- **TC-15 — Parent sees all children:** Login as Parent → **My Children**.
-  **Expected:** both Pooja Bose and Diya Pillai are listed; selecting each shows attendance / fees / report card.
-
-## F. Teaching Assignments (Admin / Dean)
-- **TC-16 — Assign a teacher:** Admin → **Teaching Assignments** → pick **Grade 1 · A** → set a teacher for any subject.
-  **Expected:** the dropdown saves; reloading keeps the selection.
-- **TC-17 — One teacher for all:** Pick a section → use **"One teacher for all subjects"** → choose a teacher → **Apply to all**.
-  **Expected:** every subject row now shows that teacher.
-- **TC-18 — Add a subject:** On the same screen, type a new subject (e.g., "Civics") → **+ Add subject**.
-  **Expected:** the subject appears in the list and can be assigned.
-
-## G. Ratings & feedback
-- **TC-19 — Student rates a teacher:** Login as Student → **Feedback** → "Rate your teachers" → give a teacher 4–5 stars + a comment → Save.
-  **Expected:** "Saved"; the rating persists on reload.
-- **TC-20 — Parent rates:** Login as Parent → **Feedback** → rate a teacher.
-  **Expected:** saved.
-- **TC-21 — Teacher sees rating:** Login as Teacher → Dashboard → "My rating".
-  **Expected:** shows an average star value + a count (anonymous; no rater names).
-- **TC-22 — Dean teacher performance:** Login as Dean → Dashboard → "Teacher performance".
-  **Expected:** teachers listed with average ★ and counts, plus recent comments.
-- **TC-23 — Staff posts feedback:** Login as Teacher → **Overview** → Students → open **Pooja Bose** → "Feedback & commendations" → add a **Feedback** (category + message) → Add.
-  **Expected:** it appears in that student's history.
-- **TC-24 — Staff posts commendation:** Same student → add a **Commendation** → Add.
-  **Expected:** appears in history (👏).
-- **TC-25 — Student/parent see feedback:** Login as Student (then Parent) → **Feedback** → "Feedback & commendations".
-  **Expected:** the feedback + commendation from TC-23/24 are visible.
-
-## H. Complaints
-- **TC-26 — File anonymous complaint:** Login as Parent (or Student) → **Complaints** → pick a staff member, category, message, tick **Anonymous** → Submit.
-  **Expected:** a confirmation; the filer cannot see a list of all complaints.
-- **TC-27 — Dean reviews + resolves:** Login as Dean → **Complaints**.
-  **Expected:** the complaint appears with "Filed by: Anonymous". Open it → **Mark resolved** → status becomes Resolved.
-
-## I. Fees (Accountant)
-- **TC-28 — Fees dashboard:** Login as Accountant → **Fees**.
-  **Expected:** invoices with paid / partial / pending totals.
-- **TC-29 — Record a payment:** Open a pending/partial invoice → record a payment (amount + method) → save.
-  **Expected:** the invoice's paid amount/status updates.
-- **TC-30 — Student sees fees:** Login as Student → **Fees**.
-  **Expected:** own invoice(s) and amount due.
-
-## J. Expenses (approval flow)
-- **TC-31 — Teacher submits expense:** Login as Teacher → **Expenses** → Submit → pick a **category (dropdown)**, amount, description → Submit.
-  **Expected:** created with status SUBMITTED.
-- **TC-32 — Dean approves:** Login as Dean → **Expenses** → open the submitted one → **Approve**.
-  **Expected:** status APPROVED.
-- **TC-33 — Accountant marks paid:** Login as Accountant → **Expenses** → open the approved one → **Mark paid**.
-  **Expected:** status PAID. (Dean cannot mark paid — note if a Dean sees that button.)
-
-## K. Payroll & Settlements
-- **TC-34 — Payslips:** Login as Accountant (or Admin) → **Payroll**.
-  **Expected:** staff payslips with PF/ESI/PT/TDS deductions.
-- **TC-35 — Create settlement:** Admin/Dean → **Settlements** → New → pick a staff member (pending salary auto-fills) → add bonus/deductions → Create.
-  **Expected:** a PENDING settlement with Net = pending + bonus − deductions.
-- **TC-36 — Approve settlement:** As Dean/Admin → open it → **Approve**.
-  **Expected:** APPROVED (the staff member becomes inactive).
-- **TC-37 — Pay settlement:** As Accountant → open it → **Mark paid**.
-  **Expected:** PAID.
-
-## L. Exams & report cards
-- **TC-38 — Create exam with range:** Admin → **Exams** → + New exam → name, class, **Start date** + **End date** → create.
-  **Expected:** appears in the list with a **Dates** column (start – end).
-- **TC-39 — Add subject in range:** Open that exam → add a subject with a date **inside** the range.
-  **Expected:** added, with the date in the **Date** column.
-- **TC-40 — Date out of range rejected:** Try adding a subject with a date **outside** the start–end range.
-  **Expected:** rejected / blocked (the picker limits it; the server refuses it).
-- **TC-41 — Datesheet shows:** Open **Term 1 Examination**.
-  **Expected:** subjects show per-subject dates (e.g., English 10 Dec, … Social Studies 18 Dec).
-- **TC-42 — Publish + report card:** Publish an exam with marks → login as Student → view/download the report card.
-  **Expected:** report card visible/downloadable as PDF.
-
-## M. Leave
-- **TC-43 — Apply leave (categories):** Login as Teacher → **Leave** → apply.
-  **Expected:** category options are **only Casual and Sick** (no Earned/Unpaid).
-- **TC-44 — Dean approves leave:** Login as Dean → **Leave** → approve the pending request.
-  **Expected:** status APPROVED.
-
-## N. Notices
-- **TC-45 — Post a notice:** Admin → **Notices** → create a notice for "Students".
-  **Expected:** created; visible to a Student login under Notices.
+# Part 1 — Authentication
+- **TC-01 Login (valid):** open URL → login as Admin. *Expected:* a Dashboard with school name "Greenwood High School".
+- **TC-02 Login (invalid):** log out → Admin email + password `wrong`. *Expected:* error; not logged in.
+- **TC-03 No forced password change:** logging in as each role goes straight to the dashboard. *Expected:* no "must change password" screen.
+- **TC-04 Logout:** top-right menu → Log out. *Expected:* back to login screen.
+- **TC-05 My Profile (any role):** login as Teacher → **My Profile**. *Expected:* profile details load; option to change password exists.
 
 ---
 
-## Reporting format (output this at the end)
+# Part 2 — Per-role walkthroughs (open every page the role can reach)
+
+## 2A. Super Admin (`superadmin@greenwood.demo`)
+- **TC-06** Dashboard loads with admin-level stats + Financial/Enrolment/Teacher-performance widgets.
+- **TC-07** **People → Overview** opens (students + staff tabs, search, grade/section filters).
+- **TC-08** **Students** list opens and paginates/filters.
+- **TC-09** **Teachers & Staff** list opens.
+- **TC-10** **Users** opens; try **+ Add user** form (don't need to submit) and open a user's **leave quota** editor — shows **Casual + Sick only** (no Earned).
+- **TC-11** **Attendance**, **Schoolwork**, **Exams**, **Notes**, **Notices** each open.
+- **TC-12** **Teaching Assignments**, **Fees**, **Payroll**, **Expenses**, **Settlements**, **School Setup**, **Complaints** each open without error.
+
+## 2B. Admin (`admin@greenwood.demo`)
+- **TC-13** Dashboard: stats + Financial overview + Enrolment + Teacher performance + read-only calendar.
+- **TC-14** **School Setup → Branding:** edit a field (e.g., contact phone) → Save. *Expected:* "Saved".
+- **TC-15** **School Setup → Campus location:** map renders (OpenStreetMap tiles, no broken images); change Radius then **Use my current location** → pin moves and **map recenters**.
+- **TC-16** **School Setup → Academic calendar:** set session start/end + Saturday rule → Save; click a weekday → mark holiday with a note. *Expected:* Sundays green/locked; working-days count shown.
+- **TC-17** **School Setup → Classes & sections:** add a class then a section under it, then delete them. *Expected:* add/delete work.
+- **TC-18** **Students:** filter Grade 1 / Section A; open **Pooja Bose** — a "Parent account" column shows `parent@greenwood.demo`; admission date editable.
+- **TC-19** **Students:** open a **Grade 5** student → set status **Transferred** → Save. *Expected:* status updates (feeds Dean enrolment "left").
+- **TC-20** **Teachers & Staff:** open the list; open a staff member's detail.
+- **TC-21** **Teaching Assignments:** pick Grade 1-A → assign a teacher to a subject; use **One teacher for all subjects**; **+ Add subject** (e.g., "Civics").
+- **TC-22** **Notices:** create a notice (audience = Students) → it appears in the list.
+- **TC-23** **Notes:** open; if a list exists, open an item's detail.
+- **TC-24** **Exams:** open list (Dates column present); other exam actions tested in Part 3.
+
+## 2C. Dean (`dean@greenwood.demo`)
+- **TC-25** Dashboard: **Financial overview** (fees pending, staff payments pending, salary paid, total expenditure), **Enrolment this session** (new admissions / left / net), **Teacher performance**, academic calendar.
+- **TC-26** **People → Overview:** filter students by **grade + section**; switch to **Staff** tab and filter Teaching/Non-teaching.
+- **TC-27** **School Setup:** Dean can open it and **edit the calendar** (mark a holiday). *Expected:* calendar editable.
+- **TC-28** **Teaching Assignments:** Dean can open and assign teachers / add a subject.
+- **TC-29** **Exams:** open list (read/oversight).
+- **TC-30** **Expenses:** open — Dean sees all expenses + a summary (approval tested in Part 3).
+- **TC-31** **Settlements:** open list (create/approve in Part 3).
+- **TC-32** **Complaints:** open — Dean sees the complaints list (resolve tested in Part 3).
+- **TC-33** **Leave:** open — Dean sees pending staff leave to approve.
+- **TC-34** **Notices:** open.
+
+## 2D. Accountant (`accountant@greenwood.demo`)
+- **TC-35** Dashboard: fees outstanding, expenses to review, payroll staff.
+- **TC-36** **Fees:** invoice list with paid / partial / pending totals.
+- **TC-37** **Fees:** open a pending/partial invoice → **record a payment** (amount + method) → save → status/paid amount updates.
+- **TC-38** **Students** and **Teachers & Staff** lists open (read).
+- **TC-39** **Payroll:** payslips list with PF/ESI/PT/TDS deductions; open a payslip.
+- **TC-40** **Expenses:** open — can mark an approved expense paid (Part 3).
+- **TC-41** **Settlements:** open — can mark an approved settlement paid (Part 3).
+
+## 2E. Teacher (`teacher@greenwood.demo`)
+- **TC-42** Dashboard: **My attendance / On-Campus** card + **My rating** card.
+- **TC-43** **On-Campus check-in (EXPECTED N-A):** the agent isn't physically on campus, so it should show **"Not on campus (… m away)"** with the button disabled → record **N-A**. (Needs a real phone on site.) If it lets you check in, note it.
+- **TC-44** **People → Overview:** open (students; staff hidden for teacher is OK).
+- **TC-45** **Students:** open list.
+- **TC-46** **Attendance:** open → mark daily attendance for the assigned section (Grade 1-A): set a couple of students present/absent → save.
+- **TC-47** **Schoolwork:** assign a homework (title, section, subject, due date) → it's saved/listed.
+- **TC-48** **Notes:** upload/share a note if the UI allows (or open the list).
+- **TC-49** **Exams:** open; enter marks for a paper if available (Part 3 covers publish).
+- **TC-50** **Payroll:** view own payslips.
+- **TC-51** **Expenses:** submit an expense (Part 3).
+- **TC-52** **Leave:** apply for leave — category options are **only Casual / Sick**.
+- **TC-53** **Complaints:** file a complaint about a staff member (Part 3 covers Dean side).
+- **TC-54** **Notices:** open; teachers can post a notice.
+
+## 2F. Student (`student@greenwood.demo` — Pooja Bose)
+- **TC-55** Dashboard: fees due + homework stats + calendar; no staff/admin menus.
+- **TC-56** **Feedback → Rate your teachers:** rate a teacher 4–5★ + comment → Save → persists.
+- **TC-57** **Feedback → Feedback & commendations:** shows feedback/commendations left by staff (after Part 3 TC-79/80).
+- **TC-58** **Schoolwork:** view assigned homework + class material.
+- **TC-59** **Exams:** view own published report card; **download as PDF**.
+- **TC-60** **Notes:** view class notes.
+- **TC-61** **Fees:** own invoice(s) + amount due.
+- **TC-62** **Leave:** apply (Casual/Sick only).
+- **TC-63** **Complaints:** file a complaint (optionally anonymous).
+- **TC-64** **Notices:** read student-facing notices.
+
+## 2G. Parent (`parent@greenwood.demo`)
+- **TC-65** Dashboard loads (parent view).
+- **TC-66** **My Children:** both **Pooja Bose** and **Diya Pillai** listed; select each → see attendance, fees, report card.
+- **TC-67** **Feedback → Rate your teachers:** rate a child's teacher.
+- **TC-68** **Feedback → Feedback & commendations:** see feedback + 👏 commendations for the children.
+- **TC-69** **Fees:** each child's fee status / dues.
+- **TC-70** **Complaints:** file a complaint (anonymous option).
+- **TC-71** **Notices:** read notices.
+
+---
+
+# Part 3 — Cross-role workflows (multi-login chains)
+
+## Expense approval
+- **TC-72** Teacher → **Expenses → Submit:** category (dropdown), amount, description → Submit. *Expected:* SUBMITTED.
+- **TC-73** Dean → **Expenses:** open it → **Approve**. *Expected:* APPROVED. (Confirm Dean has **no** "Mark paid" button.)
+- **TC-74** Accountant → **Expenses:** open the approved one → **Mark paid**. *Expected:* PAID.
+
+## Full & Final settlement
+- **TC-75** Admin/Dean → **Settlements → New:** pick a staff member (pending salary auto-fills) → add bonus/deductions → Create. *Expected:* PENDING, Net = pending + bonus − deductions.
+- **TC-76** Dean/Admin → open it → **Approve**. *Expected:* APPROVED (staff becomes inactive).
+- **TC-77** Accountant → open it → **Mark paid**. *Expected:* PAID.
+
+## Ratings / feedback / commendations visibility
+- **TC-78** Student rates a teacher (TC-56) → Teacher → Dashboard **My rating** shows an updated average + count (anonymous). Dean → **Teacher performance** shows that teacher with stars + the comment.
+- **TC-79** Teacher → **Overview → Students → Pooja Bose → Feedback & commendations:** add a **Feedback** (Academics). *Expected:* in her history.
+- **TC-80** Same student → add a **Commendation** (Sports). *Expected:* in her history.
+- **TC-81** Student (Pooja) → **Feedback:** sees the Feedback + Commendation. Parent → **Feedback:** also sees both (for Pooja).
+
+## Complaint lifecycle
+- **TC-82** Parent → **Complaints:** file an **anonymous** complaint about a staff member. *Expected:* confirmation; no list shown to the parent.
+- **TC-83** Dean → **Complaints:** the complaint shows "Filed by: **Anonymous**" → open → **Mark resolved** → status Resolved.
+
+## Leave approval
+- **TC-84** Teacher → **Leave:** apply (Casual). Dean → **Leave:** approve it → APPROVED.
+
+## Exam datesheet → report card
+- **TC-85** Admin → **Exams → + New exam:** name, class, **Start + End date** → create → list shows a **Dates** column.
+- **TC-86** Open it → add a subject with a date **inside** the range → added.
+- **TC-87** Try a subject date **outside** the range → rejected/blocked.
+- **TC-88** Open **Term 1 Examination** → subjects show per-subject dates (English 10 Dec … Social Studies 18 Dec).
+- **TC-89** Teacher → enter marks for a paper → Admin publishes → Student → views/downloads report card PDF.
+
+## Parent linking
+- **TC-90** Admin → **Students → open a student → set "Parent account"** to `parent@greenwood.demo` → Save → that parent's **My Children** now includes this student.
+
+## Enrolment reflects changes
+- **TC-91** After TC-19 (a student transferred), Dean → Dashboard → **Enrolment** "students left this session" count ≥ 1.
+
+---
+
+# Part 4 — Access control (negative checks)
+Type the path into the address bar after the site URL and observe.
+- **TC-92** As **Student**, go to `/users`. *Expected:* redirected to dashboard / no access.
+- **TC-93** As **Student**, go to `/setup`. *Expected:* redirected / no access.
+- **TC-94** As **Parent**, go to `/complaints` and confirm there's **no list of all complaints** (only the file form).
+- **TC-95** As **Teacher**, go to `/settlements`. *Expected:* redirected / no access.
+- **TC-96** As **Accountant**, go to `/teaching` assignments path `/assignments`. *Expected:* redirected / no access.
+- **TC-97** As **Dean**, confirm **Expenses** has no "Mark paid" action (approve/reject only).
+
+---
+
+## Reporting format (output at the end)
 ```
 | ID    | Result | Note |
 |-------|--------|------|
@@ -159,4 +185,4 @@ count of pass/fail. Do not stop on a failure — continue and report it.
 | ...   | ...    | ...  |
 Summary: X passed, Y failed, Z N/A
 ```
-List any FAILs first with what you saw vs. expected.
+List all FAILs first (what you saw vs. what was expected).

@@ -114,6 +114,7 @@ const paperSchema = z.object({
   subjectId: z.string().min(1),
   maxMarks: z.number().int().positive(),
   passMarks: z.number().int().nonnegative().optional(),
+  date: z.coerce.date().nullish(),
 });
 
 examsRouter.post(
@@ -133,6 +134,7 @@ examsRouter.post(
         subjectId: data.subjectId,
         maxMarks: data.maxMarks,
         passMarks: data.passMarks ?? 33,
+        date: data.date ?? null,
       },
       include: { subject: { select: { id: true, name: true } } },
     });

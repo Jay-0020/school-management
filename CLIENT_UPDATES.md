@@ -292,6 +292,14 @@ Two refinements to Teaching Assignments:
   subject in the section in one click (individual subjects can still be changed
   afterward).
 
+## Update 10 — Exam datesheet (a date per subject)
+*Completed: 16 Jun 2026*
+
+Each subject in an exam can now have its **own exam date** (a datesheet —
+English on the 10th, Maths on the 12th, etc.). When setting up an exam's
+subjects there's a **date picker**, and the subjects table shows a **Date**
+column.
+
 ---
 
 🎉 **All 14 of the client's original requirements are now complete**, plus the

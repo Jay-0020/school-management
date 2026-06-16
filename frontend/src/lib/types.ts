@@ -314,6 +314,7 @@ export interface ExamPaper {
   subjectId: string;
   maxMarks: number;
   passMarks: number;
+  date?: string | null;
   subject: { id: string; name: string };
 }
 export interface Exam {

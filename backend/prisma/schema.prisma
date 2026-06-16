@@ -639,7 +639,8 @@ model ExamPaper {
   subject   Subject @relation(fields: [subjectId], references: [id])
   subjectId String
   maxMarks  Int
-  passMarks Int     @default(33)
+  passMarks Int       @default(33)
+  date      DateTime? // exam date for this subject (datesheet)
   marks     Mark[]
 
   @@unique([examId, subjectId])

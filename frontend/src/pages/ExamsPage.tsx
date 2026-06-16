@@ -167,7 +167,7 @@ function ExamDetail({
   const refetchExam = () => qc.invalidateQueries({ queryKey: ["exam", examId] });
 
   const addPaper = useMutation({
-    mutationFn: (v: { subjectId: string; maxMarks: number; passMarks: number }) =>
+    mutationFn: (v: { subjectId: string; maxMarks: number; passMarks: number; date: string | null }) =>
       api.post(`/exams/${examId}/papers`, v),
     onSuccess: () => { refetchExam(); toast.success("Paper added"); },
     onError: (e) => toast.error(errMsg(e, "Could not add paper")),
@@ -184,6 +184,7 @@ function ExamDetail({
   const [subjectId, setSubjectId] = useState("");
   const [maxMarks, setMaxMarks] = useState("100");
   const [passMarks, setPassMarks] = useState("33");
+  const [paperDate, setPaperDate] = useState("");
 
   if (!exam) return <SkeletonRows />;
 
@@ -208,11 +209,13 @@ function ExamDetail({
         {exam.papers.length === 0 && <p className="muted">No subjects added yet.</p>}
         {exam.papers.length > 0 && (
           <table className="data-table">
-            <thead><tr><th>Subject</th><th>Max</th><th>Pass</th>{isAdmin && <th></th>}</tr></thead>
+            <thead><tr><th>Subject</th><th>Date</th><th>Max</th><th>Pass</th>{isAdmin && <th></th>}</tr></thead>
             <tbody>
               {exam.papers.map((p) => (
                 <tr key={p.id}>
-                  <td>{p.subject.name}</td><td>{p.maxMarks}</td><td>{p.passMarks}</td>
+                  <td>{p.subject.name}</td>
+                  <td>{p.date ? new Date(p.date).toLocaleDateString() : "—"}</td>
+                  <td>{p.maxMarks}</td><td>{p.passMarks}</td>
                   {isAdmin && <td><button className="link danger" onClick={() => delPaper.mutate(p.id)}>Remove</button></td>}
                 </tr>
               ))}
@@ -220,13 +223,14 @@ function ExamDetail({
           </table>
         )}
         {isAdmin && (
-          <form className="add-row" onSubmit={(e) => { e.preventDefault(); if (subjectId) { addPaper.mutate({ subjectId, maxMarks: Number(maxMarks), passMarks: Number(passMarks) }); setSubjectId(""); } }}>
+          <form className="add-row" onSubmit={(e) => { e.preventDefault(); if (subjectId) { addPaper.mutate({ subjectId, maxMarks: Number(maxMarks), passMarks: Number(passMarks), date: paperDate || null }); setSubjectId(""); setPaperDate(""); } }}>
             <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
               <option value="">Add subject…</option>
               {(subjects ?? []).filter((s) => !exam.papers.some((p) => p.subjectId === s.id)).map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
+            <input type="date" value={paperDate} onChange={(e) => setPaperDate(e.target.value)} style={{ maxWidth: 160 }} title="Exam date for this subject" />
             <input type="number" value={maxMarks} onChange={(e) => setMaxMarks(e.target.value)} style={{ maxWidth: 100 }} placeholder="Max" />
             <input type="number" value={passMarks} onChange={(e) => setPassMarks(e.target.value)} style={{ maxWidth: 100 }} placeholder="Pass" />
             <button className="inline-btn" type="submit" disabled={!subjectId}>Add</button>

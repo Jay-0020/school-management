@@ -18,6 +18,7 @@ import { leaveRouter } from "./modules/leave/leave.routes";
 import { profileRouter } from "./modules/profile/profile.routes";
 import { ratingsRouter } from "./modules/ratings/ratings.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
+import { complaintsRouter } from "./modules/complaints/complaints.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
 import { noticesRouter } from "./modules/notices/notices.routes";
 import { notesRouter } from "./modules/notes/notes.routes";
@@ -59,6 +60,7 @@ export function createApp() {
   app.use("/api/assignments", assignmentsRouter);
   app.use("/api/ratings", ratingsRouter);
   app.use("/api/feedback", feedbackRouter);
+  app.use("/api/complaints", complaintsRouter);
   app.use("/api/exams", examsRouter);
   app.use("/api/fees", feesRouter);
   app.use("/api/expenses", expensesRouter);

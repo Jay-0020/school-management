@@ -4,6 +4,7 @@ import { ToastViewport } from "./components/ToastViewport";
 import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { AttendancePage } from "./pages/AttendancePage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
+import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ExamsPage } from "./pages/ExamsPage";
 import { ExpensesPage } from "./pages/ExpensesPage";
@@ -171,6 +172,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "DEAN"]}>
             <ExpensesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/complaints"
+        element={
+          <ProtectedRoute roles={["STUDENT", "TEACHER", "PARENT", "DEAN", "SUPER_ADMIN"]}>
+            <ComplaintsPage />
           </ProtectedRoute>
         }
       />

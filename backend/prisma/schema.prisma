@@ -145,6 +145,7 @@ model Teacher {
   settlements     Settlement[]
   teachingAssignments TeachingAssignment[]
   ratingsReceived TeacherRating[]
+  complaintsAbout Complaint[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -398,6 +399,32 @@ model StudentFeedback {
   createdAt DateTime            @default(now())
 
   @@index([studentId])
+}
+
+// ── Complaints about staff (Dean + Super-Admin only; anonymity supported) ────
+enum ComplaintStatus {
+  OPEN
+  RESOLVED
+}
+
+model Complaint {
+  id             String          @id @default(cuid())
+  aboutStaff     Teacher         @relation(fields: [aboutStaffId], references: [id], onDelete: Cascade)
+  aboutStaffId   String
+  // Identity is only stored for NON-anonymous complaints; null when anonymous.
+  filedById      String?
+  filedByLabel   String? // e.g. "Parent" / "Teacher" — null when anonymous
+  anonymous      Boolean         @default(false)
+  category       String // Behaviour / Teaching quality / Misconduct / Other
+  message        String
+  status         ComplaintStatus @default(OPEN)
+  resolutionNote String?
+  resolvedById   String?
+  resolvedAt     DateTime?
+  createdAt      DateTime        @default(now())
+
+  @@index([aboutStaffId])
+  @@index([status])
 }
 
 model Homework {

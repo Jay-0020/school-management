@@ -27,9 +27,19 @@ each role through every page it can open) plus the **cross-role workflows**
 | Student | student@greenwood.demo | Pooja Bose, Grade 1-A |
 | Parent | parent@greenwood.demo | children: Pooja Bose, Diya Pillai |
 
+### How to log in and switch roles (do this yourself for every role change)
+1. Go to the URL. If the page is slow the first time, wait up to ~60s for it to wake.
+2. On the login screen, type the role's **email** into the Email field and
+   **`Demo@1234`** into the Password field, then click **Sign in / Log in**.
+3. To switch roles: click the **user avatar/menu in the top-right corner** →
+   **Log out**, then log in with the next role's email.
+4. You have the credentials for every role in the table above — log in and out on
+   your own as the cases require; do not ask the user to do it.
+
 **Heads-up:** Many cases **change data** (approvals, ratings, complaints, marking
 a student left, etc.) — that is expected on this demo. Follow the given order so
-multi-step chains line up.
+multi-step chains line up. Some actions may trigger a browser-agent confirmation
+prompt — proceed once approved.
 
 ---
 

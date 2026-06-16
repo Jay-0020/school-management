@@ -323,6 +323,8 @@ export interface Exam {
   classId: string;
   term: string | null;
   examDate: string | null;
+  startDate: string | null;
+  endDate: string | null;
   status: ExamStatus;
   class: { id: string; name: string };
   papers: ExamPaper[];

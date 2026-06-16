@@ -49,12 +49,18 @@ examsRouter.get(
   })
 );
 
-const createSchema = z.object({
-  name: z.string().min(1),
-  classId: z.string().min(1),
-  term: z.string().nullish(),
-  examDate: z.coerce.date().nullish(),
-});
+const createSchema = z
+  .object({
+    name: z.string().min(1),
+    classId: z.string().min(1),
+    term: z.string().nullish(),
+    startDate: z.coerce.date().nullish(),
+    endDate: z.coerce.date().nullish(),
+  })
+  .refine((d) => !d.startDate || !d.endDate || d.endDate >= d.startDate, {
+    message: "End date must be on or after start date",
+    path: ["endDate"],
+  });
 
 examsRouter.post(
   "/",
@@ -68,7 +74,8 @@ examsRouter.post(
         name: data.name,
         classId: data.classId,
         term: data.term ?? null,
-        examDate: data.examDate ?? null,
+        startDate: data.startDate ?? null,
+        endDate: data.endDate ?? null,
       },
       include: examInclude,
     });
@@ -128,6 +135,14 @@ examsRouter.post(
       where: { examId_subjectId: { examId: exam.id, subjectId: data.subjectId } },
     });
     if (dupe) throw ApiError.conflict("That subject is already in this exam");
+    if (data.date) {
+      if (
+        (exam.startDate && data.date < exam.startDate) ||
+        (exam.endDate && data.date > exam.endDate)
+      ) {
+        throw ApiError.badRequest("Subject date must fall within the exam's date range");
+      }
+    }
     const paper = await prisma.examPaper.create({
       data: {
         examId: exam.id,

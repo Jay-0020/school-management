@@ -292,13 +292,16 @@ Two refinements to Teaching Assignments:
   subject in the section in one click (individual subjects can still be changed
   afterward).
 
-## Update 10 — Exam datesheet (a date per subject)
+## Update 10 — Exam datesheet (date range + a date per subject)
 *Completed: 16 Jun 2026*
 
-Each subject in an exam can now have its **own exam date** (a datesheet —
-English on the 10th, Maths on the 12th, etc.). When setting up an exam's
-subjects there's a **date picker**, and the subjects table shows a **Date**
-column.
+- An exam now has a **start date and end date** (its exam period). The **+ New
+  exam** form has start/end pickers, and the exams list shows a **Dates** column
+  (start – end).
+- Each subject can have its **own exam date** within that range (a datesheet —
+  English on the 10th, Maths on the 12th, etc.). The subject's date picker is
+  **limited to the exam's start–end range** (enforced on the server too), and
+  the subjects table shows a **Date** column.
 
 ---
 

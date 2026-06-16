@@ -164,7 +164,7 @@ bullets([
   "Fees :: invoices, payments, paid / partial / pending.",
   "Payroll & Settlements :: payslips (PF/ESI/PT/TDS) and full-and-final settlements for leaving staff.",
   "Expenses :: fixed-category claims, approve / reject / mark paid.",
-  "Exams & Report Cards :: published exams with a per-subject datesheet (each subject's exam date); report cards export to PDF.",
+  "Exams & Report Cards :: exams have a start/end date range and a per-subject datesheet (each subject's date within that range); report cards export to PDF.",
   "Notices & Notifications :: announcements + in-app alerts (bell icon).",
 ]);
 

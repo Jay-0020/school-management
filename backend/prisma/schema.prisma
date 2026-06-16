@@ -623,6 +623,8 @@ model Exam {
   classId   String
   term      String? // e.g. "Term 1"
   examDate  DateTime?
+  startDate DateTime? // exam period start (subject dates fall within this range)
+  endDate   DateTime?
   status    ExamStatus  @default(DRAFT)
   papers    ExamPaper[]
   marks     Mark[]

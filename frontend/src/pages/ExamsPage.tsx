@@ -71,7 +71,7 @@ function StaffExams({ isAdmin }: { isAdmin: boolean }) {
       {data && data.length > 0 && (
         <table className="data-table">
           <thead>
-            <tr><th>Exam</th><th>Class</th><th>Term</th><th>Papers</th><th>Status</th></tr>
+            <tr><th>Exam</th><th>Class</th><th>Term</th><th>Dates</th><th>Papers</th><th>Status</th></tr>
           </thead>
           <tbody>
             {data.map((e) => (
@@ -79,6 +79,11 @@ function StaffExams({ isAdmin }: { isAdmin: boolean }) {
                 <td>{e.name}</td>
                 <td>{e.class.name}</td>
                 <td>{e.term ?? "—"}</td>
+                <td>
+                  {e.startDate
+                    ? `${new Date(e.startDate).toLocaleDateString()}${e.endDate ? " – " + new Date(e.endDate).toLocaleDateString() : ""}`
+                    : "—"}
+                </td>
                 <td>{e.papers.length}</td>
                 <td><span className={`status ${e.status === "PUBLISHED" ? "inv-paid" : "inv-pending"}`}>{e.status}</span></td>
               </tr>
@@ -97,11 +102,19 @@ function ExamModal({ classes, onClose }: { classes: ClassWithSections[]; onClose
   const [name, setName] = useState("");
   const [classId, setClassId] = useState(classes[0]?.id ?? "");
   const [term, setTerm] = useState("");
-  const [examDate, setExamDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
-    mutationFn: () => api.post("/exams", { name, classId, term: term || null, examDate: examDate || null }),
+    mutationFn: () =>
+      api.post("/exams", {
+        name,
+        classId,
+        term: term || null,
+        startDate: startDate || null,
+        endDate: endDate || null,
+      }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["exams"] }); toast.success("Exam created"); onClose(); },
     onError: (e) => setError(errMsg(e, "Could not create exam")),
   });
@@ -130,8 +143,11 @@ function ExamModal({ classes, onClose }: { classes: ClassWithSections[]; onClose
             <label>Term
               <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Term 1" />
             </label>
-            <label>Date
-              <input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
+            <label>Start date
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </label>
+            <label>End date
+              <input type="date" value={endDate} min={startDate || undefined} onChange={(e) => setEndDate(e.target.value)} />
             </label>
           </div>
           <div className="form-actions">
@@ -230,7 +246,15 @@ function ExamDetail({
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
-            <input type="date" value={paperDate} onChange={(e) => setPaperDate(e.target.value)} style={{ maxWidth: 160 }} title="Exam date for this subject" />
+            <input
+              type="date"
+              value={paperDate}
+              min={exam.startDate ? exam.startDate.slice(0, 10) : undefined}
+              max={exam.endDate ? exam.endDate.slice(0, 10) : undefined}
+              onChange={(e) => setPaperDate(e.target.value)}
+              style={{ maxWidth: 160 }}
+              title={exam.startDate ? "Pick a date within the exam range" : "Exam date for this subject"}
+            />
             <input type="number" value={maxMarks} onChange={(e) => setMaxMarks(e.target.value)} style={{ maxWidth: 100 }} placeholder="Max" />
             <input type="number" value={passMarks} onChange={(e) => setPassMarks(e.target.value)} style={{ maxWidth: 100 }} placeholder="Pass" />
             <button className="inline-btn" type="submit" disabled={!subjectId}>Add</button>

@@ -37,6 +37,8 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
 
   const groups = user ? navForRole(user.role) : [];
   const initials = (user?.email ?? "?").slice(0, 2).toUpperCase();
+  // Primary items for the mobile bottom tab bar (everything else lives behind "More").
+  const primary = groups.flatMap((g) => g.items).slice(0, 4);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -129,6 +131,20 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
         </header>
 
         <main className="content">{children}</main>
+
+        <nav className="bottom-nav">
+          {primary.map((item) => (
+            <NavLink key={item.path} to={item.path} end={item.path === "/"}
+              className={({ isActive }) => (isActive ? "active" : "")}>
+              <item.icon className="nav-icon" />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+          <button onClick={() => setNavOpen(true)}>
+            <IconMenu className="nav-icon" />
+            <span>More</span>
+          </button>
+        </nav>
       </div>
     </div>
   );

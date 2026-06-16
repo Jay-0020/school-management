@@ -96,7 +96,7 @@ export function StudentsPage() {
         )}
 
         {data && data.items.length > 0 && (
-          <table className="data-table">
+          <table className="data-table cards">
             <thead>
               <tr>
                 <th>Adm. No</th>
@@ -111,16 +111,16 @@ export function StudentsPage() {
             <tbody>
               {data.items.map((s) => (
                 <tr key={s.id}>
-                  <td>{s.admissionNo}</td>
-                  <td>
+                  <td data-label="Adm. No">{s.admissionNo}</td>
+                  <td data-label="Name">
                     {s.firstName} {s.lastName}
                   </td>
-                  <td>
+                  <td data-label="Class · Section">
                     {s.section ? `${s.section.class.name} · ${s.section.name}` : "—"}
                   </td>
-                  <td>{s.guardianName ?? "—"}</td>
-                  <td>{s.parent?.email ?? <span className="muted">—</span>}</td>
-                  <td>
+                  <td data-label="Guardian">{s.guardianName ?? "—"}</td>
+                  <td data-label="Parent">{s.parent?.email ?? <span className="muted">—</span>}</td>
+                  <td data-label="Status">
                     <span className={`status status-${s.status.toLowerCase()}`}>
                       {s.status}
                     </span>

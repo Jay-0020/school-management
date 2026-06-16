@@ -254,7 +254,7 @@ function InvoicesTab({ manager }: { manager: boolean }) {
       {data && data.length === 0 && <p className="muted">No invoices.</p>}
 
       {data && data.length > 0 && (
-        <table className="data-table">
+        <table className="data-table cards">
           <thead>
             <tr>
               {manager && <th>Student</th>}
@@ -274,17 +274,17 @@ function InvoicesTab({ manager }: { manager: boolean }) {
                 onClick={() => setOpenId(inv.id)}
               >
                 {manager && (
-                  <td>
+                  <td data-label="Student">
                     {inv.student?.firstName} {inv.student?.lastName}
                     <span className="muted"> ({inv.student?.admissionNo})</span>
                   </td>
                 )}
-                <td>{inv.title}</td>
-                <td>{money(inv.total)}</td>
-                <td>{money(inv.amountPaid)}</td>
-                <td>{money(inv.total - inv.amountPaid)}</td>
-                <td>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}</td>
-                <td>
+                <td data-label="Title">{inv.title}</td>
+                <td data-label="Total">{money(inv.total)}</td>
+                <td data-label="Paid">{money(inv.amountPaid)}</td>
+                <td data-label="Balance">{money(inv.total - inv.amountPaid)}</td>
+                <td data-label="Due">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}</td>
+                <td data-label="Status">
                   <span className={`status inv-${inv.status.toLowerCase()}`}>{inv.status}</span>
                 </td>
               </tr>

@@ -1727,3 +1727,110 @@ tr.clickable:hover td {
 .assign-tools { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; margin: 8px 0 18px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
 .assign-tool { display: flex; align-items: center; gap: 8px; }
 .assign-tool select, .assign-tool input { width: auto; min-width: 180px; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   MOBILE PASS — app-like nav, sheet modals, card tables, touch targets
+   (friendly & rounded). Appended last so it wins the cascade.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Bottom tab bar — phones only */
+.bottom-nav { display: none; }
+@media (max-width: 900px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 38;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.07);
+  }
+  .bottom-nav a,
+  .bottom-nav button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 5px 2px;
+    border: none;
+    background: none;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    min-width: 0;
+  }
+  .bottom-nav a span,
+  .bottom-nav button span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bottom-nav a.active { color: var(--primary); }
+  .bottom-nav a.active .nav-icon { transform: translateY(-1px); }
+  .bottom-nav .nav-icon { width: 22px; height: 22px; }
+  /* room above the bar so content isn't hidden behind it */
+  .content { padding-bottom: 92px; }
+}
+
+@media (max-width: 640px) {
+  /* Bottom-sheet modals */
+  .modal-overlay { place-items: end center; padding: 0; }
+  .modal {
+    max-width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 92vh;
+    padding: 20px 18px calc(22px + env(safe-area-inset-bottom, 0px));
+    animation: sheet-up 0.22s ease;
+  }
+  @keyframes sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  /* Stack page headers + make controls full-width */
+  .page-head { flex-direction: column; align-items: stretch; }
+  .page-head .controls { width: 100%; flex-wrap: wrap; }
+  .page-head .controls > * { flex: 1 1 auto; }
+
+  /* Comfortable touch targets */
+  .inline-btn,
+  input,
+  select,
+  textarea { min-height: 44px; }
+
+  /* Opt-in table → cards (add class "cards" + data-label on each <td>) */
+  .data-table.cards { display: block; overflow: visible; }
+  .data-table.cards thead { display: none; }
+  .data-table.cards tbody { display: block; }
+  .data-table.cards tr {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+  }
+  .data-table.cards tr.clickable:active { background: var(--surface-2); }
+  .data-table.cards td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 6px 0;
+    border: none;
+    text-align: right;
+  }
+  .data-table.cards td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-2);
+    text-align: left;
+    flex: 0 0 auto;
+  }
+  .data-table.cards td:empty { display: none; }
+}

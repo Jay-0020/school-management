@@ -60,7 +60,7 @@ export function TeachersPage() {
         )}
 
         {data && data.items.length > 0 && (
-          <table className="data-table">
+          <table className="data-table cards">
             <thead>
               <tr>
                 <th>Emp. No</th>
@@ -74,13 +74,13 @@ export function TeachersPage() {
             <tbody>
               {data.items.map((t) => (
                 <tr key={t.id}>
-                  <td>{t.employeeNo}</td>
-                  <td>
+                  <td data-label="Emp. No">{t.employeeNo}</td>
+                  <td data-label="Name">
                     {t.firstName} {t.lastName}
                   </td>
-                  <td>{STAFF_LABEL[t.staffType]}</td>
-                  <td>{t.phone ?? t.email ?? "—"}</td>
-                  <td>
+                  <td data-label="Type">{STAFF_LABEL[t.staffType]}</td>
+                  <td data-label="Contact">{t.phone ?? t.email ?? "—"}</td>
+                  <td data-label="Status">
                     <span className={`status status-${t.isActive ? "active" : "inactive"}`}>
                       {t.isActive ? "ACTIVE" : "INACTIVE"}
                     </span>

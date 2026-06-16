@@ -76,7 +76,7 @@ export function UsersPage() {
         {isLoading && <p className="muted">Loading…</p>}
 
         {data && data.length > 0 && (
-          <table className="data-table">
+          <table className="data-table cards">
             <thead>
               <tr>
                 <th>Email</th>
@@ -91,19 +91,19 @@ export function UsersPage() {
             <tbody>
               {data.map((u) => (
                 <tr key={u.id}>
-                  <td>
+                  <td data-label="Email">
                     {u.email}
                     {u.id === me?.id && <span className="muted"> (you)</span>}
                   </td>
-                  <td>
+                  <td data-label="Role">
                     <span className="badge">{u.role}</span>
                   </td>
-                  <td>{linkedLabel(u)}</td>
-                  <td title="Casual / Sick">
+                  <td data-label="Linked to">{linkedLabel(u)}</td>
+                  <td data-label="Leave/yr" title="Casual / Sick">
                     {u.casualQuota}/{u.sickQuota}
                   </td>
-                  <td>{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "—"}</td>
-                  <td>
+                  <td data-label="Last login">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "—"}</td>
+                  <td data-label="Status">
                     <span className={`status status-${u.isActive ? "active" : "inactive"}`}>
                       {u.isActive ? "ACTIVE" : "INACTIVE"}
                     </span>

@@ -52,7 +52,7 @@ export function AuditLogPage() {
       {data && data.items.length === 0 && <p className="muted">No activity recorded.</p>}
 
       {data && data.items.length > 0 && (
-        <table className="data-table">
+        <table className="data-table cards">
           <thead>
             <tr>
               <th>When</th>
@@ -64,13 +64,13 @@ export function AuditLogPage() {
           <tbody>
             {data.items.map((e) => (
               <tr key={e.id}>
-                <td style={{ whiteSpace: "nowrap" }}>{new Date(e.createdAt).toLocaleString()}</td>
-                <td>
+                <td data-label="When" style={{ whiteSpace: "nowrap" }}>{new Date(e.createdAt).toLocaleString()}</td>
+                <td data-label="Who">
                   {e.actorEmail ?? "—"}
                   {e.actorRole ? <span className="muted"> · {e.actorRole}</span> : null}
                 </td>
-                <td><code>{e.action}</code></td>
-                <td>{e.summary}</td>
+                <td data-label="Action"><code>{e.action}</code></td>
+                <td data-label="Details">{e.summary}</td>
               </tr>
             ))}
           </tbody>

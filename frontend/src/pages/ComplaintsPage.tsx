@@ -140,7 +140,7 @@ function ComplaintsList() {
       {isLoading && <SkeletonRows />}
       {data && data.length === 0 && <p className="muted">No complaints.</p>}
       {data && data.length > 0 && (
-        <table className="data-table">
+        <table className="data-table cards">
           <thead>
             <tr>
               <th>About</th>
@@ -152,10 +152,10 @@ function ComplaintsList() {
           <tbody>
             {data.map((c) => (
               <tr key={c.id} className="clickable" onClick={() => setOpen(c)}>
-                <td>{c.aboutStaff}</td>
-                <td>{c.category}</td>
-                <td>{c.filedBy}</td>
-                <td>
+                <td data-label="About">{c.aboutStaff}</td>
+                <td data-label="Category">{c.category}</td>
+                <td data-label="Filed by">{c.filedBy}</td>
+                <td data-label="Status">
                   <span className={`status ${c.status === "OPEN" ? "inv-pending" : "inv-paid"}`}>
                     {c.status}
                   </span>

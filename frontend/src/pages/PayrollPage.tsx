@@ -79,7 +79,7 @@ function StructuresTab() {
       {data && data.length === 0 && <p className="muted">No active staff.</p>}
 
       {data && data.length > 0 && (
-        <table className="data-table">
+        <table className="data-table cards">
           <thead>
             <tr>
               <th>Emp. No</th>
@@ -95,13 +95,13 @@ function StructuresTab() {
               const p = s.salaryStructure ? preview(s.salaryStructure) : null;
               return (
                 <tr key={s.id}>
-                  <td>{s.employeeNo}</td>
-                  <td>
+                  <td data-label="Emp. No">{s.employeeNo}</td>
+                  <td data-label="Name">
                     {s.firstName} {s.lastName}
                   </td>
-                  <td>{s.salaryStructure ? money(s.salaryStructure.basic) : "—"}</td>
-                  <td>{p ? money(p.gross) : "—"}</td>
-                  <td>{p ? money(p.net) : "—"}</td>
+                  <td data-label="Basic">{s.salaryStructure ? money(s.salaryStructure.basic) : "—"}</td>
+                  <td data-label="Gross">{p ? money(p.gross) : "—"}</td>
+                  <td data-label="Net">{p ? money(p.net) : "—"}</td>
                   <td>
                     <button className="link" onClick={() => setEditing(s)}>
                       {s.salaryStructure ? "Edit" : "Set"}

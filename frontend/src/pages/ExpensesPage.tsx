@@ -100,7 +100,7 @@ export function ExpensesPage() {
         )}
 
         {data && data.length > 0 && (
-          <table className="data-table">
+          <table className="data-table cards">
             <thead>
               <tr>
                 <th>Category</th>
@@ -113,15 +113,15 @@ export function ExpensesPage() {
             <tbody>
               {data.map((e) => (
                 <tr key={e.id} className="clickable" onClick={() => setOpenId(e.id)}>
-                  <td>{e.category}</td>
-                  <td>{money(e.amount)}</td>
-                  {isManager && <td>{e.submittedBy?.email ?? "—"}</td>}
-                  <td>
+                  <td data-label="Category">{e.category}</td>
+                  <td data-label="Amount">{money(e.amount)}</td>
+                  {isManager && <td data-label="Submitted by">{e.submittedBy?.email ?? "—"}</td>}
+                  <td data-label="Date">
                     {e.expenseDate
                       ? new Date(e.expenseDate).toLocaleDateString()
                       : new Date(e.createdAt).toLocaleDateString()}
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <span className={`status ${statusClass[e.status]}`}>{e.status}</span>
                   </td>
                 </tr>

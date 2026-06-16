@@ -69,23 +69,23 @@ function StaffExams({ isAdmin }: { isAdmin: boolean }) {
         <EmptyState icon={IconBook} title="No exams yet" hint="Create an exam, add subject papers, then enter marks." />
       )}
       {data && data.length > 0 && (
-        <table className="data-table">
+        <table className="data-table cards">
           <thead>
             <tr><th>Exam</th><th>Class</th><th>Term</th><th>Dates</th><th>Papers</th><th>Status</th></tr>
           </thead>
           <tbody>
             {data.map((e) => (
               <tr key={e.id} className="clickable" onClick={() => setOpenExam(e)}>
-                <td>{e.name}</td>
-                <td>{e.class.name}</td>
-                <td>{e.term ?? "—"}</td>
-                <td>
+                <td data-label="Exam">{e.name}</td>
+                <td data-label="Class">{e.class.name}</td>
+                <td data-label="Term">{e.term ?? "—"}</td>
+                <td data-label="Dates">
                   {e.startDate
                     ? `${new Date(e.startDate).toLocaleDateString()}${e.endDate ? " – " + new Date(e.endDate).toLocaleDateString() : ""}`
                     : "—"}
                 </td>
-                <td>{e.papers.length}</td>
-                <td><span className={`status ${e.status === "PUBLISHED" ? "inv-paid" : "inv-pending"}`}>{e.status}</span></td>
+                <td data-label="Papers">{e.papers.length}</td>
+                <td data-label="Status"><span className={`status ${e.status === "PUBLISHED" ? "inv-paid" : "inv-pending"}`}>{e.status}</span></td>
               </tr>
             ))}
           </tbody>

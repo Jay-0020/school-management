@@ -68,7 +68,7 @@ export function SettlementsPage() {
       )}
 
       {data && data.length > 0 && (
-        <table className="data-table">
+        <table className="data-table cards">
           <thead>
             <tr>
               <th>Staff</th>
@@ -80,13 +80,13 @@ export function SettlementsPage() {
           <tbody>
             {data.map((s) => (
               <tr key={s.id} className="clickable" onClick={() => setOpenId(s.id)}>
-                <td>
+                <td data-label="Staff">
                   {s.teacher.firstName} {s.teacher.lastName}
                   <span className="muted"> · {s.teacher.employeeNo}</span>
                 </td>
-                <td>{s.lastWorkingDay ? new Date(s.lastWorkingDay).toLocaleDateString() : "—"}</td>
-                <td>{money(s.netPayable)}</td>
-                <td>
+                <td data-label="Last working day">{s.lastWorkingDay ? new Date(s.lastWorkingDay).toLocaleDateString() : "—"}</td>
+                <td data-label="Net payable">{money(s.netPayable)}</td>
+                <td data-label="Status">
                   <span className={`status ${statusClass[s.status]}`}>{s.status}</span>
                 </td>
               </tr>

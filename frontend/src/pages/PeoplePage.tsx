@@ -122,7 +122,7 @@ export function PeoplePage() {
       </div>
 
       {!isLoading && (tab === "students" || !showStaff) && (
-        <table className="data-table">
+        <table className="data-table cards">
           <thead>
             <tr>
               <th>Adm. No</th>
@@ -134,10 +134,10 @@ export function PeoplePage() {
           <tbody>
             {students.map((s) => (
               <tr key={s.id} className="clickable" onClick={() => setOpenId(s.id)}>
-                <td>{s.admissionNo}</td>
-                <td>{s.name}</td>
-                <td>{s.className}</td>
-                <td>
+                <td data-label="Adm. No">{s.admissionNo}</td>
+                <td data-label="Name">{s.name}</td>
+                <td data-label="Class · Section">{s.className}</td>
+                <td data-label="Attendance">
                   {s.attendancePercent === null ? (
                     <span className="muted">—</span>
                   ) : (
@@ -153,7 +153,7 @@ export function PeoplePage() {
       )}
 
       {!isLoading && showStaff && tab === "staff" && (
-        <table className="data-table">
+        <table className="data-table cards">
           <thead>
             <tr>
               <th>Emp. No</th>
@@ -164,9 +164,9 @@ export function PeoplePage() {
           <tbody>
             {staff.map((s) => (
               <tr key={s.id}>
-                <td>{s.employeeNo}</td>
-                <td>{s.name}</td>
-                <td>{s.staffType === "TEACHING" ? "Teaching" : "Non-teaching"}</td>
+                <td data-label="Emp. No">{s.employeeNo}</td>
+                <td data-label="Name">{s.name}</td>
+                <td data-label="Type">{s.staffType === "TEACHING" ? "Teaching" : "Non-teaching"}</td>
               </tr>
             ))}
           </tbody>

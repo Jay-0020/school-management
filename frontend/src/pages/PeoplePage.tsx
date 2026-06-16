@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { SkeletonRows } from "../components/EmptyState";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "../lib/toast";
 import type { AttendanceYear, PeopleDirectory, ProfileMe } from "../lib/types";
 
 export function PeoplePage() {
@@ -267,6 +268,7 @@ function FeedbackSection({ studentId }: { studentId: string }) {
     onSuccess: () => {
       setMessage("");
       qc.invalidateQueries({ queryKey: ["student-feedback", studentId] });
+      toast.success(type === "COMMENDATION" ? "👏 Commendation sent to the parents!" : "Feedback added");
     },
   });
 

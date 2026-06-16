@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
 import { Donut } from "./charts";
+import { CountUp } from "./CountUp";
 import type { FinanceOverview as Fin } from "../lib/types";
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -15,10 +16,10 @@ export function FinanceOverview() {
   if (!data) return null;
 
   const cards = [
-    { key: "fees", label: "Student fees pending", value: inr(data.feesPending) },
-    { key: "staffpay", label: "Staff payments pending", value: inr(data.staffPaymentsPending) },
-    { key: "salary", label: "Salary paid to date", value: inr(data.salaryPaidToDate) },
-    { key: "exp", label: "Total expenditure", value: inr(data.totalExpenditure) },
+    { key: "fees", label: "Student fees pending", value: data.feesPending },
+    { key: "staffpay", label: "Staff payments pending", value: data.staffPaymentsPending },
+    { key: "salary", label: "Salary paid to date", value: data.salaryPaidToDate },
+    { key: "exp", label: "Total expenditure", value: data.totalExpenditure },
   ];
 
   return (
@@ -28,7 +29,7 @@ export function FinanceOverview() {
         {cards.map((c) => (
           <div className="stat-card" key={c.key}>
             <div className="stat-label">{c.label}</div>
-            <div className="stat-value">{c.value}</div>
+            <div className="stat-value"><CountUp value={c.value} format={inr} /></div>
           </div>
         ))}
       </div>

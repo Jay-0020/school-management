@@ -1915,3 +1915,16 @@ tr.clickable:hover td {
 /* dashboard row that puts a chart beside numbers */
 .chart-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
 .chart-row .stat-grid { flex: 1 1 260px; }
+
+/* ── Micro-interactions ───────────────────────────────────────────────────── */
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.stat-card, .widget, .panel { animation: pop-in 0.28s ease both; }
+
+/* Friendly gradient avatar */
+.avatar {
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #ec4899)) !important;
+  color: #fff !important;
+}

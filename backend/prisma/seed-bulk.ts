@@ -62,6 +62,14 @@ const monthStr = (back: number) => {
 
 async function wipe() {
   console.log("Wiping existing data (keeping SchoolSettings)…");
+  // New modules first (they FK to teacher/student/user/section/subject).
+  await prisma.teacherRating.deleteMany();
+  await prisma.studentFeedback.deleteMany();
+  await prisma.complaint.deleteMany();
+  await prisma.teachingAssignment.deleteMany();
+  await prisma.settlement.deleteMany();
+  await prisma.staffAttendance.deleteMany();
+  await prisma.holiday.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.mark.deleteMany();
   await prisma.examPaper.deleteMany();

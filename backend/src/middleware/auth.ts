@@ -27,13 +27,13 @@ export function signToken(payload: AuthPayload): string {
   return jwt.sign(payload, env.JWT_SECRET, options);
 }
 
-/** Requires a valid Bearer token; populates req.user. */
+/** Requires a valid token; populates req.user.
+ *  Prefers the httpOnly cookie (browser); falls back to a Bearer header (API/CLI). */
 export function authenticate(req: Request, _res: Response, next: NextFunction) {
   const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
-    throw ApiError.unauthorized("Missing bearer token");
-  }
-  const token = header.slice("Bearer ".length);
+  const cookieToken = (req as { cookies?: Record<string, string> }).cookies?.token;
+  const token = header?.startsWith("Bearer ") ? header.slice("Bearer ".length) : cookieToken;
+  if (!token) throw ApiError.unauthorized("Missing authentication");
   try {
     req.user = jwt.verify(token, env.JWT_SECRET) as AuthPayload;
     next();

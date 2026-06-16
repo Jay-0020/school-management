@@ -1,39 +1,29 @@
 import axios from "axios";
 import { toast } from "../lib/toast";
 
-const TOKEN_KEY = "smp_token";
-
+// Auth is carried by an httpOnly session cookie (set by the server on login),
+// so the browser sends it automatically — nothing is stored in JS/localStorage.
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api",
+  withCredentials: true,
 });
 
-// Attach the bearer token to every request.
-api.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-// On 401, drop the token so the app falls back to the login screen.
-// Surface unexpected failures (network / server) as a toast; leave 4xx
-// (validation, conflicts) to the components that show inline messages.
+// On 401 (expired/absent session) bounce to login — except for the auth probes
+// themselves, so we don't loop on the login screen or the initial /me check.
+// Surface network/server failures as a toast; leave 4xx to the components.
 api.interceptors.response.use(
   (res) => res,
   (error) => {
     const status = error?.response?.status;
-    if (status === 401) clearToken();
-    else if (!error?.response) toast.error("Network error — check your connection");
-    else if (status >= 500) toast.error("Something went wrong. Please try again.");
+    const url: string = error?.config?.url ?? "";
+    const isAuthProbe = url.includes("/auth/login") || url.includes("/auth/me");
+    if (status === 401 && !isAuthProbe) {
+      if (window.location.pathname !== "/login") window.location.href = "/login";
+    } else if (!error?.response) {
+      toast.error("Network error — check your connection");
+    } else if (status >= 500) {
+      toast.error("Something went wrong. Please try again.");
+    }
     return Promise.reject(error);
   }
 );
-
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
-}
-export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
-}
-export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-}

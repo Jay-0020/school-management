@@ -4,8 +4,19 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, signToken } from "../../middleware/auth";
+import { isProd } from "../../config/env";
 
 export const authRouter = Router();
+
+// httpOnly session cookie — not readable by JavaScript (mitigates token theft via XSS).
+const COOKIE_NAME = "token";
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProd, // HTTPS only in production
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days, matches JWT expiry
+};
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -29,8 +40,9 @@ authRouter.post(
     });
 
     const token = signToken({ sub: user.id, role: user.role, email: user.email });
+    // Token goes in the httpOnly cookie, not the response body.
+    res.cookie(COOKIE_NAME, token, cookieOptions);
     res.json({
-      token,
       user: {
         id: user.id,
         email: user.email,
@@ -40,6 +52,11 @@ authRouter.post(
     });
   })
 );
+
+authRouter.post("/logout", (_req, res) => {
+  res.clearCookie(COOKIE_NAME, { httpOnly: true, secure: isProd, sameSite: "lax", path: "/" });
+  res.json({ ok: true });
+});
 
 authRouter.get(
   "/me",

@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -50,12 +51,25 @@ export function createApp() {
   );
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
   app.use(express.json({ limit: "1mb" }));
+  app.use(cookieParser());
   app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
 
-  // Basic abuse protection on auth endpoints
+  // Basic abuse protection across auth endpoints.
   app.use(
     "/api/auth",
     rateLimit({ windowMs: 15 * 60 * 1000, max: 50, standardHeaders: true })
+  );
+  // Strict brute-force guard on login: only FAILED attempts count, so a normal
+  // sign-in is unaffected but password-guessing is throttled hard.
+  app.use(
+    "/api/auth/login",
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 10,
+      skipSuccessfulRequests: true,
+      standardHeaders: true,
+      message: { error: "Too many login attempts — please try again in a few minutes." },
+    })
   );
 
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));

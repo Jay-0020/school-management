@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { api, clearToken, getToken, setToken } from "../api/client";
+import { api } from "../api/client";
 import type { User } from "../lib/types";
 
 interface AuthState {
@@ -22,30 +22,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session from an existing token on first load.
+  // Restore session from the httpOnly cookie on first load (no token in JS).
   useEffect(() => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
-    }
     api
       .get<{ user: User }>("/auth/me")
       .then((res) => setUser(res.data.user))
-      .catch(() => clearToken())
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   async function login(email: string, password: string) {
-    const res = await api.post<{ token: string; user: User }>("/auth/login", {
-      email,
-      password,
-    });
-    setToken(res.data.token);
+    const res = await api.post<{ user: User }>("/auth/login", { email, password });
     setUser(res.data.user);
   }
 
   function logout() {
-    clearToken();
+    // Clear the server cookie; drop local state regardless.
+    api.post("/auth/logout").catch(() => {});
     setUser(null);
   }
 

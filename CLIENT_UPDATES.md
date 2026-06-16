@@ -303,6 +303,17 @@ Two refinements to Teaching Assignments:
   **limited to the exam's start–end range** (enforced on the server too), and
   the subjects table shows a **Date** column.
 
+## Update 11 — Security hardening (cookie auth + login rate limit)
+*Completed: 16 Jun 2026*
+
+Two hardening items before a real paying school:
+- **Session token moved to a secure `httpOnly` cookie** (instead of browser
+  storage) so a malicious script / XSS can't read or steal a logged-in session.
+  Login sets it, Logout clears it, and sessions restore automatically.
+- **Login is rate-limited** — 10 failed attempts per 15 minutes per device →
+  then temporarily blocked, throttling password-guessing. A normal sign-in is
+  unaffected (only failed attempts count).
+
 ---
 
 🎉 **All 14 of the client's original requirements are now complete**, plus the

@@ -283,5 +283,8 @@ read feedback); any staff (post feedback/commendations); Dean+Super-Admin
 🎉 **All 14 of the client's original requirements are now complete**, plus the
 extra feedback/commendation/complaint features requested along the way.
 
-*Next: refresh the live demo with the new modules + sample data, and update the
-demo guide.*
+**Live demo refreshed (16 Jun 2026):** all the new modules are deployed and
+populated on the live demo — https://school-demo-nnfb.onrender.com — with
+sample teaching assignments, ratings, feedback, a commendation and a complaint.
+Logins (all `Demo@1234`): superadmin@ / admin@ / dean@ / accountant@ / teacher@
+/ student@ / parent@greenwood.demo. The demo-guide PDF is updated to match.

@@ -20,9 +20,12 @@ declare global {
   }
 }
 
-export function signToken(payload: AuthPayload): string {
+export function signToken(
+  payload: AuthPayload,
+  expiresIn: string = env.JWT_EXPIRES_IN
+): string {
   const options: jwt.SignOptions = {
-    expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"],
+    expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
   };
   return jwt.sign(payload, env.JWT_SECRET, options);
 }

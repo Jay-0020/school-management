@@ -328,6 +328,19 @@ payments, leave decisions, and complaint resolutions.
 search and date filtering. Gives accountability, dispute-resolution and an audit
 trail for student/financial records.
 
+## Update 13 — Refresh tokens (revocable, seamless sessions)
+*Completed: 16 Jun 2026*
+
+Logins now use a **short-lived access token (1 hour)** plus a **rotating refresh
+token (7 days)**, both in httpOnly cookies. The app **silently renews** the
+access token in the background, so users stay logged in with no interruption —
+but the gains are real:
+- A **stolen access token is only useful for up to an hour** (not a week).
+- **Sessions are revocable** — logout invalidates the refresh token server-side
+  (foundation for "force log-out everywhere").
+- Refresh tokens **rotate on every use**, so a stolen/replayed token is detected
+  and rejected.
+
 ---
 
 🎉 **All 14 of the client's original requirements are now complete**, plus the

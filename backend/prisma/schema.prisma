@@ -86,8 +86,23 @@ model User {
   staffAttendance   StaffAttendance[]
   ratingsGiven      TeacherRating[]
   feedbackAuthored  StudentFeedback[] @relation("FeedbackAuthor")
+  refreshTokens     RefreshToken[]
 
   @@index([role])
+}
+
+// ── Refresh tokens (rotating; enables short-lived access tokens + revocation) ─
+model RefreshToken {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  tokenHash String    @unique // sha256 of the raw token (raw lives only in the cookie)
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 // ── Academic structure ─────────────────────────────────────────────────────

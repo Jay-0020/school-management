@@ -7,7 +7,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 const LIVE_URL = "https://school-demo-nnfb.onrender.com";
-const OUT = join(homedir(), "Desktop", "School-Portal-Demo-Guide.pdf");
+const OUT = process.env.GUIDE_OUT || join(homedir(), "Desktop", "School-Portal-Demo-Guide.pdf");
 
 const INDIGO = "#4f46e5";
 const DARK = "#1e1b4b";

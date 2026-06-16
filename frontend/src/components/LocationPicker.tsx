@@ -74,6 +74,8 @@ export function LocationPicker({ latitude, longitude, radius, onChange }: Props)
     } else {
       markerRef.current.setLatLng(ll);
       circleRef.current!.setLatLng(ll).setRadius(radius);
+      // Keep the selected point centered when it changes (current-location / edits).
+      map.panTo(ll);
     }
   }, [latitude, longitude, radius]);
 

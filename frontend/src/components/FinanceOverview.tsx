@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
+import { Donut } from "./charts";
 import type { FinanceOverview as Fin } from "../lib/types";
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -33,16 +34,12 @@ export function FinanceOverview() {
       </div>
 
       {data.expenditureByCategory.length > 0 && (
-        <div style={{ marginTop: 14 }}>
-          <p className="muted" style={{ margin: "0 0 8px" }}>Expenditure by category</p>
-          <div className="mini-list">
-            {data.expenditureByCategory.map((c) => (
-              <div className="mini-row" key={c.category}>
-                <span className="mini-title">{c.category}</span>
-                <span className="mini-date">{inr(c.total)}</span>
-              </div>
-            ))}
-          </div>
+        <div style={{ marginTop: 16 }}>
+          <p className="muted" style={{ margin: "0 0 10px" }}>Expenditure by category</p>
+          <Donut
+            data={data.expenditureByCategory.map((c) => ({ label: c.category, value: c.total }))}
+            center={inr(data.totalExpenditure)}
+          />
         </div>
       )}
     </div>

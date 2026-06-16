@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
+import { Bars, Ring } from "./charts";
 
 interface MyRating {
   average: number | null;
@@ -22,8 +23,15 @@ export function MyRatingCard() {
     <div className="widget">
       <p className="widget-title">My rating</p>
       <div className="checkin-card">
+        {data.average != null ? (
+          <Ring value={data.average} max={5} size={96} label={`${data.average}`} color="#f5b301" />
+        ) : (
+          <div className="checkin-pct">—</div>
+        )}
         <div>
-          <div className="checkin-pct">{data.average != null ? `${data.average}★` : "—"}</div>
+          <div className="checkin-status">
+            <strong style={{ color: "var(--text)" }}>{data.average ?? "—"} / 5</strong> average
+          </div>
           <div className="checkin-status">
             {data.count} rating{data.count === 1 ? "" : "s"} from students &amp; parents
           </div>
@@ -54,6 +62,15 @@ export function TeacherPerformance() {
     <div className="widget">
       <p className="widget-title">Teacher performance</p>
       {data.teachers.length === 0 && <p className="muted">No ratings yet.</p>}
+      {data.teachers.length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <Bars
+            data={data.teachers.slice(0, 6).map((t) => ({ label: t.name, value: t.average }))}
+            max={5}
+            unit="★"
+          />
+        </div>
+      )}
       <div className="mini-list">
         {data.teachers.slice(0, 15).map((t) => (
           <div className="mini-row" key={t.teacherId}>

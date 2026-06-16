@@ -157,58 +157,61 @@ band("Feature Walkthrough", "What to try in each role");
 
 h2("Admin / Super Admin  —  runs the whole school");
 bullets([
-  "School Setup :: rebrand the school — name, logo, colour, contact, academic year (the white-label control).",
-  "Students :: browse all 600, search/filter, add or edit a student, view a full profile.",
-  "Staff & Teachers :: 100 staff records; assign class teachers; teaching vs non-teaching.",
-  "Classes & Sections :: 12 grades × 3 sections, each with a class teacher.",
-  "Fees :: fee structures per class, auto-generated invoices, record payments, paid / partial / pending.",
-  "Payroll :: salary structures and monthly payslips with PF, ESI, Professional Tax and TDS.",
-  "Expenses :: review and approve / reject / mark-paid expense claims.",
-  "Exams & Report Cards :: published Term-1 exams across all classes; report cards export to PDF.",
-  "Notices :: post announcements to everyone, students, staff, or one section.",
-  "Notes & Notifications :: moderate shared study material; in-app alerts via the bell icon.",
+  "School Setup :: branding, plus the campus location + radius (map) and the academic calendar (session dates, Saturday rule, holidays).",
+  "Students & Parents :: browse all 600, filter by grade/section, link a parent account, mark a student as left, edit admission date.",
+  "Teaching Assignments :: assign a teacher to each subject in each section.",
+  "Staff & Teachers :: 100 staff records; class teachers; teaching vs non-teaching.",
+  "Fees :: invoices, payments, paid / partial / pending.",
+  "Payroll & Settlements :: payslips (PF/ESI/PT/TDS) and full-and-final settlements for leaving staff.",
+  "Expenses :: fixed-category claims, approve / reject / mark paid.",
+  "Exams & Report Cards :: published exams; report cards export to PDF.",
+  "Notices & Notifications :: announcements + in-app alerts (bell icon).",
 ]);
 
-h2("Dean  —  oversight & approvals");
+h2("Dean  —  oversight, approvals & the people view");
 bullets([
-  "Leave approvals :: approve or reject staff leave (there are pending requests waiting).",
-  "Oversight :: view staff, students, attendance and notices across the school.",
-  "Hierarchy :: teacher leave flows up to the Dean — raise one as Teacher, then approve it here.",
+  "Financial overview :: fees pending, staff payments pending, salary paid to date, total expenditure (by category).",
+  "Enrolment :: new admissions vs students who left this session.",
+  "Teacher performance :: every teacher's average rating + comments from students & parents.",
+  "Approvals :: staff leave, expenses, and full-and-final settlements.",
+  "Complaints :: review and resolve complaints about staff (only the Dean sees these).",
+  "Calendar & people :: academic calendar, and filter all students/staff by grade/section.",
 ]);
 
 h2("Accountant  —  money");
 bullets([
   "Invoices & collection :: every student's fee invoice and outstanding balance.",
-  "Record payments :: take a payment (cash, UPI, bank transfer, card) against an invoice.",
-  "Dashboards :: paid vs partial vs pending at a glance (300 / 150 / 150 in the demo).",
-  "Expenses :: submit and track school expenses.",
+  "Record payments :: cash, UPI, bank transfer, card against an invoice.",
+  "Dashboards :: paid vs partial vs pending at a glance.",
+  "Expenses & settlements :: mark approved expenses and settlements as paid.",
 ]);
 
 h2("Teacher  —  day to day");
 bullets([
-  "Attendance :: mark daily attendance for the assigned section (Grade 1-A).",
-  "Homework :: assign homework with due dates and subjects.",
-  "Marks :: enter exam marks for students.",
-  "Notes :: upload and share study material with the class.",
-  "Leave :: apply for leave and see remaining quota (casual / sick / earned).",
+  "On-Campus check-in :: tap to mark attendance — only works inside the school geofence (from a phone).",
+  "My rating :: see your average rating from students & parents (anonymous) on the dashboard.",
+  "Student feedback :: open a student → add feedback or a commendation, and see their history.",
+  "Attendance, Homework, Marks, Notes :: mark class attendance, set homework, enter marks, share material.",
+  "Leave :: apply for casual / sick leave and see remaining quota.",
   "Payslips :: view own monthly payslips.",
 ]);
 
 h2("Student  —  self-service");
 bullets([
-  "Attendance :: own attendance record and percentage.",
-  "Report card :: view and download the Term-1 report card as a PDF.",
-  "Fees :: invoices and what's paid / due.",
-  "Homework & Notes :: assigned homework and class study material.",
-  "Notices :: announcements meant for students.",
+  "Rate your teachers :: give each of your teachers a 1–5★ rating + comment (anonymous).",
+  "Feedback :: read feedback and commendations your teachers have left for you.",
+  "Complaints :: raise a complaint about a staff member (optionally anonymous).",
+  "Attendance & report card :: your attendance %, and download your report card (PDF).",
+  "Fees, Homework & Notes :: dues, assigned homework, class material.",
 ]);
 
 h2("Parent  —  stay informed");
 bullets([
-  "Children :: this parent has 2 children in Grade 1-A — switch between them.",
-  "Attendance & report cards :: track each child and download report cards.",
-  "Fees :: each child's fee status and dues.",
-  "Notices :: school and student announcements.",
+  "Children :: this parent has 2 children in Grade 1-A — see them all in one account.",
+  "Feedback & commendations :: read teachers' feedback and 👏 commendations for each child.",
+  "Rate teachers :: rate your children's teachers (anonymous).",
+  "Complaints :: raise a complaint (optionally anonymous) — only the Dean sees it.",
+  "Attendance, report cards & fees :: track each child and download report cards.",
 ]);
 
 h2("Nice touches to point out");

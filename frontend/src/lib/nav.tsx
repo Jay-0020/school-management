@@ -149,6 +149,12 @@ export const NAV: NavGroup[] = [
         icon: IconSettings,
         roles: ["SUPER_ADMIN", "ADMIN", "DEAN"],
       },
+      {
+        label: "Activity Log",
+        path: "/audit",
+        icon: IconReceipt,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
     ],
   },
 ];

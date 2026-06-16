@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { audit } from "../../lib/audit";
 
 export const usersRouter = Router();
 
@@ -118,6 +119,7 @@ usersRouter.post(
 
     // Re-read so the response reflects the link that was just created.
     const user = await prisma.user.findUnique({ where: { id: userId }, select: userSelect });
+    audit(req, "user.create", `Created user ${user?.email} (${user?.role})`, { type: "User", id: user?.id });
     res.status(201).json(user);
   })
 );
@@ -136,6 +138,7 @@ usersRouter.post(
       where: { id: user.id },
       data: { passwordHash: await argon2.hash(newPassword), mustChangePassword: true },
     });
+    audit(req, "user.reset_password", `Reset password for ${user.email}`, { type: "User", id: user.id });
     res.json({ ok: true });
   })
 );
@@ -160,6 +163,7 @@ usersRouter.patch(
       data,
       select: userSelect,
     });
+    audit(req, "user.update", `Updated user ${exists.email}`, { type: "User", id: exists.id });
     res.json(user);
   })
 );
@@ -174,6 +178,7 @@ usersRouter.delete(
     if (!exists) throw ApiError.notFound("User not found");
     // Optional relations (teacher/student/notice) are set null on delete.
     await prisma.user.delete({ where: { id: req.params.id } });
+    audit(req, "user.delete", `Deleted user ${exists.email}`, { type: "User", id: exists.id });
     res.status(204).end();
   })
 );

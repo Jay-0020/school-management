@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit";
 import { env } from "./config/env";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 import { assignmentsRouter } from "./modules/assignments/assignments.routes";
+import { auditRouter } from "./modules/audit/audit.routes";
 import { attendanceRouter } from "./modules/attendance/attendance.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
@@ -36,6 +37,7 @@ import { usersRouter } from "./modules/users/users.routes";
 
 export function createApp() {
   const app = express();
+  app.set("trust proxy", 1); // behind Render's proxy — real client IP for logs/rate-limit
 
   // Allow images over https (OpenStreetMap map tiles + external school logos);
   // everything else keeps Helmet's secure defaults.
@@ -83,6 +85,7 @@ export function createApp() {
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/staff-attendance", staffAttendanceRouter);
   app.use("/api/assignments", assignmentsRouter);
+  app.use("/api/audit", auditRouter);
   app.use("/api/ratings", ratingsRouter);
   app.use("/api/feedback", feedbackRouter);
   app.use("/api/complaints", complaintsRouter);

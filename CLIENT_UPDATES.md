@@ -314,6 +314,20 @@ Two hardening items before a real paying school:
   then temporarily blocked, throttling password-guessing. A normal sign-in is
   unaffected (only failed attempts count).
 
+## Update 12 — Activity log (who did what, when)
+*Completed: 16 Jun 2026*
+
+An **append-only Activity Log** now records sensitive actions across the school
+and **can't be edited or deleted**. It captures **who** (email + role), the
+**action**, a readable **summary**, and the **time** for: logins, password
+changes/resets, user create/update/delete, student add/edit/left/reactivate,
+marks entry, exam publish, fee payments, expense and settlement approvals &
+payments, leave decisions, and complaint resolutions.
+
+**Admin / Super-Admin** view it under **Administration → Activity Log**, with
+search and date filtering. Gives accountability, dispute-resolution and an audit
+trail for student/financial records.
+
 ---
 
 🎉 **All 14 of the client's original requirements are now complete**, plus the

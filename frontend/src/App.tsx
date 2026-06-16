@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ToastViewport } from "./components/ToastViewport";
 import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { AttendancePage } from "./pages/AttendancePage";
+import { AuditLogPage } from "./pages/AuditLogPage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -188,6 +189,14 @@ export function App() {
         element={
           <ProtectedRoute roles={["STUDENT", "PARENT"]}>
             <FeedbackPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/audit"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}>
+            <AuditLogPage />
           </ProtectedRoute>
         }
       />

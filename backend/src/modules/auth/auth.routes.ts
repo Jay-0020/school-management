@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, signToken } from "../../middleware/auth";
 import { isProd } from "../../config/env";
+import { audit, logAudit } from "../../lib/audit";
 
 export const authRouter = Router();
 
@@ -42,6 +43,14 @@ authRouter.post(
     const token = signToken({ sub: user.id, role: user.role, email: user.email });
     // Token goes in the httpOnly cookie, not the response body.
     res.cookie(COOKIE_NAME, token, cookieOptions);
+    logAudit({
+      actorId: user.id,
+      actorEmail: user.email,
+      actorRole: user.role,
+      action: "auth.login",
+      summary: "Signed in",
+      ip: req.ip,
+    });
     res.json({
       user: {
         id: user.id,
@@ -102,6 +111,7 @@ authRouter.post(
         mustChangePassword: false,
       },
     });
+    audit(req, "auth.password_change", "Changed their password");
     res.json({ ok: true });
   })
 );

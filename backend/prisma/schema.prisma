@@ -689,3 +689,23 @@ model Note {
 
   @@index([sectionId, status])
 }
+
+// ── Audit log (append-only: who did what, when) ──────────────────────────────
+// Actor identity is snapshotted (email/role) so entries stay meaningful even if
+// the user is later removed. No relation/cascade — the log must never be mutated.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorEmail String?
+  actorRole  Role?
+  action     String // e.g. "auth.login", "expense.approve", "marks.update"
+  entityType String?
+  entityId   String?
+  summary    String // human-readable line
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([entityType, entityId])
+}

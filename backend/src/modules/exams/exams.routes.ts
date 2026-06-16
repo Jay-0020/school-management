@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { streamPdf, field, table } from "../../lib/pdf";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { audit } from "../../lib/audit";
 
 export const examsRouter = Router();
 
@@ -103,6 +104,7 @@ examsRouter.patch(
       data: { status: data.status },
       include: examInclude,
     });
+    audit(req, "exam.publish", `${data.status === "PUBLISHED" ? "Published" : "Unpublished"} exam "${exam.name}" (${exam.class.name})`, { type: "Exam", id: exam.id });
     res.json(exam);
   })
 );
@@ -234,6 +236,7 @@ examsRouter.post(
         })
       )
     );
+    audit(req, "marks.update", `Entered marks for ${entries.length} student(s)`, { type: "ExamPaper", id: paperId });
     res.json({ saved: entries.length });
   })
 );

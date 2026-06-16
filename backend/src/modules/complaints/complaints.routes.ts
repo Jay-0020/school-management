@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { audit } from "../../lib/audit";
 
 export const complaintsRouter = Router();
 
@@ -147,6 +148,7 @@ complaintsRouter.post(
       where: { id: req.params.id },
       data: { status: "RESOLVED", resolutionNote: note ?? null, resolvedById: req.user!.sub, resolvedAt: new Date() },
     });
+    audit(req, "complaint.resolve", `Resolved a complaint (${exists.category})`, { type: "Complaint", id: exists.id });
     res.json({ ok: true, status: updated.status });
   })
 );

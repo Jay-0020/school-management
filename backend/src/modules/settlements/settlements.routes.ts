@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { audit } from "../../lib/audit";
 
 export const settlementsRouter = Router();
 
@@ -139,6 +140,7 @@ settlementsRouter.post(
     if (decision === "APPROVED") {
       await prisma.teacher.update({ where: { id: settlement.teacherId }, data: { isActive: false } });
     }
+    audit(req, `settlement.${decision.toLowerCase()}`, `${decision === "APPROVED" ? "Approved" : "Rejected"} settlement — net ₹${settlement.netPayable.toLocaleString("en-IN")}`, { type: "Settlement", id: settlement.id });
     res.json(updated);
   })
 );
@@ -158,6 +160,7 @@ settlementsRouter.post(
       data: { status: "PAID", paidAt: new Date() },
       include,
     });
+    audit(req, "settlement.pay", `Paid settlement — net ₹${settlement.netPayable.toLocaleString("en-IN")}`, { type: "Settlement", id: settlement.id });
     res.json(updated);
   })
 );

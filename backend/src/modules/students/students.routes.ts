@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { audit } from "../../lib/audit";
 
 export const studentsRouter = Router();
 
@@ -86,6 +87,7 @@ studentsRouter.post(
     const student = await prisma.student.create({
       data: { ...data, admissionDate: data.admissionDate ?? new Date() },
     });
+    audit(req, "student.create", `Added student ${student.firstName} ${student.lastName} (${student.admissionNo})`, { type: "Student", id: student.id });
     res.status(201).json(student);
   })
 );
@@ -128,6 +130,7 @@ studentsRouter.patch(
       where: { id: req.params.id },
       data,
     });
+    audit(req, "student.update", `Updated student ${student.firstName} ${student.lastName}`, { type: "Student", id: student.id });
     res.json(student);
   })
 );
@@ -150,6 +153,7 @@ studentsRouter.post(
       where: { id: req.params.id },
       data: { status, leftAt: leftAt ?? new Date() },
     });
+    audit(req, "student.leave", `Marked ${student.firstName} ${student.lastName} as left (${status})`, { type: "Student", id: student.id });
     res.json(student);
   })
 );
@@ -164,6 +168,7 @@ studentsRouter.post(
       where: { id: req.params.id },
       data: { status: "ACTIVE", leftAt: null },
     });
+    audit(req, "student.reactivate", `Reactivated ${student.firstName} ${student.lastName}`, { type: "Student", id: student.id });
     res.json(student);
   })
 );

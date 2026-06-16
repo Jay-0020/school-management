@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { audit } from "../../lib/audit";
 
 export const expensesRouter = Router();
 
@@ -153,6 +154,7 @@ expensesRouter.post(
       },
       include,
     });
+    audit(req, `expense.${decision.toLowerCase()}`, `${decision === "APPROVED" ? "Approved" : "Rejected"} expense — ${expense.category} ₹${expense.amount.toLocaleString("en-IN")}`, { type: "Expense", id: expense.id });
 
     // Notify the submitter of the decision.
     if (expense.submittedById) {
@@ -184,6 +186,7 @@ expensesRouter.post(
       data: { status: "PAID", paidAt: new Date() },
       include,
     });
+    audit(req, "expense.pay", `Marked expense paid — ${expense.category} ₹${expense.amount.toLocaleString("en-IN")}`, { type: "Expense", id: expense.id });
     res.json(updated);
   })
 );

@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { notify, notifyMany } from "../../lib/notify";
 import { authenticate } from "../../middleware/auth";
+import { audit } from "../../lib/audit";
 
 export const leaveRouter = Router();
 
@@ -265,6 +266,7 @@ leaveRouter.post(
       },
       include,
     });
+    audit(req, `leave.${decision.toLowerCase()}`, `${decision === "APPROVED" ? "Approved" : "Rejected"} a leave request`, { type: "LeaveRequest", id: request.id });
 
     // Notify the applicant of the outcome.
     const range =

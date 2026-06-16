@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { streamPdf, field, table, inr } from "../../lib/pdf";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { audit } from "../../lib/audit";
 
 export const feesRouter = Router();
 
@@ -293,6 +294,7 @@ feesRouter.post(
     });
     await recomputeInvoice(invoice.id);
 
+    audit(req, "fee.payment", `Recorded payment ₹${data.amount.toLocaleString("en-IN")} (${data.method}) on invoice "${invoice.title}"`, { type: "Invoice", id: invoice.id });
     res.status(201).json(payment);
   })
 );

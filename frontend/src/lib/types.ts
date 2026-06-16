@@ -162,6 +162,19 @@ export interface SchoolSettings {
   geofenceRadius?: number | null;
 }
 
+export interface AuditLogEntry {
+  id: string;
+  actorId: string | null;
+  actorEmail: string | null;
+  actorRole: Role | null;
+  action: string;
+  entityType: string | null;
+  entityId: string | null;
+  summary: string;
+  ip: string | null;
+  createdAt: string;
+}
+
 export type SaturdayRule = "NONE" | "ALL" | "ALTERNATE";
 export interface SchoolCalendar {
   sessionStart: string | null;

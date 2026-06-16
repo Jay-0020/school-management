@@ -36,7 +36,18 @@ import { usersRouter } from "./modules/users/users.routes";
 export function createApp() {
   const app = express();
 
-  app.use(helmet());
+  // Allow images over https (OpenStreetMap map tiles + external school logos);
+  // everything else keeps Helmet's secure defaults.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+          "img-src": ["'self'", "data:", "https:"],
+        },
+      },
+    })
+  );
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
   app.use(express.json({ limit: "1mb" }));
   app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));

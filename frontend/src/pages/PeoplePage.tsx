@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
@@ -224,6 +224,9 @@ function StudentDetail({ id, onClose }: { id: string; onClose: () => void }) {
                 ))}
               </tbody>
             </table>
+
+            <FeedbackSection studentId={id} />
+
             <div className="form-actions">
               <button className="inline-btn ghost" onClick={onClose}>
                 Close
@@ -233,5 +236,89 @@ function StudentDetail({ id, onClose }: { id: string; onClose: () => void }) {
         )}
       </div>
     </div>
+  );
+}
+
+const FEEDBACK_CATEGORIES = ["Academics", "Behaviour", "Sports", "Discipline", "Other"];
+interface FeedbackEntry {
+  id: string;
+  type: "FEEDBACK" | "COMMENDATION";
+  category: string;
+  message: string;
+  author: string;
+  createdAt: string;
+}
+
+/** Staff: write feedback / commendations for a student + see the history. */
+function FeedbackSection({ studentId }: { studentId: string }) {
+  const qc = useQueryClient();
+  const [type, setType] = useState<"FEEDBACK" | "COMMENDATION">("FEEDBACK");
+  const [category, setCategory] = useState("Academics");
+  const [message, setMessage] = useState("");
+
+  const { data } = useQuery({
+    queryKey: ["student-feedback", studentId],
+    queryFn: async () =>
+      (await api.get<{ items: FeedbackEntry[] }>(`/feedback/student/${studentId}`)).data.items,
+  });
+
+  const add = useMutation({
+    mutationFn: () => api.post("/feedback", { studentId, type, category, message }),
+    onSuccess: () => {
+      setMessage("");
+      qc.invalidateQueries({ queryKey: ["student-feedback", studentId] });
+    },
+  });
+
+  return (
+    <>
+      <h4 className="section-title">Feedback &amp; commendations</h4>
+      <div className="form-grid">
+        <label>
+          Type
+          <select value={type} onChange={(e) => setType(e.target.value as typeof type)}>
+            <option value="FEEDBACK">Feedback (student-facing)</option>
+            <option value="COMMENDATION">Commendation (to parents)</option>
+          </select>
+        </label>
+        <label>
+          Category
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            {FEEDBACK_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <label className="stack-label">
+        Message
+        <textarea rows={2} value={message} onChange={(e) => setMessage(e.target.value)} />
+      </label>
+      <div className="form-actions" style={{ marginTop: 0 }}>
+        <button
+          className="inline-btn"
+          disabled={!message.trim() || add.isPending}
+          onClick={() => add.mutate()}
+        >
+          {add.isPending ? "Saving…" : "Add"}
+        </button>
+      </div>
+
+      <div className="mini-list" style={{ marginTop: 10 }}>
+        {data && data.length === 0 && <p className="muted">No feedback yet.</p>}
+        {data?.map((f) => (
+          <div className="mini-row" key={f.id}>
+            <span className="mini-title">
+              {f.type === "COMMENDATION" ? "👏 " : ""}
+              <strong>{f.category}</strong> — {f.message}{" "}
+              <span className="muted">· {f.author}</span>
+            </span>
+            <span className="mini-date">{new Date(f.createdAt).toLocaleDateString()}</span>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

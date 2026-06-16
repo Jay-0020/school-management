@@ -13,6 +13,15 @@ interface Rateable {
   myStars: number | null;
   myComment: string | null;
 }
+interface FeedbackItem {
+  id: string;
+  student: string;
+  type: "FEEDBACK" | "COMMENDATION";
+  category: string;
+  message: string;
+  author: string;
+  createdAt: string;
+}
 
 function Stars({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
@@ -39,6 +48,11 @@ export function FeedbackPage() {
     queryFn: async () => (await api.get<{ items: Rateable[] }>("/ratings/rateable")).data.items,
   });
 
+  const { data: feedback } = useQuery({
+    queryKey: ["my-feedback"],
+    queryFn: async () => (await api.get<{ items: FeedbackItem[] }>("/feedback/mine")).data.items,
+  });
+
   return (
     <AppShell title="Feedback">
       <h2>Rate your teachers</h2>
@@ -60,6 +74,32 @@ export function FeedbackPage() {
             t={t}
             onSaved={() => qc.invalidateQueries({ queryKey: ["rateable"] })}
           />
+        ))}
+      </div>
+
+      <h2 style={{ marginTop: 28 }}>Feedback &amp; commendations</h2>
+      {feedback && feedback.length === 0 && (
+        <p className="muted">No feedback from teachers yet.</p>
+      )}
+      <div className="rate-list">
+        {feedback?.map((f) => (
+          <div className="rate-card" key={f.id}>
+            <div className="rate-head">
+              <div>
+                {f.type === "COMMENDATION" ? (
+                  <span className="badge-ok">👏 Commendation</span>
+                ) : (
+                  <span className="badge">Feedback</span>
+                )}
+                {f.student && <span className="muted"> · {f.student}</span>}
+              </div>
+              <span className="muted inline">{new Date(f.createdAt).toLocaleDateString()}</span>
+            </div>
+            <p style={{ margin: "4px 0" }}>{f.message}</p>
+            <span className="muted inline">
+              {f.category} · by {f.author}
+            </span>
+          </div>
         ))}
       </div>
     </AppShell>

@@ -13,6 +13,7 @@ import { authRouter } from "./modules/auth/auth.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { examsRouter } from "./modules/exams/exams.routes";
 import { expensesRouter } from "./modules/expenses/expenses.routes";
+import { feedbackRouter } from "./modules/feedback/feedback.routes";
 import { leaveRouter } from "./modules/leave/leave.routes";
 import { profileRouter } from "./modules/profile/profile.routes";
 import { ratingsRouter } from "./modules/ratings/ratings.routes";
@@ -57,6 +58,7 @@ export function createApp() {
   app.use("/api/staff-attendance", staffAttendanceRouter);
   app.use("/api/assignments", assignmentsRouter);
   app.use("/api/ratings", ratingsRouter);
+  app.use("/api/feedback", feedbackRouter);
   app.use("/api/exams", examsRouter);
   app.use("/api/fees", feesRouter);
   app.use("/api/expenses", expensesRouter);

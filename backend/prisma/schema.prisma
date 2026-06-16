@@ -85,6 +85,7 @@ model User {
   uploadedNotes     Note[]
   staffAttendance   StaffAttendance[]
   ratingsGiven      TeacherRating[]
+  feedbackAuthored  StudentFeedback[] @relation("FeedbackAuthor")
 
   @@index([role])
 }
@@ -177,6 +178,7 @@ model Student {
   attendance    AttendanceRecord[]
   invoices      Invoice[]
   marks         Mark[]
+  feedback      StudentFeedback[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
@@ -376,6 +378,26 @@ model TeacherRating {
 
   @@unique([raterId, teacherId]) // one rating per person per teacher (editable)
   @@index([teacherId])
+}
+
+// ── Teacher → student feedback & commendations ───────────────────────────────
+enum StudentFeedbackType {
+  FEEDBACK     // general feedback, student-facing (parents see it too)
+  COMMENDATION // a positive highlight, surfaced to parents
+}
+
+model StudentFeedback {
+  id        String              @id @default(cuid())
+  student   Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  author    User?               @relation("FeedbackAuthor", fields: [authorId], references: [id])
+  authorId  String?
+  type      StudentFeedbackType @default(FEEDBACK)
+  category  String // Academics / Behaviour / Sports / Discipline / Other
+  message   String
+  createdAt DateTime            @default(now())
+
+  @@index([studentId])
 }
 
 model Homework {

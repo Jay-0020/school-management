@@ -224,27 +224,32 @@ bullets([
 
 // ── Updates ──────────────────────────────────────────────────────────────────
 doc.addPage();
-band("Updates", "Recently delivered — June 2026");
-para("The latest round of enhancements, built from school feedback:");
-bullets([
-  "Staff attendance :: geofenced \"On Campus\" check-in (phone GPS) + an academic calendar that sets working days, the Saturday rule and holidays.",
-  "Dean dashboard :: live financial overview (fees pending, staff payments pending, salary paid to date, total expenditure) and enrolment (new admissions vs students who left this session).",
-  "Expense approvals :: fixed expense categories; claims route to the Dean to approve, the accountant marks them paid.",
-  "Full & Final settlement :: compute and approve a leaving staff member's final dues (pending salary + bonus − deductions).",
-  "Teaching assignments :: assign a teacher to each subject in each section; Admins/Deans can add subjects, or assign one teacher to all subjects (primary classes).",
-  "Teacher ratings :: students & parents rate their teachers (anonymous, 1–5★); teachers see their average, the Dean sees a performance view.",
-  "Feedback & commendations :: staff post feedback or positive commendations on a student; the student and parents see them.",
-  "Complaints :: students, teachers and parents can report a staff member (optionally fully anonymous) — only the Dean sees and resolves them.",
-  "Exams :: each exam has a start–end date range, and every subject has its own date within it (a datesheet).",
-  "Parents & students :: one parent account now shows all of their children; leave is simplified to Casual / Sick.",
-]);
+band("Updates", "Change log");
 
-para("Security & data protection:");
+h2("16 June 2026 — latest");
+bullets([
+  "Exams :: each exam now has a start–end date range, and every subject has its own date within it (a datesheet).",
+  "Teaching assignments :: Admins/Deans can add subjects, and assign one teacher to all subjects of a class (for primary grades).",
+]);
+para("Security & data protection (16 June 2026):");
 bullets([
   "Secure sign-in :: the login session lives in a protected (httpOnly) cookie that scripts can't read, with short-lived access + auto-renewing sessions, so a stolen session can't be reused.",
   "Brute-force protection :: repeated wrong-password attempts are throttled.",
   "Activity log :: an append-only record of sensitive actions (logins, approvals, payments, grade entry, record changes) — who did what and when — for the Admin to review.",
   "Per-school isolation :: every school's data lives in its own database; passwords are strongly hashed; access is strictly role-based.",
+]);
+
+h2("Earlier — June 2026");
+bullets([
+  "Staff attendance :: geofenced \"On Campus\" check-in (phone GPS) + an academic calendar that sets working days, the Saturday rule and holidays.",
+  "Dean dashboard :: live financial overview (fees pending, staff payments pending, salary paid to date, total expenditure) and enrolment (new admissions vs students who left this session).",
+  "Expense approvals :: fixed expense categories; claims route to the Dean to approve, the accountant marks them paid.",
+  "Full & Final settlement :: compute and approve a leaving staff member's final dues (pending salary + bonus − deductions).",
+  "Teaching assignments :: assign a teacher to each subject in each section.",
+  "Teacher ratings :: students & parents rate their teachers (anonymous, 1–5★); teachers see their average, the Dean sees a performance view.",
+  "Feedback & commendations :: staff post feedback or positive commendations on a student; the student and parents see them.",
+  "Complaints :: students, teachers and parents can report a staff member (optionally fully anonymous) — only the Dean sees and resolves them.",
+  "Parents & students :: one parent account now shows all of their children; leave is simplified to Casual / Sick.",
 ]);
 
 // ── How to use the new features (step by step) ───────────────────────────────

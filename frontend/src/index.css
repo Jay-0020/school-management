@@ -1713,3 +1713,12 @@ tr.clickable:hover td {
 .settle-breakdown > div { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.92rem; color: var(--text-2); }
 .settle-net { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px !important; color: var(--text) !important; font-weight: 600; }
 .settle-net strong { color: var(--primary); font-size: 1.05rem; }
+
+/* ── Teacher rating (stars) ───────────────────────────────────────────────── */
+.rate-list { display: flex; flex-direction: column; gap: 12px; }
+.rate-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; background: var(--surface); }
+.rate-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.stars { display: inline-flex; gap: 2px; }
+.star { font-size: 1.5rem; line-height: 1; color: var(--border-strong); padding: 0 1px; }
+.star.on { color: #f5b301; }
+.rate-card textarea { margin-top: 4px; }

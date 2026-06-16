@@ -84,6 +84,7 @@ model User {
   notifications     Notification[]
   uploadedNotes     Note[]
   staffAttendance   StaffAttendance[]
+  ratingsGiven      TeacherRating[]
 
   @@index([role])
 }
@@ -142,6 +143,7 @@ model Teacher {
   payslips        Payslip[]
   settlements     Settlement[]
   teachingAssignments TeachingAssignment[]
+  ratingsReceived TeacherRating[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -357,6 +359,23 @@ model TeachingAssignment {
   @@unique([sectionId, subjectId]) // one teacher per subject per section
   @@index([teacherId])
   @@index([sectionId])
+}
+
+// ── Teacher ratings (students & parents rate their teachers; anonymous) ──────
+model TeacherRating {
+  id        String   @id @default(cuid())
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId String
+  rater     User     @relation(fields: [raterId], references: [id], onDelete: Cascade)
+  raterId   String
+  raterRole Role
+  stars     Int // 1–5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([raterId, teacherId]) // one rating per person per teacher (editable)
+  @@index([teacherId])
 }
 
 model Homework {

@@ -15,6 +15,7 @@ import { examsRouter } from "./modules/exams/exams.routes";
 import { expensesRouter } from "./modules/expenses/expenses.routes";
 import { leaveRouter } from "./modules/leave/leave.routes";
 import { profileRouter } from "./modules/profile/profile.routes";
+import { ratingsRouter } from "./modules/ratings/ratings.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
 import { noticesRouter } from "./modules/notices/notices.routes";
@@ -55,6 +56,7 @@ export function createApp() {
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/staff-attendance", staffAttendanceRouter);
   app.use("/api/assignments", assignmentsRouter);
+  app.use("/api/ratings", ratingsRouter);
   app.use("/api/exams", examsRouter);
   app.use("/api/fees", feesRouter);
   app.use("/api/expenses", expensesRouter);

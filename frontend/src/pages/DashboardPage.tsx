@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { EnrolmentOverview } from "../components/EnrolmentOverview";
 import { FinanceOverview } from "../components/FinanceOverview";
+import { MyRatingCard, TeacherPerformance } from "../components/RatingWidgets";
 import { SchoolCalendar } from "../components/SchoolCalendar";
 import { StaffAttendanceOverview, StaffCheckInCard } from "../components/StaffCheckIn";
 import { SkeletonStats } from "../components/EmptyState";
@@ -81,9 +82,13 @@ export function DashboardPage() {
 
       {isStaff && <StaffCheckInCard />}
 
+      {user.role === "TEACHER" && <MyRatingCard />}
+
       {isManager && <FinanceOverview />}
 
       {isManager && <EnrolmentOverview />}
+
+      {isManager && <TeacherPerformance />}
 
       <div className="dash-cols">
         <div className="widget">

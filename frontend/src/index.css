@@ -42,9 +42,9 @@
   --shadow-md: 0 4px 14px rgba(16, 24, 40, 0.08);
   --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.16);
 
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-lg: 16px;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
   --sidebar-w: 250px;
 }
 
@@ -1833,4 +1833,68 @@ tr.clickable:hover td {
     flex: 0 0 auto;
   }
   .data-table.cards td:empty { display: none; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   POLISH — friendly & rounded: gradient hero, soft card interactions,
+   friendlier empty states.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Cards feel tactile */
+.stat-card,
+.widget,
+.panel {
+  transition: box-shadow 0.16s ease, transform 0.12s ease, border-color 0.16s ease;
+}
+@media (hover: hover) {
+  .stat-card:hover,
+  .widget:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+.stat-value {
+  letter-spacing: -0.02em;
+}
+
+/* Gradient dashboard hero */
+.dash-hero {
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 76%, #ffffff));
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 24px 26px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-md);
+}
+.dash-hero h2 {
+  color: #fff;
+  margin: 0 0 4px;
+}
+.dash-hero .muted {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Friendly empty states */
+.empty-ico {
+  background: var(--primary-soft);
+  color: var(--primary);
+  width: 66px;
+  height: 66px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+}
+.empty-ico svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Tappable list rows */
+.data-table tr.clickable {
+  transition: background 0.12s ease;
+}
+@media (hover: hover) {
+  .data-table tr.clickable:hover {
+    background: var(--surface-2);
+  }
 }

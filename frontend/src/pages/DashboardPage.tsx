@@ -1,15 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import { api } from "../api/client";
-import { AdminHome } from "../components/AdminHome";
 import { AppShell } from "../components/AppShell";
-import { EnrolmentOverview } from "../components/EnrolmentOverview";
-import { FinanceOverview } from "../components/FinanceOverview";
-import { MyRatingCard, TeacherPerformance } from "../components/RatingWidgets";
-import { SchoolCalendar } from "../components/SchoolCalendar";
-import { StaffAttendanceOverview, StaffCheckInCard } from "../components/StaffCheckIn";
+import { RoleHome } from "../components/RoleHome";
 import { SkeletonStats } from "../components/EmptyState";
-import { IconBell } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import { useBranding } from "../context/BrandingContext";
 import { navForRole } from "../lib/nav";
@@ -28,9 +21,6 @@ interface NoticeBrief {
   createdAt: string;
 }
 
-const STAFF_ROLES = ["TEACHER", "DEAN", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"];
-const MANAGER_ROLES = ["DEAN", "ADMIN", "SUPER_ADMIN"];
-
 export function DashboardPage() {
   const { user } = useAuth();
   const { settings } = useBranding();
@@ -48,10 +38,6 @@ export function DashboardPage() {
 
   if (!user) return null;
 
-  const isStaff = STAFF_ROLES.includes(user.role);
-  const isManager = MANAGER_ROLES.includes(user.role);
-  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
-
   // Quick actions = the user's nav items (minus Dashboard itself).
   const actions = navForRole(user.role)
     .flatMap((g) => g.items)
@@ -68,75 +54,17 @@ export function DashboardPage() {
       </div>
 
       <div className="dash-stack">
-      {isAdmin && data ? (
-        <AdminHome stats={data.stats} notices={data.notices} actions={actions} />
-      ) : (
-        <>
-      {!data ? (
-        <SkeletonStats count={5} />
-      ) : (
-        <div className="stat-grid">
-          {data.stats.map((s) => (
-            <div className="stat-card" key={s.key}>
-              <div className="stat-label">{s.label}</div>
-              <div className="stat-value">{s.value}</div>
-              {s.hint && <div className="stat-hint">{s.hint}</div>}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {isStaff && <StaffCheckInCard />}
-
-      {user.role === "TEACHER" && <MyRatingCard />}
-
-      {isManager && <FinanceOverview />}
-
-      {isManager && <EnrolmentOverview />}
-
-      {isManager && <TeacherPerformance />}
-
-      <div className="dash-cols">
-        <div className="widget">
-          <p className="widget-title">Quick actions</p>
-          <div className="quick-actions">
-            {actions.map((a) => (
-              <Link className="quick-action" to={a.path} key={a.path}>
-                <a.icon className="nav-icon" />
-                {a.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="widget">
-          <p className="widget-title">Recent notices</p>
-          {data && data.notices.length === 0 && <p className="muted">No notices yet.</p>}
-          <div className="mini-list">
-            {data?.notices.map((n) => (
-              <Link to="/notices" className="mini-row" key={n.id}>
-                <IconBell className="nav-icon" />
-                <span className="mini-title">
-                  {n.pinned && "📌 "}
-                  {n.title}
-                </span>
-                <span className="mini-date">{new Date(n.createdAt).toLocaleDateString()}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {isManager && <StaffAttendanceOverview />}
-
-      {cal && (
-        <div className="widget">
-          <p className="widget-title">Academic calendar</p>
-          <SchoolCalendar cal={cal} readOnly />
-        </div>
-      )}
-        </>
-      )}
+        {!data ? (
+          <SkeletonStats count={5} />
+        ) : (
+          <RoleHome
+            role={user.role}
+            stats={data.stats}
+            notices={data.notices}
+            actions={actions}
+            cal={cal}
+          />
+        )}
       </div>
     </AppShell>
   );

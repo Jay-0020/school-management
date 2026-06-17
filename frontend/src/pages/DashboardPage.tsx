@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
+import { AdminHome } from "../components/AdminHome";
 import { AppShell } from "../components/AppShell";
 import { EnrolmentOverview } from "../components/EnrolmentOverview";
 import { FinanceOverview } from "../components/FinanceOverview";
@@ -49,6 +50,7 @@ export function DashboardPage() {
 
   const isStaff = STAFF_ROLES.includes(user.role);
   const isManager = MANAGER_ROLES.includes(user.role);
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
   // Quick actions = the user's nav items (minus Dashboard itself).
   const actions = navForRole(user.role)
@@ -66,6 +68,10 @@ export function DashboardPage() {
       </div>
 
       <div className="dash-stack">
+      {isAdmin && data ? (
+        <AdminHome stats={data.stats} notices={data.notices} actions={actions} />
+      ) : (
+        <>
       {!data ? (
         <SkeletonStats count={5} />
       ) : (
@@ -128,6 +134,8 @@ export function DashboardPage() {
           <p className="widget-title">Academic calendar</p>
           <SchoolCalendar cal={cal} readOnly />
         </div>
+      )}
+        </>
       )}
       </div>
     </AppShell>

@@ -1928,3 +1928,74 @@ tr.clickable:hover td {
   background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #ec4899)) !important;
   color: #fff !important;
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   BENTO HOME — compact, mixed-size tiles, 2-up KPIs, chip rails
+   ════════════════════════════════════════════════════════════════════════ */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+@media (min-width: 760px) {
+  .bento { grid-template-columns: repeat(4, 1fr); }
+}
+.bento .span-2 { grid-column: span 2; }
+.bento .span-full { grid-column: 1 / -1; }
+.bento > .widget { margin: 0; }
+
+/* Mini KPI tile */
+.kpi-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.kpi-tile .kpi-ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.kpi-tile .kpi-ico svg { width: 18px; height: 18px; }
+.kpi-value { font-size: 23px; font-weight: 750; letter-spacing: -0.02em; line-height: 1.1; }
+.kpi-label { font-size: 12.5px; color: var(--text-2); font-weight: 600; }
+.kpi-hint { font-size: 11px; color: var(--muted); }
+
+/* Quick-action chip rail (horizontal scroll) */
+.chip-rail {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 6px;
+  scrollbar-width: none;
+}
+.chip-rail::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 99px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+.chip .nav-icon { width: 16px; height: 16px; color: var(--primary); }
+.chip:active { transform: translateY(1px); }
+
+/* Section label between bento blocks */
+.bento-label { font-size: 13px; font-weight: 700; color: var(--text-2); margin: 18px 0 10px; }

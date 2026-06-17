@@ -1999,3 +1999,13 @@ tr.clickable:hover td {
 
 /* Section label between bento blocks */
 .bento-label { font-size: 13px; font-weight: 700; color: var(--text-2); margin: 18px 0 10px; }
+
+/* Equal-height KPI tiles + capped preview tiles (dashboard = launchpad) */
+.kpi-tile { min-height: 116px; justify-content: space-between; }
+.tile-foot {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.tile-foot a { font-size: 13px; font-weight: 600; }
+.preview-tile .mini-list { max-height: none; }

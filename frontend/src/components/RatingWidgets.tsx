@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { Bars, Ring } from "./charts";
 
@@ -51,43 +52,53 @@ export function MyRatingCard() {
   );
 }
 
-/** Dean / Admin teacher-performance leaderboard + recent comments. */
-export function TeacherPerformance() {
+/** Dean / Admin teacher-performance. `preview` = compact dashboard tile that
+ *  links to the full page; otherwise the full leaderboard + comments. */
+export function TeacherPerformance({ preview = false }: { preview?: boolean }) {
   const { data } = useQuery({
     queryKey: ["teacher-perf"],
     queryFn: async () => (await api.get<Perf>("/ratings/teachers")).data,
   });
   if (!data) return null;
+
+  if (preview) {
+    return (
+      <div className="widget preview-tile">
+        <p className="widget-title">Teacher performance</p>
+        {data.teachers.length === 0 ? (
+          <p className="muted">No ratings yet.</p>
+        ) : (
+          <Bars
+            data={data.teachers.slice(0, 3).map((t) => ({ label: t.name, value: t.average }))}
+            max={5}
+            unit="★"
+          />
+        )}
+        <div className="tile-foot">
+          <Link to="/teacher-performance">View all teachers →</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="widget">
-      <p className="widget-title">Teacher performance</p>
+    <>
       {data.teachers.length === 0 && <p className="muted">No ratings yet.</p>}
       {data.teachers.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
+        <div className="panel">
+          <p className="widget-title">Ratings</p>
           <Bars
-            data={data.teachers.slice(0, 6).map((t) => ({ label: t.name, value: t.average }))}
+            data={data.teachers.map((t) => ({ label: t.name, value: t.average }))}
             max={5}
             unit="★"
           />
         </div>
       )}
-      <div className="mini-list">
-        {data.teachers.slice(0, 15).map((t) => (
-          <div className="mini-row" key={t.teacherId}>
-            <span className="mini-title">
-              {t.name} <span className="muted">· {t.employeeNo}</span>
-            </span>
-            <span className="mini-date">
-              {t.average}★ ({t.count})
-            </span>
-          </div>
-        ))}
-      </div>
       {data.comments.length > 0 && (
-        <div style={{ marginTop: 12 }}>
-          <p className="muted" style={{ margin: "0 0 6px" }}>Recent comments</p>
+        <div className="panel" style={{ marginTop: 16 }}>
+          <p className="widget-title">Recent comments</p>
           <div className="mini-list">
-            {data.comments.slice(0, 8).map((c, i) => (
+            {data.comments.map((c, i) => (
               <div className="mini-row" key={i}>
                 <span className="mini-title">
                   “{c.comment}” <span className="muted">— {c.teacher}</span>
@@ -98,6 +109,6 @@ export function TeacherPerformance() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

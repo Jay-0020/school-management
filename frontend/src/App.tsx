@@ -22,7 +22,9 @@ import { PayrollPage } from "./pages/PayrollPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
 import { SchoolworkPage } from "./pages/SchoolworkPage";
 import { SettlementsPage } from "./pages/SettlementsPage";
+import { StaffAttendancePage } from "./pages/StaffAttendancePage";
 import { StudentsPage } from "./pages/StudentsPage";
+import { TeacherPerformancePage } from "./pages/TeacherPerformancePage";
 import { TeachersPage } from "./pages/TeachersPage";
 import { UsersPage } from "./pages/UsersPage";
 
@@ -101,6 +103,22 @@ export function App() {
         element={
           <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"]}>
             <TeachersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff-attendance"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "DEAN"]}>
+            <StaffAttendancePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher-performance"
+        element={
+          <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN", "DEAN"]}>
+            <TeacherPerformancePage />
           </ProtectedRoute>
         }
       />

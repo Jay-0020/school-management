@@ -72,25 +72,30 @@ export function AdminHome({
 
       <div className="dash-cols">
         <EnrolmentOverview />
-        <TeacherPerformance />
+        <TeacherPerformance preview />
       </div>
 
-      <StaffAttendanceOverview />
+      <div className="dash-cols">
+        <StaffAttendanceOverview preview />
 
-      <div className="widget">
-        <p className="widget-title">Recent notices</p>
-        {notices.length === 0 && <p className="muted">No notices yet.</p>}
-        <div className="mini-list">
-          {notices.map((n) => (
-            <Link to="/notices" className="mini-row" key={n.id}>
-              <IconBell className="nav-icon" />
-              <span className="mini-title">
-                {n.pinned && "📌 "}
-                {n.title}
-              </span>
-              <span className="mini-date">{new Date(n.createdAt).toLocaleDateString()}</span>
-            </Link>
-          ))}
+        <div className="widget preview-tile">
+          <p className="widget-title">Recent notices</p>
+          {notices.length === 0 && <p className="muted">No notices yet.</p>}
+          <div className="mini-list">
+            {notices.slice(0, 3).map((n) => (
+              <Link to="/notices" className="mini-row" key={n.id}>
+                <IconBell className="nav-icon" />
+                <span className="mini-title">
+                  {n.pinned && "📌 "}
+                  {n.title}
+                </span>
+                <span className="mini-date">{new Date(n.createdAt).toLocaleDateString()}</span>
+              </Link>
+            ))}
+          </div>
+          <div className="tile-foot">
+            <Link to="/notices">View all notices →</Link>
+          </div>
         </div>
       </div>
     </>

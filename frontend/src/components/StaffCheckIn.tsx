@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import { useBranding } from "../context/BrandingContext";
@@ -113,8 +114,9 @@ export function StaffCheckInCard() {
   );
 }
 
-/** Dean / Admin overview of every staff member's attendance %. */
-export function StaffAttendanceOverview() {
+/** Dean / Admin staff-attendance. `preview` = compact dashboard tile linking to
+ *  the full page; otherwise the full list. */
+export function StaffAttendanceOverview({ preview = false }: { preview?: boolean }) {
   const { data } = useQuery({
     queryKey: ["staff-att-all"],
     queryFn: async () =>
@@ -122,12 +124,20 @@ export function StaffAttendanceOverview() {
   });
   if (!data) return null;
 
+  const presentToday = data.staff.filter((s) => s.present).length;
+  const rows = preview ? data.staff.slice(0, 3) : data.staff;
+
   return (
-    <div className="widget">
-      <p className="widget-title">Staff attendance · {data.workingDays} working days</p>
+    <div className={`widget${preview ? " preview-tile" : ""}`}>
+      <p className="widget-title">Staff attendance</p>
+      {preview && (
+        <p className="muted" style={{ margin: "-4px 0 10px" }}>
+          {presentToday} of {data.staff.length} present today
+        </p>
+      )}
       {data.staff.length === 0 && <p className="muted">No staff with logins yet.</p>}
       <div className="mini-list">
-        {data.staff.slice(0, 15).map((s) => (
+        {rows.map((s) => (
           <div className="mini-row" key={s.employeeNo}>
             <span className="mini-title">
               {s.present ? "🟢 " : "⚪ "}
@@ -137,6 +147,13 @@ export function StaffAttendanceOverview() {
           </div>
         ))}
       </div>
+      {preview ? (
+        <div className="tile-foot">
+          <Link to="/staff-attendance">View all staff →</Link>
+        </div>
+      ) : (
+        <p className="muted" style={{ marginTop: 10 }}>Attendance % is over {data.workingDays} working days this session.</p>
+      )}
     </div>
   );
 }

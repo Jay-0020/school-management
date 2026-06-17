@@ -19,7 +19,7 @@ export function EnrolmentOverview() {
 
   return (
     <div className="widget">
-      <p className="widget-title">Enrolment this session</p>
+      <p className="widget-title">Enrolment This Session</p>
       {!data.sessionConfigured && (
         <p className="muted">
           Set the session dates in <strong>School Setup → Academic calendar</strong> to track new

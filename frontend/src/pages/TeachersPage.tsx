@@ -61,7 +61,7 @@ export function TeachersPage() {
           <div className="controls">
             <input
               type="search"
-              placeholder="Search name, emp. no, contact…"
+              placeholder="Search name, employee no., or contact…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -116,7 +116,7 @@ export function TeachersPage() {
           <table className="data-table cards">
             <thead>
               <tr>
-                <th>Emp. No</th>
+                <th>Employee no.</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Contact</th>
@@ -127,7 +127,7 @@ export function TeachersPage() {
             <tbody>
               {data.items.map((t) => (
                 <tr key={t.id}>
-                  <td data-label="Emp. No">{t.employeeNo}</td>
+                  <td data-label="Employee no.">{t.employeeNo}</td>
                   <td data-label="Name">
                     {t.firstName} {t.lastName}
                   </td>

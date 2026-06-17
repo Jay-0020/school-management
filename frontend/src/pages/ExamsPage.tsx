@@ -323,7 +323,7 @@ function MarksAndResults({ exam, sections }: { exam: Exam; sections: { id: strin
         {roster && roster.roster.length > 0 && (
           <>
             <table className="data-table">
-              <thead><tr><th>Adm. No</th><th>Name</th><th>Marks (/{paper?.maxMarks})</th></tr></thead>
+              <thead><tr><th>Admission no.</th><th>Name</th><th>Marks (/{paper?.maxMarks})</th></tr></thead>
               <tbody>
                 {roster.roster.map((s) => (
                   <tr key={s.studentId}>

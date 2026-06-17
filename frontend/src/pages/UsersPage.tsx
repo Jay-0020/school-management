@@ -82,9 +82,9 @@ export function UsersPage() {
   }
 
   return (
-    <AppShell title="Users">
+    <AppShell title="User Accounts">
         <div className="page-head">
-          <h2>Users {data ? <span className="muted">({data.length})</span> : null}</h2>
+          <h2>User Accounts {data ? <span className="muted">({data.length})</span> : null}</h2>
           <div className="controls">
             <input
               type="search"
@@ -129,7 +129,7 @@ export function UsersPage() {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Linked to</th>
-                <th>Leave/yr</th>
+                <th>Leave / year (Casual / Sick)</th>
                 <th>Last login</th>
                 <th>Status</th>
                 <th></th>
@@ -146,7 +146,7 @@ export function UsersPage() {
                     <span className="badge">{u.role}</span>
                   </td>
                   <td data-label="Linked to">{linkedLabel(u)}</td>
-                  <td data-label="Leave/yr" title="Casual / Sick">
+                  <td data-label="Leave / year (Casual / Sick)" title="Casual / Sick leave per year">
                     {u.casualQuota}/{u.sickQuota}
                   </td>
                   <td data-label="Last login">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "—"}</td>

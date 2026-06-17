@@ -78,7 +78,7 @@ export function StaffCheckInCard() {
 
   return (
     <div className="widget">
-      <p className="widget-title">My attendance</p>
+      <p className="widget-title">My Attendance</p>
       <div className="checkin-card">
         <div>
           <div className="checkin-pct">{me?.percentage != null ? `${me.percentage}%` : "—"}</div>
@@ -129,7 +129,7 @@ export function StaffAttendanceOverview({ preview = false }: { preview?: boolean
 
   return (
     <div className={`widget${preview ? " preview-tile" : ""}`}>
-      <p className="widget-title">Staff attendance</p>
+      <p className="widget-title">Staff Attendance</p>
       {preview && (
         <p className="muted" style={{ margin: "-4px 0 10px" }}>
           {presentToday} of {data.staff.length} present today

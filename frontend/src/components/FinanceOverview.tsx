@@ -24,7 +24,7 @@ export function FinanceOverview() {
 
   return (
     <div className="widget">
-      <p className="widget-title">Financial overview</p>
+      <p className="widget-title">Financial Overview</p>
       <div className="stat-grid">
         {cards.map((c) => (
           <div className="stat-card" key={c.key}>

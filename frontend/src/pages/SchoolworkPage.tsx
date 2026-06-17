@@ -24,8 +24,8 @@ export function SchoolworkPage() {
   const [tab, setTab] = useState<"homework" | "subjects">("homework");
 
   return (
-    <AppShell title="Schoolwork">
-        <h2>Schoolwork</h2>
+    <AppShell title="Homework">
+        <h2>Homework</h2>
 
         {isAdmin && (
           <div className="tabs">
@@ -236,7 +236,7 @@ function HomeworkModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{isEdit ? "Edit homework" : "Assign homework"}</h3>
+        <h3>{isEdit ? "Edit Homework" : "Assign Homework"}</h3>
         <form onSubmit={handleSubmit}>
           <label className="stack-label">
             Title

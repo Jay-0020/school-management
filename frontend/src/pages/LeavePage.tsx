@@ -54,7 +54,7 @@ export function LeavePage() {
       {canApprove && (
         <div className="tabs">
           <button className={`tab ${tab === "mine" ? "active" : ""}`} onClick={() => setTab("mine")}>
-            My requests
+            My Requests
           </button>
           <button className={`tab ${tab === "inbox" ? "active" : ""}`} onClick={() => setTab("inbox")}>
             Approvals
@@ -233,7 +233,7 @@ function RequestModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Request leave</h3>
+        <h3>Request Leave</h3>
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <label>

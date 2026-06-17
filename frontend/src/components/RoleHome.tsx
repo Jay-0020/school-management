@@ -50,7 +50,7 @@ const KPI_ICON: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
 function NoticesTile({ notices }: { notices: NoticeBrief[] }) {
   return (
     <div className="widget preview-tile">
-      <p className="widget-title">Recent notices</p>
+      <p className="widget-title">Recent Notices</p>
       {notices.length === 0 && <p className="muted">No notices yet.</p>}
       <div className="mini-list">
         {notices.slice(0, 3).map((n) => (
@@ -146,7 +146,7 @@ export function RoleHome({
 
       {cal && (
         <div className="widget">
-          <p className="widget-title">Academic calendar</p>
+          <p className="widget-title">Academic Calendar</p>
           <SchoolCalendar cal={cal} readOnly />
         </div>
       )}

@@ -66,9 +66,9 @@ export function NotesPage() {
   }
 
   return (
-    <AppShell title="Notes">
+    <AppShell title="Study Notes">
       <div className="page-head">
-        <h2>Shared Notes</h2>
+        <h2>Study Notes</h2>
         <div className="controls">
           <input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} style={{ maxWidth: 200 }} />
           {isStaff && (

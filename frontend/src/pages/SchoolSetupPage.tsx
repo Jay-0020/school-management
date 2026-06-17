@@ -75,7 +75,7 @@ function BrandingPanel({
 
   return (
     <section className="panel">
-      <h3>Branding & details</h3>
+      <h3>Branding & Details</h3>
       <p className="muted">These theme the portal for this school.</p>
 
       <form className="form-grid" onSubmit={handleSubmit}>
@@ -182,7 +182,7 @@ function LocationPanel({
 
   return (
     <section className="panel">
-      <h3>Campus location & geofence</h3>
+      <h3>Campus Location & Check-in Area</h3>
       <p className="muted">
         Staff can only check in <strong>“On Campus”</strong> when they're within this radius of the
         school. Click the map to set the location.
@@ -286,12 +286,12 @@ function CalendarPanel() {
   const SAT_LABEL: Record<SaturdayRule, string> = {
     NONE: "All working",
     ALL: "All off",
-    ALTERNATE: "2nd & 4th off",
+    ALTERNATE: "2nd & 4th Saturdays off",
   };
 
   return (
     <section className="panel">
-      <h3>Academic calendar</h3>
+      <h3>Academic Calendar</h3>
       <p className="muted">
         Set the session dates and how Saturdays work. Sundays are always holidays. Working days this
         session: <strong>{data.workingDays}</strong>.
@@ -369,7 +369,7 @@ function ClassesPanel({ canAdmin }: { canAdmin: boolean }) {
 
   return (
     <section className="panel">
-      <h3>Classes & sections</h3>
+      <h3>Classes & Sections</h3>
       <p className="muted">Define the academic structure students are enrolled into.</p>
 
       {canAdmin && (

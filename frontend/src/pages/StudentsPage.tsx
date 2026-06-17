@@ -134,7 +134,7 @@ export function StudentsPage() {
           <table className="data-table cards">
             <thead>
               <tr>
-                <th>Adm. No</th>
+                <th>Admission no.</th>
                 <th>Name</th>
                 <th>Class · Section</th>
                 <th>Guardian</th>
@@ -146,7 +146,7 @@ export function StudentsPage() {
             <tbody>
               {data.items.map((s) => (
                 <tr key={s.id}>
-                  <td data-label="Adm. No">{s.admissionNo}</td>
+                  <td data-label="Admission no.">{s.admissionNo}</td>
                   <td data-label="Name">
                     {s.firstName} {s.lastName}
                   </td>

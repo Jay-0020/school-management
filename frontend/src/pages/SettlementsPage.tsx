@@ -38,7 +38,7 @@ export function SettlementsPage() {
   });
 
   return (
-    <AppShell title="Settlements">
+    <AppShell title="Final Settlements">
       <div className="page-head">
         <h2>Full &amp; Final Settlements</h2>
         <div className="controls">
@@ -152,7 +152,7 @@ function CreateModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>New full &amp; final settlement</h3>
+        <h3>New Full &amp; Final Settlement</h3>
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <label>
@@ -328,7 +328,7 @@ function DetailModal({
         {canPay && s.status === "APPROVED" && (
           <div className="form-actions">
             <button className="inline-btn" onClick={() => pay.mutate()} disabled={pay.isPending}>
-              Mark paid
+              Mark as paid
             </button>
           </div>
         )}

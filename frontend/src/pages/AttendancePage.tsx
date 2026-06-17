@@ -163,7 +163,7 @@ function MarkPanel({ sectionId }: { sectionId: string }) {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Adm. No</th>
+                <th>Admission no.</th>
                 <th>Name</th>
                 <th>Status</th>
               </tr>
@@ -246,7 +246,7 @@ function SummaryPanel({ sectionId }: { sectionId: string }) {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Adm. No</th>
+              <th>Admission no.</th>
               <th>Name</th>
               <th>P</th>
               <th>A</th>

@@ -50,7 +50,7 @@ export const NAV: NavGroup[] = [
     label: "People",
     items: [
       {
-        label: "Overview",
+        label: "Directory",
         path: "/people",
         icon: IconUsers,
         roles: ["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"],
@@ -80,7 +80,7 @@ export const NAV: NavGroup[] = [
         roles: ["SUPER_ADMIN", "ADMIN", "DEAN"],
       },
       {
-        label: "Users",
+        label: "User Accounts",
         path: "/users",
         icon: IconUsers,
         roles: ["SUPER_ADMIN", "ADMIN"],
@@ -97,7 +97,7 @@ export const NAV: NavGroup[] = [
         roles: ["SUPER_ADMIN", "ADMIN", "TEACHER"],
       },
       {
-        label: "Schoolwork",
+        label: "Homework",
         path: "/schoolwork",
         icon: IconBook,
         roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"],
@@ -109,7 +109,7 @@ export const NAV: NavGroup[] = [
         roles: ["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER", "STUDENT"],
       },
       {
-        label: "Notes",
+        label: "Study Notes",
         path: "/notes",
         icon: IconBook,
         roles: ["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"],
@@ -145,7 +145,7 @@ export const NAV: NavGroup[] = [
         roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "TEACHER", "DEAN"],
       },
       {
-        label: "Settlements",
+        label: "Final Settlements",
         path: "/settlements",
         icon: IconWallet,
         roles: ["SUPER_ADMIN", "ADMIN", "DEAN", "ACCOUNTANT"],

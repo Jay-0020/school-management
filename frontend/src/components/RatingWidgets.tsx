@@ -22,7 +22,7 @@ export function MyRatingCard() {
   if (!data) return null;
   return (
     <div className="widget">
-      <p className="widget-title">My rating</p>
+      <p className="widget-title">My Rating</p>
       <div className="checkin-card">
         {data.average != null ? (
           <Ring value={data.average} max={5} size={96} label={`${data.average}`} color="#f5b301" />
@@ -64,7 +64,7 @@ export function TeacherPerformance({ preview = false }: { preview?: boolean }) {
   if (preview) {
     return (
       <div className="widget preview-tile">
-        <p className="widget-title">Teacher performance</p>
+        <p className="widget-title">Teacher Performance</p>
         {data.teachers.length === 0 ? (
           <p className="muted">No ratings yet.</p>
         ) : (
@@ -96,7 +96,7 @@ export function TeacherPerformance({ preview = false }: { preview?: boolean }) {
       )}
       {data.comments.length > 0 && (
         <div className="panel" style={{ marginTop: 16 }}>
-          <p className="widget-title">Recent comments</p>
+          <p className="widget-title">Recent Comments</p>
           <div className="mini-list">
             {data.comments.map((c, i) => (
               <div className="mini-row" key={i}>

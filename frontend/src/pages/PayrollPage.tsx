@@ -51,7 +51,7 @@ export function PayrollPage() {
                 className={`tab ${tab === "structures" ? "active" : ""}`}
                 onClick={() => setTab("structures")}
               >
-                Salary structures
+                Salary Structures
               </button>
             </div>
             {tab === "payslips" ? <PayslipsTab manager /> : <StructuresTab />}
@@ -82,7 +82,7 @@ function StructuresTab() {
         <table className="data-table cards">
           <thead>
             <tr>
-              <th>Emp. No</th>
+              <th>Employee no.</th>
               <th>Name</th>
               <th>Basic</th>
               <th>Gross</th>
@@ -95,7 +95,7 @@ function StructuresTab() {
               const p = s.salaryStructure ? preview(s.salaryStructure) : null;
               return (
                 <tr key={s.id}>
-                  <td data-label="Emp. No">{s.employeeNo}</td>
+                  <td data-label="Employee no.">{s.employeeNo}</td>
                   <td data-label="Name">
                     {s.firstName} {s.lastName}
                   </td>

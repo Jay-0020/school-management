@@ -186,7 +186,7 @@ function SubmitModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Submit expense</h3>
+        <h3>Submit Expense</h3>
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <label>
@@ -335,7 +335,7 @@ function ExpenseModal({
             {isPayer && exp.status === "APPROVED" && (
               <div className="form-actions">
                 <button className="inline-btn" onClick={() => pay.mutate()} disabled={pay.isPending}>
-                  Mark paid / reimbursed
+                  Mark as paid / reimbursed
                 </button>
               </div>
             )}

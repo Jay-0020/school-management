@@ -54,7 +54,7 @@ export function FeesPage() {
                 className={`tab ${tab === "structures" ? "active" : ""}`}
                 onClick={() => setTab("structures")}
               >
-                Fee structures
+                Fee Structures
               </button>
             </div>
             {tab === "invoices" ? <InvoicesTab manager /> : <StructuresTab />}
@@ -343,9 +343,9 @@ function GenerateModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Generate invoices</h3>
+        <h3>Generate Invoices</h3>
         <p className="muted hint">
-          Creates one invoice per active student in the class, from its fee structures.
+          Creates one invoice per active student in the class, using that class's fee structure.
         </p>
         <form onSubmit={handleSubmit}>
           <div className="form-grid">

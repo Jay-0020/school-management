@@ -59,9 +59,9 @@ export function PeoplePage() {
   );
 
   return (
-    <AppShell title="Overview">
+    <AppShell title="Directory">
       <div className="page-head">
-        <h2>People Overview</h2>
+        <h2>Directory</h2>
         <input
           placeholder="Search…"
           value={q}
@@ -126,7 +126,7 @@ export function PeoplePage() {
         <table className="data-table cards">
           <thead>
             <tr>
-              <th>Adm. No</th>
+              <th>Admission no.</th>
               <th>Name</th>
               <th>Class · Section</th>
               <th>Attendance</th>
@@ -135,7 +135,7 @@ export function PeoplePage() {
           <tbody>
             {students.map((s) => (
               <tr key={s.id} className="clickable" onClick={() => setOpenId(s.id)}>
-                <td data-label="Adm. No">{s.admissionNo}</td>
+                <td data-label="Admission no.">{s.admissionNo}</td>
                 <td data-label="Name">{s.name}</td>
                 <td data-label="Class · Section">{s.className}</td>
                 <td data-label="Attendance">
@@ -157,7 +157,7 @@ export function PeoplePage() {
         <table className="data-table cards">
           <thead>
             <tr>
-              <th>Emp. No</th>
+              <th>Employee no.</th>
               <th>Name</th>
               <th>Type</th>
             </tr>
@@ -165,7 +165,7 @@ export function PeoplePage() {
           <tbody>
             {staff.map((s) => (
               <tr key={s.id}>
-                <td data-label="Emp. No">{s.employeeNo}</td>
+                <td data-label="Employee no.">{s.employeeNo}</td>
                 <td data-label="Name">{s.name}</td>
                 <td data-label="Type">{s.staffType === "TEACHING" ? "Teaching" : "Non-teaching"}</td>
               </tr>
@@ -194,9 +194,9 @@ function StudentDetail({ id, onClose }: { id: string; onClose: () => void }) {
           <>
             <h3 style={{ marginBottom: 2 }}>{data.name}</h3>
             <p className="muted">
-              {data.className} · Adm. {data.admissionNo}
+              {data.className} · Admission no. {data.admissionNo}
             </p>
-            <h4 className="section-title">Attendance by year</h4>
+            <h4 className="section-title">Attendance (by academic year)</h4>
             <table className="data-table">
               <thead>
                 <tr>

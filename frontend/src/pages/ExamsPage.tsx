@@ -66,12 +66,12 @@ function StaffExams({ isAdmin }: { isAdmin: boolean }) {
 
       {isLoading && <SkeletonRows />}
       {data && data.length === 0 && (
-        <EmptyState icon={IconBook} title="No exams yet" hint="Create an exam, add subject papers, then enter marks." />
+        <EmptyState icon={IconBook} title="No exams yet" hint="Create an exam, add subjects, then enter marks." />
       )}
       {data && data.length > 0 && (
         <table className="data-table cards">
           <thead>
-            <tr><th>Exam</th><th>Class</th><th>Term</th><th>Dates</th><th>Papers</th><th>Status</th></tr>
+            <tr><th>Exam</th><th>Class</th><th>Term</th><th>Dates</th><th>Subjects</th><th>Status</th></tr>
           </thead>
           <tbody>
             {data.map((e) => (
@@ -84,7 +84,7 @@ function StaffExams({ isAdmin }: { isAdmin: boolean }) {
                     ? `${new Date(e.startDate).toLocaleDateString()}${e.endDate ? " – " + new Date(e.endDate).toLocaleDateString() : ""}`
                     : "—"}
                 </td>
-                <td data-label="Papers">{e.papers.length}</td>
+                <td data-label="Subjects">{e.papers.length}</td>
                 <td data-label="Status"><span className={`status ${e.status === "PUBLISHED" ? "inv-paid" : "inv-pending"}`}>{e.status}</span></td>
               </tr>
             ))}
@@ -129,7 +129,7 @@ function ExamModal({ classes, onClose }: { classes: ClassWithSections[]; onClose
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>New exam</h3>
+        <h3>New Exam</h3>
         <form onSubmit={submit}>
           <label className="stack-label">Name
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Term 1 Examination" required />
@@ -185,8 +185,8 @@ function ExamDetail({
   const addPaper = useMutation({
     mutationFn: (v: { subjectId: string; maxMarks: number; passMarks: number; date: string | null }) =>
       api.post(`/exams/${examId}/papers`, v),
-    onSuccess: () => { refetchExam(); toast.success("Paper added"); },
-    onError: (e) => toast.error(errMsg(e, "Could not add paper")),
+    onSuccess: () => { refetchExam(); toast.success("Subject added"); },
+    onError: (e) => toast.error(errMsg(e, "Could not add subject")),
   });
   const delPaper = useMutation({
     mutationFn: (id: string) => api.delete(`/exams/papers/${id}`),
@@ -221,7 +221,7 @@ function ExamDetail({
 
       {/* Papers */}
       <section className="panel">
-        <h3>Subjects & max marks</h3>
+        <h3>Subjects & Max Marks</h3>
         {exam.papers.length === 0 && <p className="muted">No subjects added yet.</p>}
         {exam.papers.length > 0 && (
           <table className="data-table">
@@ -306,7 +306,7 @@ function MarksAndResults({ exam, sections }: { exam: Exam; sections: { id: strin
   return (
     <>
       <section className="panel">
-        <h3>Enter marks</h3>
+        <h3>Enter Marks</h3>
         <div className="mark-controls">
           <label className="inline-field">Section
             <select value={sectionId} onChange={(e) => setSectionId(e.target.value)}>

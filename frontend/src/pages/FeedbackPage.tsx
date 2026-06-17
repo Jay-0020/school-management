@@ -55,7 +55,7 @@ export function FeedbackPage() {
 
   return (
     <AppShell title="Feedback">
-      <h2>Rate your teachers</h2>
+      <h2>Rate Your Teachers</h2>
       <p className="muted">Your ratings are anonymous — teachers only ever see their average.</p>
 
       {isLoading && <SkeletonRows />}

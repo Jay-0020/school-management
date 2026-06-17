@@ -58,7 +58,7 @@ function FileComplaint() {
   if (done) {
     return (
       <section className="panel">
-        <h3>Complaint submitted</h3>
+        <h3>Complaint Submitted</h3>
         <p className="muted">
           Thank you — your complaint has been sent to the Dean{anonymous ? " anonymously" : ""}.
         </p>

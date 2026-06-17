@@ -214,7 +214,7 @@ function QuotaModal({ user, onClose }: { user: ManagedUser; onClose: () => void 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Leave quota</h3>
+        <h3>Leave Quota</h3>
         <p className="muted hint">{user.email} — annual days per category</p>
         <div className="form-grid">
           <label>
@@ -306,7 +306,7 @@ function UserModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Add user</h3>
+        <h3>Add User</h3>
         <form onSubmit={handleSubmit}>
           <label className="stack-label">
             Email

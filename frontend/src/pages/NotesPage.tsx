@@ -182,7 +182,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Upload notes</h3>
+        <h3>Upload Notes</h3>
         <form onSubmit={submit}>
           <label className="stack-label">Title
             <input value={title} onChange={(e) => setTitle(e.target.value)} required />

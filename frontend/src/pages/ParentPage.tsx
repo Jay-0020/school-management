@@ -112,7 +112,7 @@ export function ParentPage() {
 
           {/* Report cards */}
           <section className="panel">
-            <h3>Report cards</h3>
+            <h3>Report Cards</h3>
             {data.exams.length === 0 ? (
               <p className="muted">No published results yet.</p>
             ) : (
@@ -132,7 +132,7 @@ export function ParentPage() {
 
           {/* Homework */}
           <section className="panel">
-            <h3>Recent homework</h3>
+            <h3>Recent Homework</h3>
             {data.homework.length === 0 ? (
               <p className="muted">Nothing assigned recently.</p>
             ) : (

@@ -1811,28 +1811,47 @@ tr.clickable:hover td {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 10px 14px;
-    margin-bottom: 10px;
+    padding: 4px 16px;
+    margin-bottom: 14px;
     box-shadow: var(--shadow-sm);
   }
   .data-table.cards tr.clickable:active { background: var(--surface-2); }
   .data-table.cards td {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    gap: 14px;
-    padding: 6px 0;
+    align-items: baseline;
+    gap: 16px;
+    padding: 11px 0;
     border: none;
+    border-bottom: 1px solid var(--border);
     text-align: right;
+    line-height: 1.4;
+    min-height: 0;
   }
+  /* last visible cell shouldn't carry a divider */
+  .data-table.cards td:last-child { border-bottom: none; }
   .data-table.cards td::before {
     content: attr(data-label);
+    font-size: 12px;
     font-weight: 600;
-    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
     text-align: left;
     flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  /* value side: allow wrapping, keep it the dominant text */
+  .data-table.cards td {
+    font-weight: 500;
+    color: var(--text);
+    overflow-wrap: anywhere;
   }
   .data-table.cards td:empty { display: none; }
+  /* a cell with no data-label (e.g. an action/button cell) shows no label
+     and lays its content out from the right, wrapping as needed */
+  .data-table.cards td:not([data-label]) { justify-content: flex-end; flex-wrap: wrap; }
+  .data-table.cards td:not([data-label])::before { display: none; }
 }
 
 /* ════════════════════════════════════════════════════════════════════════

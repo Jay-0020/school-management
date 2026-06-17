@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { EmptyState, SkeletonRows } from "../components/EmptyState";
@@ -22,14 +22,32 @@ export function TeachersPage() {
   const [editing, setEditing] = useState<Teacher | null>(null);
   const [creating, setCreating] = useState(false);
 
+  // Filters
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [staffType, setStaffType] = useState<"" | StaffType>("");
+  const [status, setStatus] = useState<"" | "active" | "inactive">("");
+
+  // Debounce the search box so we don't fire a request per keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const hasFilters = !!(search || staffType || status);
+
   const { data, isLoading } = useQuery({
-    queryKey: ["teachers", page],
-    queryFn: async () =>
-      (
-        await api.get<Paginated<Teacher>>("/teachers", {
-          params: { page, pageSize: PAGE_SIZE },
-        })
-      ).data,
+    queryKey: ["teachers", page, search, staffType, status],
+    queryFn: async () => {
+      const params: Record<string, string | number> = { page, pageSize: PAGE_SIZE };
+      if (search) params.search = search;
+      if (staffType) params.staffType = staffType;
+      if (status) params.status = status;
+      return (await api.get<Paginated<Teacher>>("/teachers", { params })).data;
+    },
   });
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
@@ -40,13 +58,44 @@ export function TeachersPage() {
           <h2>
             Teachers & Staff {data ? <span className="muted">({data.total})</span> : null}
           </h2>
-          {canEdit && (
-            <div className="controls">
+          <div className="controls">
+            <input
+              type="search"
+              placeholder="Search name, emp. no, contact…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <select
+              value={staffType}
+              onChange={(e) => {
+                setStaffType(e.target.value as "" | StaffType);
+                setPage(1);
+              }}
+            >
+              <option value="">All types</option>
+              {STAFF_TYPES.map((s) => (
+                <option key={s} value={s}>
+                  {STAFF_LABEL[s]}
+                </option>
+              ))}
+            </select>
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value as "" | "active" | "inactive");
+                setPage(1);
+              }}
+            >
+              <option value="">All statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            {canEdit && (
               <button className="inline-btn" onClick={() => setCreating(true)}>
                 + Add staff
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {isLoading && <SkeletonRows />}
@@ -54,8 +103,12 @@ export function TeachersPage() {
         {data && data.items.length === 0 && (
           <EmptyState
             icon={IconTeacher}
-            title="No staff yet"
-            hint="Add teaching and non-teaching staff to manage their records and payroll."
+            title={hasFilters ? "No matching staff" : "No staff yet"}
+            hint={
+              hasFilters
+                ? "Try a different search or clear the filters."
+                : "Add teaching and non-teaching staff to manage their records and payroll."
+            }
           />
         )}
 

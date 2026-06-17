@@ -15,13 +15,34 @@ teachersRouter.get(
     const page = Math.max(1, Number(req.query.page) || 1);
     const pageSize = Math.min(100, Number(req.query.pageSize) || 25);
 
+    const search = String(req.query.search ?? "").trim();
+    const staffType = req.query.staffType;
+    const status = req.query.status; // "active" | "inactive"
+
+    const where: NonNullable<Parameters<typeof prisma.teacher.findMany>[0]>["where"] = {};
+    if (staffType === "TEACHING" || staffType === "NON_TEACHING") {
+      where.staffType = staffType;
+    }
+    if (status === "active") where.isActive = true;
+    else if (status === "inactive") where.isActive = false;
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+        { employeeNo: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
     const [items, total] = await Promise.all([
       prisma.teacher.findMany({
+        where,
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: "desc" },
       }),
-      prisma.teacher.count(),
+      prisma.teacher.count({ where }),
     ]);
 
     res.json({ items, total, page, pageSize });

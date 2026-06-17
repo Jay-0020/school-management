@@ -370,13 +370,31 @@ while staying clean on desktop.
 - **Expenses** — status + category. **Complaints** — status.
 - All searches are case-insensitive and instant (debounced).
 
+## Update 15 — Wording cleanup (clearer labels everywhere)
+*Completed: 17 Jun 2026*
+
+A pass over the app's wording so labels are self-explanatory and consistent —
+no jargon, no cryptic abbreviations.
+
+- **Clearer menu names:** "Overview" → **Directory**, "Schoolwork" → **Homework**,
+  "Notes" → **Study Notes** (so it isn't confused with *Notices*), "Users" →
+  **User Accounts**, "Settlements" → **Final Settlements**.
+- **Abbreviations spelled out:** "Emp. No" → **Employee no.**, "Adm. No" →
+  **Admission no.**, "Leave/yr" → **Leave / year (Casual / Sick)**.
+- **Plain language instead of jargon:** "geofence" → **Check-in area**,
+  "2nd & 4th off" → **2nd & 4th Saturdays off**.
+- **Consistent wording in Exams:** the same thing was called both a "paper" and a
+  "subject" — now **Subjects** everywhere.
+- **Consistent Title Case** for headings, tabs and dashboard cards; clearer
+  actions ("Mark paid" → **Mark as paid**).
+
 ---
 
 🎉 **All 14 of the client's original requirements are now complete**, plus the
 extra feedback/commendation/complaint features requested along the way.
 
-**Live demo refreshed (16 Jun 2026):** all the new modules — plus the
-phone-first redesign and list filters — are deployed on the live demo —
+**Live demo refreshed (17 Jun 2026):** all the new modules — plus the
+phone-first redesign, list filters and the wording cleanup — are deployed on the live demo —
 https://school-demo-nnfb.onrender.com — with sample teaching assignments,
 ratings, feedback, a commendation and a complaint. Logins (all `Demo@1234`):
 superadmin@ / admin@ / dean@ / accountant@ / teacher@ / student@ /

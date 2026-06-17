@@ -226,7 +226,13 @@ bullets([
 doc.addPage();
 band("Updates", "Change log");
 
-h2("16 June 2026 — latest");
+h2("17 June 2026 — latest");
+para("Wording cleanup — labels across the app are now self-explanatory and consistent (no jargon or cryptic abbreviations).");
+bullets([
+  "Clearer menu names :: \"Overview\" → Directory, \"Schoolwork\" → Homework, \"Notes\" → Study Notes, \"Users\" → User Accounts, \"Settlements\" → Final Settlements.",
+  "Abbreviations spelled out :: \"Emp. No\" → Employee no., \"Adm. No\" → Admission no., \"Leave/yr\" → Leave / year (Casual / Sick).",
+  "Plain language :: \"geofence\" → Check-in area; in Exams, the same thing is now consistently called a Subject (was sometimes \"paper\").",
+]);
 para("Phone-first redesign & filters — the whole app was rebuilt phone-first; it's now genuinely pleasant to use on a phone, while staying clean on desktop.");
 bullets([
   "Mobile navigation :: a bottom tab bar with a \"More\" drawer, bottom-sheet dialogs and larger touch targets.",

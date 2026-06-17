@@ -226,8 +226,8 @@ bullets([
 doc.addPage();
 band("Updates", "Change log");
 
-h2("16 June 2026 — latest: phone-first redesign & filters");
-para("The whole app was rebuilt phone-first — it's now genuinely pleasant to use on a phone, while staying clean on desktop.");
+h2("16 June 2026 — latest");
+para("Phone-first redesign & filters — the whole app was rebuilt phone-first; it's now genuinely pleasant to use on a phone, while staying clean on desktop.");
 bullets([
   "Mobile navigation :: a bottom tab bar with a \"More\" drawer, bottom-sheet dialogs and larger touch targets.",
   "Tables become cards on phones :: each row is a tidy, labelled card instead of a squashed, side-scrolling table.",
@@ -235,13 +235,12 @@ bullets([
   "Less endless scrolling :: Teacher Performance and Staff Attendance now have their own pages; the dashboard shows a short preview + \"View all\".",
   "Filters on the big lists :: Students (search + section + status), Teachers & Staff (search + type + status), Users (search + role + status), Expenses (status + category), Complaints (status). Searches are instant and case-insensitive.",
 ]);
-
-h2("Earlier in June 2026 — exams & assignments");
+para("Exams & teaching assignments:");
 bullets([
   "Exams :: each exam now has a start–end date range, and every subject has its own date within it (a datesheet).",
   "Teaching assignments :: Admins/Deans can add subjects, and assign one teacher to all subjects of a class (for primary grades).",
 ]);
-para("Security & data protection (June 2026):");
+para("Security & data protection:");
 bullets([
   "Secure sign-in :: the login session lives in a protected (httpOnly) cookie that scripts can't read, with short-lived access + auto-renewing sessions, so a stolen session can't be reused.",
   "Brute-force protection :: repeated wrong-password attempts are throttled.",

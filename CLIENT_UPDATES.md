@@ -341,13 +341,44 @@ but the gains are real:
 - Refresh tokens **rotate on every use**, so a stolen/replayed token is detected
   and rejected.
 
+## Update 14 — Mobile-first redesign + list filters
+*Completed: 16 Jun 2026*
+
+The app is now built phone-first and is genuinely pleasant to move around on,
+while staying clean on desktop.
+
+**Mobile experience:**
+- A **bottom tab bar** (with a "More" drawer) replaces hunting through a menu;
+  **bottom-sheet modals**, larger 44px touch targets and safe-area padding.
+- **Tables reflow into tidy cards** on phones — each row becomes a card with
+  clear labelled fields, comfortable spacing and dividers (no more squashed
+  horizontal scrolling).
+
+**Friendlier, more useful dashboards (per role):**
+- A **redesigned home for every role** (Admin, Dean, Accountant, Teacher,
+  Student, Parent): a compact, even **tile grid** of the numbers that matter, a
+  swipeable **quick-action rail**, and **at-a-glance charts** (fees, enrolment,
+  ratings) drawn natively — no heavy chart library.
+- Growing lists no longer make the dashboard scroll forever: **Teacher
+  Performance** and **Staff Attendance** now have their **own dedicated pages**,
+  with the dashboard showing a short preview + "View all".
+
+**Filters across list pages** so big schools can find things fast:
+- **Students** — search (name / admission no) + section + status.
+- **Teachers & Staff** — search + staff type + status.
+- **Users** — search (email / linked name) + role + status.
+- **Expenses** — status + category. **Complaints** — status.
+- All searches are case-insensitive and instant (debounced).
+
 ---
 
 🎉 **All 14 of the client's original requirements are now complete**, plus the
 extra feedback/commendation/complaint features requested along the way.
 
-**Live demo refreshed (16 Jun 2026):** all the new modules are deployed and
-populated on the live demo — https://school-demo-nnfb.onrender.com — with
-sample teaching assignments, ratings, feedback, a commendation and a complaint.
-Logins (all `Demo@1234`): superadmin@ / admin@ / dean@ / accountant@ / teacher@
-/ student@ / parent@greenwood.demo. The demo-guide PDF is updated to match.
+**Live demo refreshed (16 Jun 2026):** all the new modules — plus the
+phone-first redesign and list filters — are deployed on the live demo —
+https://school-demo-nnfb.onrender.com — with sample teaching assignments,
+ratings, feedback, a commendation and a complaint. Logins (all `Demo@1234`):
+superadmin@ / admin@ / dean@ / accountant@ / teacher@ / student@ /
+parent@greenwood.demo. Best viewed on a phone. The demo-guide PDF is updated to
+match.

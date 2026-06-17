@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
@@ -19,9 +19,28 @@ export function UsersPage() {
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
 
+  // Filters
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"" | Role>("");
+  const [status, setStatus] = useState<"" | "active" | "inactive">("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const hasFilters = !!(search || roleFilter || status);
+
   const { data, isLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => (await api.get<{ items: ManagedUser[] }>("/users")).data.items,
+    queryKey: ["users", search, roleFilter, status],
+    queryFn: async () => {
+      const params: Record<string, string> = {};
+      if (search) params.search = search;
+      if (roleFilter) params.role = roleFilter;
+      if (status) params.status = status;
+      return (await api.get<{ items: ManagedUser[] }>("/users", { params })).data.items;
+    },
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["users"] });
@@ -67,6 +86,28 @@ export function UsersPage() {
         <div className="page-head">
           <h2>Users {data ? <span className="muted">({data.length})</span> : null}</h2>
           <div className="controls">
+            <input
+              type="search"
+              placeholder="Search email, name…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as "" | Role)}>
+              <option value="">All roles</option>
+              {ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as "" | "active" | "inactive")}
+            >
+              <option value="">All statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
             <button className="inline-btn" onClick={() => setCreating(true)}>
               + Add user
             </button>
@@ -74,6 +115,12 @@ export function UsersPage() {
         </div>
 
         {isLoading && <p className="muted">Loading…</p>}
+
+        {data && data.length === 0 && (
+          <p className="muted">
+            {hasFilters ? "No users match these filters." : "No users yet."}
+          </p>
+        )}
 
         {data && data.length > 0 && (
           <table className="data-table cards">

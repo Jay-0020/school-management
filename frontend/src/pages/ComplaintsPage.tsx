@@ -127,19 +127,35 @@ function FileComplaint() {
 function ComplaintsList() {
   const qc = useQueryClient();
   const [open, setOpen] = useState<Complaint | null>(null);
+  const [status, setStatus] = useState<"" | "OPEN" | "RESOLVED">("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["complaints"],
     queryFn: async () => (await api.get<{ items: Complaint[] }>("/complaints")).data.items,
   });
 
+  const shown = (data ?? []).filter((c) => !status || c.status === status);
+
   return (
     <>
-      <h2>Complaints</h2>
-      <p className="muted">Complaints about staff — visible only to you and the super-admin.</p>
+      <div className="page-head">
+        <div>
+          <h2>Complaints</h2>
+          <p className="muted">Complaints about staff — visible only to you and the super-admin.</p>
+        </div>
+        <div className="controls">
+          <select value={status} onChange={(e) => setStatus(e.target.value as "" | "OPEN" | "RESOLVED")}>
+            <option value="">All statuses</option>
+            <option value="OPEN">Open</option>
+            <option value="RESOLVED">Resolved</option>
+          </select>
+        </div>
+      </div>
       {isLoading && <SkeletonRows />}
-      {data && data.length === 0 && <p className="muted">No complaints.</p>}
-      {data && data.length > 0 && (
+      {data && shown.length === 0 && (
+        <p className="muted">{status ? "No complaints with this status." : "No complaints."}</p>
+      )}
+      {shown.length > 0 && (
         <table className="data-table cards">
           <thead>
             <tr>
@@ -150,7 +166,7 @@ function ComplaintsList() {
             </tr>
           </thead>
           <tbody>
-            {data.map((c) => (
+            {shown.map((c) => (
               <tr key={c.id} className="clickable" onClick={() => setOpen(c)}>
                 <td data-label="About">{c.aboutStaff}</td>
                 <td data-label="Category">{c.category}</td>

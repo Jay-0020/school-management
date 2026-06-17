@@ -39,13 +39,16 @@ export function ExpensesPage() {
     user?.role === "DEAN";
 
   const [status, setStatus] = useState("");
+  const [category, setCategory] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["expenses", isManager ? status : "mine"],
+    queryKey: ["expenses", isManager ? status : "mine", category],
     queryFn: async () => {
-      const params = isManager && status ? { status } : {};
+      const params: Record<string, string> = {};
+      if (isManager && status) params.status = status;
+      if (category) params.category = category;
       return (await api.get<{ items: Expense[] }>("/expenses", { params })).data.items;
     },
   });
@@ -72,6 +75,14 @@ export function ExpensesPage() {
                 ))}
               </select>
             )}
+            <select value={category} onChange={(e) => setCategory(e.target.value)}>
+              <option value="">All categories</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
             <button className="inline-btn" onClick={() => setSubmitting(true)}>
               + Submit expense
             </button>

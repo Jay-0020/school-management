@@ -17,8 +17,21 @@ studentsRouter.get(
     const page = Math.max(1, Number(req.query.page) || 1);
     const pageSize = Math.min(100, Number(req.query.pageSize) || 25);
     const sectionId = req.query.sectionId as string | undefined;
+    const search = String(req.query.search ?? "").trim();
+    const status = req.query.status as string | undefined;
 
-    const where = sectionId ? { sectionId } : {};
+    const where: NonNullable<Parameters<typeof prisma.student.findMany>[0]>["where"] = {};
+    if (sectionId) where.sectionId = sectionId;
+    if (status && ["ACTIVE", "INACTIVE", "ALUMNI", "TRANSFERRED"].includes(status)) {
+      where.status = status as "ACTIVE" | "INACTIVE" | "ALUMNI" | "TRANSFERRED";
+    }
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+        { admissionNo: { contains: search, mode: "insensitive" } },
+      ];
+    }
     const [items, total] = await Promise.all([
       prisma.student.findMany({
         where,

@@ -25,10 +25,36 @@ const userSelect = {
   student: { select: { id: true, firstName: true, lastName: true, admissionNo: true } },
 } as const;
 
+const ROLES = ["SUPER_ADMIN", "ADMIN", "DEAN", "ACCOUNTANT", "TEACHER", "STUDENT", "PARENT"] as const;
+
 usersRouter.get(
   "/",
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    const search = String(req.query.search ?? "").trim();
+    const role = req.query.role;
+    const status = req.query.status; // "active" | "inactive"
+
+    const where: NonNullable<Parameters<typeof prisma.user.findMany>[0]>["where"] = {};
+    if (typeof role === "string" && (ROLES as readonly string[]).includes(role)) {
+      where.role = role as (typeof ROLES)[number];
+    }
+    if (status === "active") where.isActive = true;
+    else if (status === "inactive") where.isActive = false;
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+        { teacher: { firstName: { contains: search, mode: "insensitive" } } },
+        { teacher: { lastName: { contains: search, mode: "insensitive" } } },
+        { teacher: { employeeNo: { contains: search, mode: "insensitive" } } },
+        { student: { firstName: { contains: search, mode: "insensitive" } } },
+        { student: { lastName: { contains: search, mode: "insensitive" } } },
+        { student: { admissionNo: { contains: search, mode: "insensitive" } } },
+      ];
+    }
+
     const users = await prisma.user.findMany({
+      where,
       orderBy: { createdAt: "desc" },
       select: userSelect,
     });

@@ -686,6 +686,12 @@ label {
 .controls select {
   width: auto;
 }
+.controls input,
+.controls input[type="search"] {
+  width: auto;
+  flex: 0 1 230px;
+  min-width: 0;
+}
 
 /* ── Panels / cards ───────────────────────────────────────── */
 .panel {

@@ -89,6 +89,9 @@ expensesRouter.get(
     } else if (req.query.status) {
       where.status = req.query.status as Prisma.ExpenseWhereInput["status"];
     }
+    if (req.query.category) {
+      where.category = req.query.category as Prisma.ExpenseWhereInput["category"];
+    }
     const items = await prisma.expense.findMany({
       where,
       orderBy: { createdAt: "desc" },

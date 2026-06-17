@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { EmptyState, SkeletonRows } from "../components/EmptyState";
@@ -26,8 +26,21 @@ export function StudentsPage() {
 
   const [page, setPage] = useState(1);
   const [sectionId, setSectionId] = useState<string>("");
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<"" | EnrollmentStatus>("");
   const [editing, setEditing] = useState<Student | null>(null);
   const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const hasFilters = !!(sectionId || search || status);
 
   // Section options for filter + form, flattened from classes.
   const { data: classes } = useQuery({
@@ -44,10 +57,12 @@ export function StudentsPage() {
   );
 
   const { data, isLoading } = useQuery({
-    queryKey: ["students", page, sectionId],
+    queryKey: ["students", page, sectionId, search, status],
     queryFn: async () => {
       const params: Record<string, string | number> = { page, pageSize: PAGE_SIZE };
       if (sectionId) params.sectionId = sectionId;
+      if (search) params.search = search;
+      if (status) params.status = status;
       return (await api.get<Paginated<Student>>("/students", { params })).data;
     },
   });
@@ -59,6 +74,12 @@ export function StudentsPage() {
         <div className="page-head">
           <h2>Students {data ? <span className="muted">({data.total})</span> : null}</h2>
           <div className="controls">
+            <input
+              type="search"
+              placeholder="Search name or admission no…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
             <select
               value={sectionId}
               onChange={(e) => {
@@ -70,6 +91,20 @@ export function StudentsPage() {
               {sectionOptions.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value as "" | EnrollmentStatus);
+                setPage(1);
+              }}
+            >
+              <option value="">All statuses</option>
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s.charAt(0) + s.slice(1).toLowerCase()}
                 </option>
               ))}
             </select>
@@ -86,10 +121,10 @@ export function StudentsPage() {
         {data && data.items.length === 0 && (
           <EmptyState
             icon={IconStudents}
-            title="No students yet"
+            title={hasFilters ? "No matching students" : "No students yet"}
             hint={
-              sectionId
-                ? "No students in this section. Try a different section or add one."
+              hasFilters
+                ? "Try a different search or clear the filters."
                 : "Add your first student to get started."
             }
           />

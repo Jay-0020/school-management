@@ -40,14 +40,18 @@ export function createApp() {
   const app = express();
   app.set("trust proxy", 1); // behind Render's proxy — real client IP for logs/rate-limit
 
-  // Allow images over https (OpenStreetMap map tiles + external school logos);
-  // everything else keeps Helmet's secure defaults.
+  // CSP: allow images over https (OpenStreetMap tiles + external school logos)
+  // and allowlist Razorpay Checkout (external script + its iframe + API calls)
+  // for online fee payment; everything else keeps Helmet's secure defaults.
   app.use(
     helmet({
       contentSecurityPolicy: {
         directives: {
           ...helmet.contentSecurityPolicy.getDefaultDirectives(),
           "img-src": ["'self'", "data:", "https:"],
+          "script-src": ["'self'", "https://checkout.razorpay.com"],
+          "frame-src": ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com", "https://*.razorpay.com"],
+          "connect-src": ["'self'", "https://*.razorpay.com", "https://lumberjack.razorpay.com"],
         },
       },
     })

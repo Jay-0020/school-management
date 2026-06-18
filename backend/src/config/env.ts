@@ -25,6 +25,15 @@ const schema = z.object({
 
   SEED_ADMIN_EMAIL: z.string().default("admin@demoschool.in"),
   SEED_ADMIN_PASSWORD: z.string().default("ChangeMe!123"),
+
+  // Online fee payment (Razorpay). Online pay auto-enables when key id + secret
+  // are set. Each school uses its own Razorpay account (per-instance).
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+  // Convenience fee the parent pays on top, so the school nets the full fee.
+  // 2.36% ≈ Razorpay's 2% + 18% GST.
+  CONVENIENCE_FEE_PERCENT: z.coerce.number().min(0).max(15).default(2.36),
 });
 
 const parsed = schema.safeParse(process.env);

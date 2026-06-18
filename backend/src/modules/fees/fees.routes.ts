@@ -6,29 +6,20 @@ import { ApiError, asyncHandler } from "../../lib/http";
 import { streamPdf, field, table, inr } from "../../lib/pdf";
 import { authenticate, requireRole } from "../../middleware/auth";
 import { audit } from "../../lib/audit";
+import {
+  createInvoiceOrder,
+  onlineConfig,
+  OnlinePayError,
+  recomputeInvoice,
+  settleOrder,
+  verifyPaymentSignature,
+} from "./online";
 
 export const feesRouter = Router();
 
 feesRouter.use(authenticate);
 
 const MANAGERS = ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"] as const;
-
-/** Recompute an invoice's paid total and status from its payments. */
-async function recomputeInvoice(invoiceId: string) {
-  const invoice = await prisma.invoice.findUnique({
-    where: { id: invoiceId },
-    include: { payments: true },
-  });
-  if (!invoice) return;
-  const amountPaid = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
-  let status: Prisma.InvoiceUpdateInput["status"] = invoice.status;
-  if (invoice.status !== "CANCELLED") {
-    if (amountPaid <= 0) status = "PENDING";
-    else if (amountPaid >= invoice.total) status = "PAID";
-    else status = "PARTIAL";
-  }
-  await prisma.invoice.update({ where: { id: invoiceId }, data: { amountPaid, status } });
-}
 
 // ── Fee structures (per class) ──────────────────────────────────────────────
 feesRouter.get(
@@ -296,5 +287,90 @@ feesRouter.post(
 
     audit(req, "fee.payment", `Recorded payment ₹${data.amount.toLocaleString("en-IN")} (${data.method}) on invoice "${invoice.title}"`, { type: "Invoice", id: invoice.id });
     res.status(201).json(payment);
+  })
+);
+
+// ── Online payment (Razorpay) ───────────────────────────────────────────────
+// Tells the frontend whether to offer "Pay online" and which key to use.
+feesRouter.get(
+  "/online/config",
+  asyncHandler(async (_req, res) => {
+    res.json(onlineConfig());
+  })
+);
+
+// Load an invoice and ensure the caller (student/parent) owns it.
+async function loadOwnedInvoice(id: string, userId: string, role: string) {
+  const invoice = await prisma.invoice.findUnique({
+    where: { id },
+    include: {
+      student: { select: { firstName: true, lastName: true, userId: true, parentId: true } },
+    },
+  });
+  if (!invoice) throw ApiError.notFound("Invoice not found");
+  const owns = invoice.student.userId === userId || invoice.student.parentId === userId;
+  if (!owns && role !== "SUPER_ADMIN" && role !== "ADMIN") throw ApiError.forbidden();
+  return invoice;
+}
+
+feesRouter.post(
+  "/invoices/:id/online-order",
+  asyncHandler(async (req, res) => {
+    const { sub, role } = req.user!;
+    const invoice = await loadOwnedInvoice(req.params.id, sub, role);
+    const user = await prisma.user.findUnique({
+      where: { id: sub },
+      select: { email: true, phone: true },
+    });
+    try {
+      const order = await createInvoiceOrder(invoice.id, {
+        name: `${invoice.student.firstName} ${invoice.student.lastName}`.trim(),
+        email: user?.email ?? undefined,
+        contact: user?.phone ?? undefined,
+      });
+      res.status(201).json(order);
+    } catch (e) {
+      if (e instanceof OnlinePayError) {
+        const map: Record<string, string> = {
+          ONLINE_DISABLED: "Online payment isn't enabled for this school.",
+          CANCELLED: "This invoice is cancelled.",
+          NOTHING_DUE: "This invoice is already fully paid.",
+          NOT_FOUND: "Invoice not found.",
+        };
+        throw ApiError.badRequest(map[e.message] ?? "Could not start payment");
+      }
+      throw e;
+    }
+  })
+);
+
+const verifySchema = z.object({
+  razorpay_order_id: z.string(),
+  razorpay_payment_id: z.string(),
+  razorpay_signature: z.string(),
+});
+
+feesRouter.post(
+  "/invoices/:id/online-verify",
+  asyncHandler(async (req, res) => {
+    const { sub, role } = req.user!;
+    const invoice = await loadOwnedInvoice(req.params.id, sub, role);
+    const body = verifySchema.parse(req.body);
+
+    if (!verifyPaymentSignature(body.razorpay_order_id, body.razorpay_payment_id, body.razorpay_signature)) {
+      throw ApiError.badRequest("Payment verification failed");
+    }
+    // The order must belong to this invoice (defence-in-depth).
+    const order = await prisma.paymentOrder.findUnique({ where: { id: body.razorpay_order_id } });
+    if (!order || order.invoiceId !== invoice.id) throw ApiError.badRequest("Unknown payment order");
+
+    await settleOrder(body.razorpay_order_id, body.razorpay_payment_id);
+    audit(req, "fee.payment.online", `Online payment on invoice "${invoice.title}"`, { type: "Invoice", id: invoice.id });
+
+    const updated = await prisma.invoice.findUnique({
+      where: { id: invoice.id },
+      include: { items: true, payments: { orderBy: { paidAt: "desc" } } },
+    });
+    res.json(updated);
   })
 );

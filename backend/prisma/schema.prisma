@@ -322,11 +322,36 @@ model Invoice {
   dueDate    DateTime?
   items      InvoiceItem[]
   payments   Payment[]
+  paymentOrders PaymentOrder[]
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   @@index([studentId])
   @@index([status])
+}
+
+// A Razorpay online-payment attempt for an invoice. Links the gateway order to
+// the invoice and gives us idempotent settlement (verify + webhook can't
+// double-credit). Amounts are whole INR.
+model PaymentOrder {
+  id                String             @id // Razorpay order id (order_...)
+  invoice           Invoice            @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId         String
+  feeAmount         Int // invoice portion credited on success
+  surcharge         Int // convenience fee paid by the parent
+  grossAmount       Int // total charged (feeAmount + surcharge)
+  status            PaymentOrderStatus @default(CREATED)
+  razorpayPaymentId String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([invoiceId])
+}
+
+enum PaymentOrderStatus {
+  CREATED
+  PAID
+  FAILED
 }
 
 model InvoiceItem {

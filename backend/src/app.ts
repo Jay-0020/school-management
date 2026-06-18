@@ -22,6 +22,7 @@ import { ratingsRouter } from "./modules/ratings/ratings.routes";
 import { classesRouter } from "./modules/classes/classes.routes";
 import { complaintsRouter } from "./modules/complaints/complaints.routes";
 import { feesRouter } from "./modules/fees/fees.routes";
+import { razorpayWebhookHandler } from "./modules/fees/online";
 import { noticesRouter } from "./modules/notices/notices.routes";
 import { notesRouter } from "./modules/notes/notes.routes";
 import { parentRouter } from "./modules/parent/parent.routes";
@@ -52,6 +53,15 @@ export function createApp() {
     })
   );
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+
+  // Razorpay webhook needs the RAW body for HMAC verification, so it must be
+  // registered before the JSON parser. No auth — Razorpay calls it directly.
+  app.post(
+    "/api/fees/online/webhook",
+    express.raw({ type: "*/*" }),
+    razorpayWebhookHandler
+  );
+
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
   app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));

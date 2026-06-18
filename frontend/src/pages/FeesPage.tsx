@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import { downloadPdf } from "../lib/download";
+import { toast } from "../lib/toast";
 import type {
   ClassWithSections,
   FeeStructure,
@@ -29,6 +30,35 @@ function errMsg(err: unknown, fallback: string): string {
   return (
     (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? fallback
   );
+}
+
+interface OnlineConfig {
+  enabled: boolean;
+  keyId: string | null;
+  feePercent: number;
+}
+interface OnlineOrder {
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+  invoiceTitle: string;
+  outstanding: number;
+  surcharge: number;
+  gross: number;
+  prefill: { name?: string; email?: string; contact?: string };
+}
+
+// Load Razorpay Checkout on demand (only when a parent actually pays).
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if ((window as unknown as { Razorpay?: unknown }).Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
 }
 
 export function FeesPage() {
@@ -410,8 +440,65 @@ function InvoiceModal({
   const [method, setMethod] = useState<PaymentMethod>("CASH");
   const [reference, setReference] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
 
   const balance = inv ? inv.total - inv.amountPaid : 0;
+
+  // Whether to offer "Pay online" (students/parents only).
+  const { data: payCfg } = useQuery({
+    queryKey: ["online-config"],
+    queryFn: async () => (await api.get<OnlineConfig>("/fees/online/config")).data,
+    enabled: !manager,
+  });
+
+  const surcharge = payCfg ? Math.round((balance * payCfg.feePercent) / 100) : 0;
+  const grossOnline = balance + surcharge;
+
+  async function startOnlinePay() {
+    if (!inv) return;
+    setError(null);
+    setPaying(true);
+    try {
+      const loaded = await loadRazorpayScript();
+      if (!loaded) throw new Error("Couldn't load the payment window. Check your connection and try again.");
+      const { data: order } = await api.post<OnlineOrder>(`/fees/invoices/${id}/online-order`, {});
+      const rzp = new (window as unknown as { Razorpay: new (o: unknown) => { open: () => void; on: (e: string, cb: (r: unknown) => void) => void } }).Razorpay({
+        key: order.keyId,
+        order_id: order.orderId,
+        amount: order.amount,
+        currency: order.currency,
+        name: order.invoiceTitle,
+        description: `Fee payment — ${order.invoiceTitle}`,
+        prefill: order.prefill,
+        theme: { color: "#1d4ed8" },
+        handler: async (resp: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          try {
+            await api.post(`/fees/invoices/${id}/online-verify`, {
+              razorpay_order_id: resp.razorpay_order_id,
+              razorpay_payment_id: resp.razorpay_payment_id,
+              razorpay_signature: resp.razorpay_signature,
+            });
+            toast.success("Payment successful 🎉");
+          } catch {
+            // The webhook will still settle it; just let them know it's processing.
+            toast.success("Payment received — your balance will update shortly.");
+          }
+          qc.invalidateQueries({ queryKey: ["invoice", id] });
+          qc.invalidateQueries({ queryKey: ["invoices"] });
+        },
+        modal: { ondismiss: () => setPaying(false) },
+      });
+      rzp.on("payment.failed", (r) => {
+        const desc = (r as { error?: { description?: string } })?.error?.description;
+        setError(desc ?? "Payment failed. Please try again.");
+      });
+      rzp.open();
+    } catch (e) {
+      setError(errMsg(e, "Could not start payment"));
+    } finally {
+      setPaying(false);
+    }
+  }
 
   const pay = useMutation({
     mutationFn: () =>
@@ -535,6 +622,17 @@ function InvoiceModal({
                   Record
                 </button>
               </form>
+            )}
+            {!manager && balance > 0 && inv.status !== "CANCELLED" && payCfg?.enabled && (
+              <div className="pay-online" style={{ marginTop: 12 }}>
+                <p className="muted" style={{ marginBottom: 8 }}>
+                  {money(balance)} fee + {money(surcharge)} processing ({payCfg.feePercent}%) ={" "}
+                  <strong>{money(grossOnline)}</strong>
+                </p>
+                <button className="inline-btn" disabled={paying} onClick={startOnlinePay}>
+                  {paying ? "Opening…" : `Pay ${money(grossOnline)} online`}
+                </button>
+              </div>
             )}
             {error && <p className="error">{error}</p>}
 

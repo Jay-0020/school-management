@@ -391,22 +391,40 @@ no jargon, no cryptic abbreviations.
 ## Update 16 — Online fee payment (Razorpay)
 *Completed: 18 Jun 2026*
 
-Parents and students can now **pay fees online** — by UPI, debit/credit card or
-net banking — straight from the app.
+Online fee payment via **Razorpay** is now **built into the portal**. Parents and
+students can pay fees online — by UPI, debit/credit card or net banking — and the
+invoice is **marked paid automatically** with a payment record + receipt. The
+school receives the **full fee** (the parent pays a small processing fee on top),
+money settles **directly to the school's own bank account**, and card details
+never touch our servers.
 
-- **One tap on an unpaid invoice → "Pay online"**, pay, and the invoice is
-  **marked paid automatically** with a payment record + receipt.
-- **The school receives the full fee** — the parent pays a small processing fee
-  on top (default ~2.36%, configurable), so the gateway's cut is covered.
-- **Money settles directly to the school's own bank account** via the school's
-  own Razorpay account; it never passes through us, and card details never touch
-  our servers.
-- Built securely (server-verified signatures + webhook confirmation, no
-  double-charging) and it stays **off until a school connects its Razorpay
-  keys**, so nothing changes until each school opts in.
+**Current status:** the integration is complete and switched on, **but it won't
+actually process a payment yet** — that needs a **working Razorpay account
+connected** (with its keys). The Razorpay account currently in place can't
+complete payments, so until a proper account is connected, "Pay online" will open
+the payment window but the payment won't go through. Once a valid account's keys
+are added, it works with no further changes.
 
-Setup is documented in **RAZORPAY_SETUP.md** (account creation, KYC/verification
-timeline, keys, webhook, and where it integrates).
+### How to try it
+1. Go to the live portal: **https://school-demo-nnfb.onrender.com**
+2. Log in as a **parent** (or student) — e.g. `parent@greenwood.demo` / `Demo@1234`.
+3. Open **Fees** → tap an **unpaid invoice**.
+4. You'll see a **"Pay online"** option with the amount + a small processing-fee
+   breakdown → tap **Pay online**.
+5. The **Razorpay payment window** opens with the amount and payment methods
+   (UPI / Card / Net banking).
+
+**What to check:**
+- With a **working Razorpay account** connected: completing the payment closes the
+  window, shows **"Payment successful"**, and the invoice flips to **PAID** with a
+  payment entry. As an **Accountant/Admin**, opening the same invoice shows that
+  online payment in its list.
+- Right now (no working account): the window opens but the payment is declined —
+  and importantly the invoice **correctly stays unpaid** (no false "paid").
+
+> To make payments actually go through, a valid Razorpay account's keys need to be
+> connected — full instructions (account setup, keys, what to configure) are in
+> **RAZORPAY_SETUP.md**.
 
 ---
 

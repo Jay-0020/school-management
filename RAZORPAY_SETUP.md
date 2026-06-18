@@ -83,8 +83,21 @@ Required only to go **Live**. Steps in the dashboard's activation flow:
 - After activation, **settlements** reach the school's bank on a **T+2 working
   days** cycle by default (configurable in Razorpay).
 
-> Tip: you can build and fully test the integration in **Test Mode while
-> activation is pending** — they're independent.
+> Tip: you can build and integration-test in **Test Mode while activation is
+> pending** — order creation + signature verify work regardless (see Part 6).
+
+> **⚠️ Business category matters (learned in testing).** If an account is
+> registered as **Education / School** and left **un-activated**, Razorpay
+> **restricts its test checkout** — the hosted Checkout opens but **rejects every
+> method** (cards show "International cards are not supported", netbanking fails,
+> risk-detection JS returns 503). So:
+> - For the **platform/developer's own** Razorpay account (used only to wire up
+>   and demo the integration), register under your **real business** —
+>   **IT / software, individual/proprietor — NOT "School"**. That category needs
+>   only PAN + bank + business proof (no affiliation cert) and its **test
+>   checkout processes normally** (domestic card / `success@razorpay`).
+> - Each **real school** uses **its own** account and supplies **its own**
+>   affiliation certificate. Never upload a school document that isn't yours.
 
 ---
 
@@ -111,12 +124,23 @@ Render restarts automatically. (Local `.env` does NOT apply to Render.)
 
 1. Ensure test keys are set + backend restarted.
 2. Log in as a **parent/student** → open an **unpaid invoice** → **Pay online**.
-3. Pay with a Razorpay **test instrument**:
-   - **Card:** `4111 1111 1111 1111`, any future expiry, any CVV; choose
-     **Success** on the OTP screen.
-   - **UPI:** `success@razorpay` (succeeds) / `failure@razorpay` (fails).
+3. Pay with a Razorpay **test instrument** (needs a properly set-up account —
+   see the business-category warning in Part 4):
+   - **UPI:** `success@razorpay` (succeeds) / `failure@razorpay` (fails) — cleanest.
+   - **Card (domestic):** `5104 0155 5555 5558` (Mastercard), any future expiry,
+     any CVV; enter any OTP / choose **Success**. *(Avoid `4111 1111 1111 1111`
+     — its BIN is treated as international and fails on accounts without
+     international cards enabled.)*
 4. The invoice should flip to **PAID** and a payment row appears
    (method `ONLINE`, reference = the Razorpay payment id).
+
+> **Verifying the integration without the hosted checkout.** If your test
+> account's checkout is restricted (Part 4), you can still prove the server path:
+> create an order via `…/online-order`, then POST to `…/online-verify` with a
+> signature = `HMAC_SHA256("<order_id>|<payment_id>", KEY_SECRET)`. A valid
+> signature settles the invoice to PAID (crediting only the fee, not the
+> surcharge); a tampered one is rejected. This confirms order → verify → settle
+> independently of Razorpay's UI.
 
 ---
 
@@ -128,6 +152,7 @@ Render restarts automatically. (Local `.env` does NOT apply to Render.)
 | **Payment logic** | `backend/src/modules/fees/online.ts` — Razorpay client, order creation, signature verify, **idempotent settlement**, webhook handler, shared `recomputeInvoice`. |
 | **API endpoints** | `backend/src/modules/fees/fees.routes.ts` — `GET /api/fees/online/config`, `POST /api/fees/invoices/:id/online-order`, `POST /api/fees/invoices/:id/online-verify`. |
 | **Webhook route** | `backend/src/app.ts` — `POST /api/fees/online/webhook` (registered **before** the JSON parser so it receives the raw body for HMAC verification; no auth). |
+| **CSP allowlist** | `backend/src/app.ts` — Helmet's Content-Security-Policy must allow Razorpay: `script-src` → `checkout.razorpay.com`, `frame-src`/`connect-src` → `*.razorpay.com`. Without it the browser blocks Checkout and you get "Could not start payment". |
 | **Data model** | `backend/prisma/schema.prisma` — `PaymentOrder` model + `PaymentOrderStatus` enum (links a Razorpay order to an invoice; gives idempotent settlement). Migration `…_add_payment_order`. Successful payments are recorded as a `Payment` with method `ONLINE`. |
 | **Frontend** | `frontend/src/pages/FeesPage.tsx` — the **"Pay online"** button on a parent/student's unpaid invoice (in `InvoiceModal`), the fee breakdown, on-demand Razorpay Checkout, and the verify call. |
 

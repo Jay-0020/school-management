@@ -192,8 +192,9 @@ confirmation prompt — proceed once approved.
 > Part 4 **N-A**.
 >
 > **Test payment instruments (no real money):**
-> - **Card:** `4111 1111 1111 1111`, any future expiry (e.g. 12/30), any CVV, any name; on the bank/OTP step choose **Success**.
-> - **UPI:** `success@razorpay` (succeeds) / `failure@razorpay` (fails).
+> - **UPI (cleanest):** `success@razorpay` (succeeds) / `failure@razorpay` (fails).
+> - **Card (domestic):** `5104 0155 5555 5558` (Mastercard), any future expiry (e.g. 12/30), any CVV; on the bank/OTP step enter any OTP or choose **Success**. *Avoid `4111 1111 1111 1111` — flagged as international on accounts without international cards.*
+> - These need a **properly set-up Razorpay account**; a restricted/un-activated account rejects all methods (note it and mark TC-96/97 N-A).
 >
 > The payment opens in a **Razorpay Checkout** popup/iframe. Interact with it to
 > complete the test payment. If the agent cannot drive the Razorpay popup,
@@ -202,7 +203,7 @@ confirmation prompt — proceed once approved.
 
 - **TC-94 Pay-online visible:** Parent → **Fees** → open a **PENDING/PARTIAL** invoice (e.g. Pooja Bose's). *Expected:* a **"Pay online"** section showing a breakdown like **"₹X fee + ₹Y processing (2.36%) = ₹Z"** and a **Pay ₹Z online** button.
 - **TC-95 Checkout opens:** click **Pay online**. *Expected:* the **Razorpay Checkout** window opens showing the **gross amount (₹Z)** and payment methods (UPI / Card / Netbanking).
-- **TC-96 Pay by test card (happy path):** in Checkout choose **Card** → `4111 1111 1111 1111`, 12/30, any CVV → pay → choose **Success** on the bank page. *Expected:* Checkout closes, a **"Payment successful"** message, and the invoice flips to **PAID** (or PARTIAL→ less balance) with a new payment row **method = ONLINE**, reference starting **"Razorpay …"**.
+- **TC-96 Pay (happy path):** in Checkout pick **UPI** → `success@razorpay` (or **Card** → `5104 0155 5555 5558`, 12/30, any CVV → OTP/Success). *Expected:* Checkout closes, a **"Payment successful"** message, and the invoice flips to **PAID** (or PARTIAL→ less balance) with a new payment row **method = ONLINE**, reference starting **"Razorpay …"**.
 - **TC-97 Amount credited correctly:** confirm only the **fee amount (₹X)**, not the gross with surcharge, was credited to the invoice balance. *Expected:* invoice "Paid" increased by ₹X; it reads PAID when fully covered.
 - **TC-98 Already-paid invoice:** reopen the now-PAID invoice. *Expected:* **no "Pay online"** button (nothing due).
 - **TC-99 Failed/cancelled payment:** open another unpaid invoice → Pay online → in Checkout either **close it** or use UPI `failure@razorpay`. *Expected:* invoice **stays unpaid** (no false "paid"); a graceful error/dismiss, no crash.

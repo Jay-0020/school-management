@@ -226,7 +226,14 @@ bullets([
 doc.addPage();
 band("Updates", "Change log");
 
-h2("17 June 2026 — latest");
+h2("18 June 2026 — latest");
+para("Online fee payment (Razorpay) — parents and students can now pay fees online (UPI / card / net banking) right from the app; the invoice is marked paid automatically with a receipt, and the school receives the full fee (a small processing fee is added for the parent).");
+bullets([
+  "How it works :: open an unpaid invoice → \"Pay online\" → pay in the Razorpay window → invoice flips to PAID; the money settles directly to the school's own bank account, and card details never touch our servers.",
+  "Status :: the integration is built and switched on, but it won't actually process a payment until a working Razorpay account's keys are connected. Until then \"Pay online\" opens the window but the payment won't go through (and the invoice correctly stays unpaid).",
+]);
+
+h2("17 June 2026");
 para("Wording cleanup — labels across the app are now self-explanatory and consistent (no jargon or cryptic abbreviations).");
 bullets([
   "Clearer menu names :: \"Overview\" → Directory, \"Schoolwork\" → Homework, \"Notes\" → Study Notes, \"Users\" → User Accounts, \"Settlements\" → Final Settlements.",
@@ -280,6 +287,7 @@ steps([
   "File / resolve a complaint :: Student / Teacher / Parent: Sidebar → Complaints → pick a staff member, category, message, tick Anonymous if you wish → Submit. Dean: Complaints → open one → Mark resolved.",
   "Staff attendance & calendar :: Admin: School Setup → set the campus location (map) + academic calendar. Staff: Dashboard → \"On Campus\" check-in — works only inside the geofence (use a phone for real GPS).",
   "Dean dashboards & settlements :: Dean: Dashboard shows the Financial overview + Enrolment. Admin/Dean: Settlements → create → approve; the Accountant marks it paid.",
+  "Pay fees online — Student / Parent :: Sidebar → Fees → open an unpaid invoice → \"Pay online\" → pay in the Razorpay window (UPI / card / net banking) → the invoice is marked PAID with a receipt. (Needs a working Razorpay account connected; until then the window opens but the payment won't go through.)",
 ]);
 
 // ── Footer on every page (margin disabled so it never spills to a new page) ──

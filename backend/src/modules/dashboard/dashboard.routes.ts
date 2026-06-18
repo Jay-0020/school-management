@@ -31,7 +31,7 @@ async function feesOutstanding(): Promise<number> {
  */
 dashboardRouter.get(
   "/finance",
-  requireRole("SUPER_ADMIN", "ADMIN", "DEAN"),
+  requireRole("SUPER_ADMIN", "ADMIN", "DEAN", "ACCOUNTANT"),
   asyncHandler(async (_req, res) => {
     const [feesAgg, staffPending, salaryPaid, expPaid, expByCat] = await Promise.all([
       prisma.invoice.aggregate({

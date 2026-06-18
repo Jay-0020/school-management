@@ -388,6 +388,26 @@ no jargon, no cryptic abbreviations.
 - **Consistent Title Case** for headings, tabs and dashboard cards; clearer
   actions ("Mark paid" → **Mark as paid**).
 
+## Update 16 — Online fee payment (Razorpay)
+*Completed: 18 Jun 2026*
+
+Parents and students can now **pay fees online** — by UPI, debit/credit card or
+net banking — straight from the app.
+
+- **One tap on an unpaid invoice → "Pay online"**, pay, and the invoice is
+  **marked paid automatically** with a payment record + receipt.
+- **The school receives the full fee** — the parent pays a small processing fee
+  on top (default ~2.36%, configurable), so the gateway's cut is covered.
+- **Money settles directly to the school's own bank account** via the school's
+  own Razorpay account; it never passes through us, and card details never touch
+  our servers.
+- Built securely (server-verified signatures + webhook confirmation, no
+  double-charging) and it stays **off until a school connects its Razorpay
+  keys**, so nothing changes until each school opts in.
+
+Setup is documented in **RAZORPAY_SETUP.md** (account creation, KYC/verification
+timeline, keys, webhook, and where it integrates).
+
 ---
 
 🎉 **All 14 of the client's original requirements are now complete**, plus the

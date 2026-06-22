@@ -1,18 +1,20 @@
 import { createApp } from "./app";
 import { env } from "./config/env";
-import { prisma } from "./lib/prisma";
+import { tenantCount } from "./config/tenants";
+import { disconnectAll } from "./lib/prisma";
 
 async function main() {
   const app = createApp();
 
   const server = app.listen(env.PORT, () => {
     console.log(`🚀 API listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
+    console.log(`🏫 Serving ${tenantCount()} school(s) from the tenant registry`);
   });
 
   const shutdown = async (signal: string) => {
     console.log(`\n${signal} received, shutting down...`);
     server.close();
-    await prisma.$disconnect();
+    await disconnectAll();
     process.exit(0);
   };
 

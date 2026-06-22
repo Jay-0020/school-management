@@ -8,9 +8,12 @@ const schema = z.object({
   PORT: z.coerce.number().default(4000),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
 
-  DATABASE_URL: z.string(),
+  // Per-tenant now: each school's DATABASE_URL and JWT_SECRET come from the
+  // tenant registry (tenants.json), resolved per request — not from process env.
+  // Kept optional so provisioning/seed subprocesses (which set them) still parse.
+  DATABASE_URL: z.string().optional(),
 
-  JWT_SECRET: z.string().min(8, "JWT_SECRET must be set"),
+  JWT_SECRET: z.string().optional(),
   JWT_EXPIRES_IN: z.string().default("7d"),
 
   // White-label seed values for this deployment

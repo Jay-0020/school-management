@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import type { Role } from "@prisma/client";
 import { env } from "../config/env";
 import { ApiError } from "../lib/http";
+import { requireTenant } from "../lib/tenant-context";
 
 export interface AuthPayload {
   sub: string; // user id
@@ -27,7 +28,9 @@ export function signToken(
   const options: jwt.SignOptions = {
     expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
   };
-  return jwt.sign(payload, env.JWT_SECRET, options);
+  // Per-tenant secret: a token minted for one school can't be verified against
+  // another, so tokens never cross tenants even if user ids happen to collide.
+  return jwt.sign(payload, requireTenant().tenant.jwtSecret, options);
 }
 
 /** Requires a valid token; populates req.user.
@@ -38,7 +41,7 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
   const token = header?.startsWith("Bearer ") ? header.slice("Bearer ".length) : cookieToken;
   if (!token) throw ApiError.unauthorized("Missing authentication");
   try {
-    req.user = jwt.verify(token, env.JWT_SECRET) as AuthPayload;
+    req.user = jwt.verify(token, requireTenant().tenant.jwtSecret) as AuthPayload;
     next();
   } catch {
     throw ApiError.unauthorized("Invalid or expired token");

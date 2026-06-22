@@ -30,5 +30,8 @@ uploads/
 
 # Provisioned per-school env files (secrets)
 backend/instances/
+
+# Tenant registry — holds per-school DB URLs + JWT secrets
+backend/tenants.json
 School-Portal-Demo-Guide.pdf
 Online-Fee-Payment-Options.pdf

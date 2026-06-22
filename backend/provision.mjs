@@ -15,7 +15,7 @@
 // school/school @ localhost:5432.
 import { execSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -59,7 +59,14 @@ const cfg = {
   password: a.password || "ChangeMe!123",
   db: a.db,
   port: a.port || "4000",
+  // Hostname this school is reached at. Defaults to a *.localhost subdomain
+  // derived from the db name (school_springfield → springfield.localhost) for
+  // local/dev; pass --host the real domain in production.
+  host: a.host || `${a.db.replace(/^school_/, "")}.localhost`,
 };
+
+// One stable per-school JWT secret, shared by the .env and the tenant registry.
+const jwtSecret = randomBytes(24).toString("hex");
 
 const baseUrl = `postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}`;
 const dbUrl = `${baseUrl}/${cfg.db}?schema=public`;
@@ -86,7 +93,7 @@ const env = `# Generated for ${cfg.name}
 NODE_ENV=production
 PORT=${cfg.port}
 DATABASE_URL=${dbUrl}
-JWT_SECRET=${randomBytes(24).toString("hex")}
+JWT_SECRET=${jwtSecret}
 JWT_EXPIRES_IN=7d
 SCHOOL_NAME=${cfg.name}
 SCHOOL_SHORT_NAME=${cfg.short}
@@ -124,7 +131,22 @@ execSync("npx prisma migrate deploy", { cwd: here, env: runEnv, stdio: "ignore" 
 console.log("  • seeding branding + admin…");
 execSync("npx tsx prisma/seed.ts", { cwd: here, env: seedEnv, stdio: "ignore" });
 
-console.log(`\n✅ "${cfg.name}" is provisioned.`);
+// 4. Register the school in the tenant registry (tenants.json) — the single app
+//    reads this to route requests by hostname to this school's DB. Idempotent:
+//    re-provisioning the same db updates its entry in place.
+const registryPath = join(here, "tenants.json");
+const registry = existsSync(registryPath)
+  ? JSON.parse(readFileSync(registryPath, "utf8"))
+  : { tenants: [] };
+const entry = { host: cfg.host, db: cfg.db, databaseUrl: dbUrl, jwtSecret, name: cfg.name };
+const idx = registry.tenants.findIndex((t) => t.db === cfg.db || t.host === cfg.host);
+if (idx >= 0) registry.tenants[idx] = entry;
+else registry.tenants.push(entry);
+writeFileSync(registryPath, JSON.stringify(registry, null, 2) + "\n");
+console.log(`  ✓ registered tenant "${cfg.host}" in tenants.json`);
+
+console.log(`\n✅ "${cfg.name}" is provisioned and registered.`);
 console.log(`   Admin login: ${cfg.admin} / ${cfg.password}`);
-console.log(`   Run it:      cd backend && env $(cat ${envPath} | grep -v '^#' | xargs) npm start`);
-console.log(`   Or deploy:   docker compose --env-file ${envPath} -f docker-compose.school.yml up -d\n`);
+console.log(`   Reached at:  http://${cfg.host}:${cfg.port}`);
+console.log(`   Run it:      cd backend && npm start   (one app serves every registered school)`);
+console.log(`   No redeploy needed to add a school — it's live as soon as it's in tenants.json.\n`);

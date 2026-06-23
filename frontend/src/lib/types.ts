@@ -242,6 +242,7 @@ export interface Student {
   guardianName?: string | null;
   guardianPhone?: string | null;
   address?: string | null;
+  photoFile?: string | null;
   status: EnrollmentStatus;
   admissionDate?: string | null;
   leftAt?: string | null;

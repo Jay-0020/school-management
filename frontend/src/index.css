@@ -346,7 +346,8 @@ label {
 /* ── App shell ─────────────────────────────────────────────── */
 .shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden; /* the window itself never scrolls; the main column does */
 }
 .sidebar {
   width: var(--sidebar-w);
@@ -448,6 +449,8 @@ label {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow-y: auto; /* scroll container — sidebar (sibling) stays pinned, topbar sticks within this */
 }
 .topbar {
   position: sticky;

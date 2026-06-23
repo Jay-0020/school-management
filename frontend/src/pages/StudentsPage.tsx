@@ -2,9 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { Avatar } from "../components/Avatar";
 import { EmptyState, SkeletonRows } from "../components/EmptyState";
 import { IconStudents } from "../components/icons";
+import { PhotoUploader } from "../components/PhotoUploader";
 import { useAuth } from "../context/AuthContext";
+import { photoUrl } from "../lib/photoUrl";
 import type {
   ClassWithSections,
   EnrollmentStatus,
@@ -148,7 +151,14 @@ export function StudentsPage() {
                 <tr key={s.id}>
                   <td data-label="Admission no.">{s.admissionNo}</td>
                   <td data-label="Name">
-                    {s.firstName} {s.lastName}
+                    <span className="cell-person">
+                      <Avatar
+                        src={s.photoFile ? photoUrl("students", s.id) : null}
+                        name={`${s.firstName} ${s.lastName}`}
+                        size={30}
+                      />
+                      {s.firstName} {s.lastName}
+                    </span>
                   </td>
                   <td data-label="Class · Section">
                     {s.section ? `${s.section.class.name} · ${s.section.name}` : "—"}
@@ -309,6 +319,15 @@ function StudentModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>{isEdit ? "Edit student" : "Add student"}</h3>
+        {isEdit && student && (
+          <PhotoUploader
+            kind="students"
+            id={student.id}
+            name={`${student.firstName} ${student.lastName}`}
+            hasPhoto={!!student.photoFile}
+            onChange={() => qc.invalidateQueries({ queryKey: ["students"] })}
+          />
+        )}
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
             Admission no.

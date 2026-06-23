@@ -2,8 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { Avatar } from "../components/Avatar";
 import { EmptyState, SkeletonRows } from "../components/EmptyState";
 import { IconTeacher } from "../components/icons";
+import { PhotoUploader } from "../components/PhotoUploader";
+import { photoUrl } from "../lib/photoUrl";
 import { useAuth } from "../context/AuthContext";
 import type { Paginated, StaffType, Teacher } from "../lib/types";
 
@@ -129,7 +132,14 @@ export function TeachersPage() {
                 <tr key={t.id}>
                   <td data-label="Employee no.">{t.employeeNo}</td>
                   <td data-label="Name">
-                    {t.firstName} {t.lastName}
+                    <span className="cell-person">
+                      <Avatar
+                        src={t.photoFile ? photoUrl("teachers", t.id) : null}
+                        name={`${t.firstName} ${t.lastName}`}
+                        size={30}
+                      />
+                      {t.firstName} {t.lastName}
+                    </span>
                   </td>
                   <td data-label="Type">{STAFF_LABEL[t.staffType]}</td>
                   <td data-label="Contact">{t.phone ?? t.email ?? "—"}</td>
@@ -262,6 +272,15 @@ function TeacherModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>{isEdit ? "Edit staff member" : "Add staff member"}</h3>
+        {isEdit && teacher && (
+          <PhotoUploader
+            kind="teachers"
+            id={teacher.id}
+            name={`${teacher.firstName} ${teacher.lastName}`}
+            hasPhoto={!!teacher.photoFile}
+            onChange={() => qc.invalidateQueries({ queryKey: ["teachers"] })}
+          />
+        )}
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
             Employee no.

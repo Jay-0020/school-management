@@ -346,7 +346,8 @@ label {
 /* ── App shell ─────────────────────────────────────────────── */
 .shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden; /* the window itself never scrolls; the main column does */
 }
 .sidebar {
   width: var(--sidebar-w);
@@ -448,6 +449,8 @@ label {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow-y: auto; /* scroll container — sidebar (sibling) stays pinned, topbar sticks within this */
 }
 .topbar {
   position: sticky;
@@ -1952,6 +1955,29 @@ tr.clickable:hover td {
 .avatar {
   background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #ec4899)) !important;
   color: #fff !important;
+}
+/* Photo avatars (image) reuse .avatar sizing but cover the circle. */
+img.avatar {
+  object-fit: cover;
+  background: var(--surface-2, #e5e7eb) !important;
+}
+/* Avatar + upload/remove controls (person editors / detail) */
+.photo-uploader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 14px;
+}
+.photo-uploader-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+/* Tighten the directory name cell so the avatar sits inline with the name. */
+.cell-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* ════════════════════════════════════════════════════════════════════════

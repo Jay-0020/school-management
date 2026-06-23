@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
 import { audit } from "../../lib/audit";
+import { uploadPhoto, streamPhoto, deletePhotoFile } from "../../lib/photos";
 
 export const studentsRouter = Router();
 
@@ -183,5 +184,59 @@ studentsRouter.post(
     });
     audit(req, "student.reactivate", `Reactivated ${student.firstName} ${student.lastName}`, { type: "Student", id: student.id });
     res.json(student);
+  })
+);
+
+// ── Profile photo (per-tenant storage, served tenant-scoped) ────────────────
+// GET is authenticated-only so <img> tags (which send the cookie) can render it.
+studentsRouter.get(
+  "/:id/photo",
+  asyncHandler(async (req, res) => {
+    const s = await prisma.student.findUnique({
+      where: { id: req.params.id },
+      select: { photoFile: true },
+    });
+    streamPhoto(res, s?.photoFile);
+  })
+);
+
+studentsRouter.post(
+  "/:id/photo",
+  requireRole("SUPER_ADMIN", "ADMIN"),
+  uploadPhoto,
+  asyncHandler(async (req, res) => {
+    if (!req.file) throw ApiError.badRequest("A photo is required");
+    const existing = await prisma.student.findUnique({
+      where: { id: req.params.id },
+      select: { photoFile: true, firstName: true, lastName: true },
+    });
+    if (!existing) {
+      deletePhotoFile(req.file.filename);
+      throw ApiError.notFound("Student not found");
+    }
+    await prisma.student.update({
+      where: { id: req.params.id },
+      data: { photoFile: req.file.filename },
+    });
+    deletePhotoFile(existing.photoFile);
+    audit(req, "student.photo", `Updated photo for ${existing.firstName} ${existing.lastName}`, { type: "Student", id: req.params.id });
+    res.status(201).json({ ok: true });
+  })
+);
+
+studentsRouter.delete(
+  "/:id/photo",
+  requireRole("SUPER_ADMIN", "ADMIN"),
+  asyncHandler(async (req, res) => {
+    const s = await prisma.student.findUnique({
+      where: { id: req.params.id },
+      select: { photoFile: true },
+    });
+    if (!s) throw ApiError.notFound("Student not found");
+    if (s.photoFile) {
+      deletePhotoFile(s.photoFile);
+      await prisma.student.update({ where: { id: req.params.id }, data: { photoFile: null } });
+    }
+    res.json({ ok: true });
   })
 );

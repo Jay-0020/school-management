@@ -2,8 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
+import { Avatar } from "../components/Avatar";
+import { PhotoUploader } from "../components/PhotoUploader";
 import { SkeletonRows } from "../components/EmptyState";
 import { useAuth } from "../context/AuthContext";
+import { photoUrl } from "../lib/photoUrl";
 import { toast } from "../lib/toast";
 import type { AttendanceYear, PeopleDirectory, ProfileMe } from "../lib/types";
 
@@ -15,7 +18,7 @@ export function PeoplePage() {
   const [grade, setGrade] = useState("");
   const [section, setSection] = useState("");
   const [staffType, setStaffType] = useState("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [open, setOpen] = useState<{ id: string; name: string; hasPhoto: boolean } | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["people"],
@@ -134,9 +137,14 @@ export function PeoplePage() {
           </thead>
           <tbody>
             {students.map((s) => (
-              <tr key={s.id} className="clickable" onClick={() => setOpenId(s.id)}>
+              <tr key={s.id} className="clickable" onClick={() => setOpen({ id: s.id, name: s.name, hasPhoto: s.hasPhoto })}>
                 <td data-label="Admission no.">{s.admissionNo}</td>
-                <td data-label="Name">{s.name}</td>
+                <td data-label="Name">
+                  <span className="cell-person">
+                    <Avatar src={s.hasPhoto ? photoUrl("students", s.id) : null} name={s.name} size={30} />
+                    {s.name}
+                  </span>
+                </td>
                 <td data-label="Class · Section">{s.className}</td>
                 <td data-label="Attendance">
                   {s.attendancePercent === null ? (
@@ -167,7 +175,12 @@ export function PeoplePage() {
             {staff.map((s) => (
               <tr key={s.id}>
                 <td data-label="Employee no.">{s.employeeNo}</td>
-                <td data-label="Name">{s.name}</td>
+                <td data-label="Name">
+                  <span className="cell-person">
+                    <Avatar src={s.hasPhoto ? photoUrl("teachers", s.id) : null} name={s.name} size={30} />
+                    {s.name}
+                  </span>
+                </td>
                 <td data-label="Type">{s.staffType === "TEACHING" ? "Teaching" : "Non-teaching"}</td>
                 <td data-label="Attendance">
                   {s.attendancePercent === null ? (
@@ -185,12 +198,21 @@ export function PeoplePage() {
         </table>
       )}
 
-      {openId && <StudentDetail id={openId} onClose={() => setOpenId(null)} />}
+      {open && <StudentDetail student={open} onClose={() => setOpen(null)} />}
     </AppShell>
   );
 }
 
-function StudentDetail({ id, onClose }: { id: string; onClose: () => void }) {
+function StudentDetail({
+  student,
+  onClose,
+}: {
+  student: { id: string; name: string; hasPhoto: boolean };
+  onClose: () => void;
+}) {
+  const { user } = useAuth();
+  const id = student.id;
+  const canManage = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN";
   const { data } = useQuery({
     queryKey: ["student-overview", id],
     queryFn: async () => (await api.get<ProfileMe>(`/profile/student/${id}`)).data,
@@ -207,6 +229,13 @@ function StudentDetail({ id, onClose }: { id: string; onClose: () => void }) {
             <p className="muted">
               {data.className} · Admission no. {data.admissionNo}
             </p>
+            {canManage ? (
+              <PhotoUploader kind="students" id={id} name={student.name} hasPhoto={student.hasPhoto} />
+            ) : (
+              <div className="photo-uploader">
+                <Avatar src={student.hasPhoto ? photoUrl("students", id) : null} name={student.name} size={64} />
+              </div>
+            )}
             <h4 className="section-title">Attendance (by academic year)</h4>
             <table className="data-table">
               <thead>

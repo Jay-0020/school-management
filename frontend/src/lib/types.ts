@@ -86,6 +86,7 @@ export interface PeopleDirectory {
     grade: string | null;
     section: string | null;
     attendancePercent: number | null;
+    hasPhoto: boolean;
   }[];
   staff: {
     type: "staff";
@@ -95,6 +96,7 @@ export interface PeopleDirectory {
     staffType: string;
     attendancePercent: number | null;
     presentToday: boolean;
+    hasPhoto: boolean;
   }[];
 }
 
@@ -240,6 +242,7 @@ export interface Student {
   guardianName?: string | null;
   guardianPhone?: string | null;
   address?: string | null;
+  photoFile?: string | null;
   status: EnrollmentStatus;
   admissionDate?: string | null;
   leftAt?: string | null;
@@ -264,6 +267,7 @@ export interface Teacher {
   joiningDate?: string | null;
   phone?: string | null;
   email?: string | null;
+  photoFile?: string | null;
   isActive: boolean;
 }
 

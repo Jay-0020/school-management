@@ -194,6 +194,7 @@ profileRouter.get(
         grade: s.section?.class.name ?? null,
         section: s.section?.name ?? null,
         attendancePercent: t.total ? Math.round((t.present / t.total) * 100) : null,
+        hasPhoto: !!s.photoFile,
       };
     });
 
@@ -233,6 +234,7 @@ profileRouter.get(
           // without an account, or before a session is configured, read as "—".
           attendancePercent: t.userId && days ? Math.round((attended / days) * 100) : null,
           presentToday: t.userId ? presentToday.has(t.userId) : false,
+          hasPhoto: !!t.photoFile,
         };
       });
     }

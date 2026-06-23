@@ -153,6 +153,7 @@ model Teacher {
   joiningDate    DateTime?
   phone          String?
   email          String?
+  photoFile       String?          // filename in uploads/<tenant>/photos (served via /api/teachers/:id/photo)
   isActive        Boolean          @default(true)
   classTeacherOf  Section[]        @relation("ClassTeacher")
   salaryStructure SalaryStructure?
@@ -188,6 +189,7 @@ model Student {
   guardianName  String?
   guardianPhone String?
   address       String?
+  photoFile     String?            // filename in uploads/<tenant>/photos (served via /api/students/:id/photo)
   status        EnrollmentStatus   @default(ACTIVE)
   admissionDate DateTime?          // when they actually joined (onboarding)
   leftAt        DateTime?          // set when the student leaves (retention)

@@ -312,6 +312,38 @@ this is a contained change when you need it. Not required for the first schools.
 - **Rollback:** the previous single-tenant architecture is preserved on the
   `single-tenant-legacy` branch if a client ever wants the old per-school model.
 
+### Backups — where they go & how to set them up
+
+**Golden rule:** a backup must live **somewhere other than the server it came
+from.** A dump sitting on the same box is *not* a backup — if the box dies, it
+dies too. Backups never land on your laptop automatically; you choose a
+destination.
+
+**If you use a managed Postgres (Neon / Supabase / DigitalOcean / Azure):**
+backups are **automatic and stored in the provider's cloud** — just turn them on
+in their dashboard and set a retention window. Nothing to run, nothing on your
+device. (Recommended — least to manage.)
+
+**If you self-host Postgres on the VPS:** nothing is backed up until you set it
+up. Dump on a schedule **and push the dump off the server** to cheap object
+storage (Backblaze B2 / S3 / etc.). Example daily cron (`crontab -e`):
+```bash
+# 2 AM daily: dump every school DB, then upload off-server, then prune local copies
+0 2 * * * cd /opt/school-management/backend && \
+  for url in $(node -e "JSON.parse(require('fs').readFileSync('tenants.json')).tenants.forEach(t=>console.log(t.databaseUrl))"); do \
+    pg_dump "$url" | gzip > /var/backups/$(date +\%F)-$(echo "$url" | sed 's#.*/##;s#?.*##').sql.gz ; \
+  done && \
+  rclone copy /var/backups remote:school-backups && \
+  find /var/backups -mtime +7 -delete
+```
+(`rclone` is a one-binary tool that uploads to B2/S3/Drive/etc. Configure it once
+with `rclone config`.) Keep a copy on your device too if you like — but the
+**off-site cloud copy is the real safety net**, not your laptop.
+
+**Don't forget the uploads volume.** Photos / note files live on disk separately
+from the DB, so back up `backend/uploads` the same way (e.g. `rclone copy` the
+volume, or snapshot it). The DB backup alone does **not** include these files.
+
 ---
 
 ## Deployment pipeline (CI/CD)

@@ -65,6 +65,7 @@ calculator.
 | **B. DigitalOcean + DO Managed PG** | 2 vCPU/4GB ~$24 | ~$15 | **~$39 (≈ ₹3,300)** | Simple, fully managed |
 | **C. Azure VM + PG Flexible Server** | B2s ~$36 pay-go / ~$22 reserved | Burstable B1ms ~$25 | **~$61 pay-go / ~$47 reserved (≈ ₹4,000–5,200)** | Client is an Azure / enterprise shop; India regions |
 | **D. Render (paid)** | Standard web ~$25 | ~$7–19 | **~$32–44 (≈ ₹2,700–3,700)** | Least ops, push-to-deploy built in; pricier than a VPS |
+| **E. Hostinger VPS** | KVM 2 (2 vCPU/8GB) ~$7–10 | self-host on VPS ~$0, or Neon free ~$0 | **~$7–10 (≈ ₹600–850)** | Cheapest with India data centers; budget-tier support; **no managed DB** |
 
 **Free / not on this bill:** TLS (Caddy + Let's Encrypt), CI/CD (GitHub Actions
 free tier + GHCR), and per-school **domains** (each school buys its own,
@@ -83,6 +84,19 @@ per school.
   reserved** instances (~40% off).
 - **Avoid Render *free*** for production (it sleeps and the DB expires — demo
   tier only). Render *paid* only if push-button simplicity is worth the premium.
+- **Hostinger (cheap, India DCs) →** use their **VPS (KVM)** plan, **not** shared/
+  cPanel hosting (that won't run Docker). Pick **8GB / 2 vCPU (KVM 2)** — the extra
+  vCPU matters and the price gap is tiny. Choose **Ubuntu** as the VPS OS at signup
+  (often a "Ubuntu + Docker" template); you SSH in from your Mac — nothing Linux is
+  installed on the Mac. It has **no managed database**, so either self-host Postgres
+  on the box (**set up your own automated `pg_dump` backups — non-negotiable**) or
+  pair it with **Neon/Supabase** free (recommended, so you don't babysit the DB).
+
+> **VPS vs hyperscaler:** Hostinger / Hetzner / DigitalOcean are cloud VPS hosts —
+> cheap, you get a box, **no managed DB** (self-host or pair with Neon). AWS / Azure /
+> GCP are "hyperscaler" clouds — pricier, but bundle managed Postgres, load
+> balancers, autoscaling, etc. Both are "cloud" (rented, no hardware you own); for a
+> single Docker + Caddy box the box behaves identically.
 
 > **Azure VM ≠ Azure DevOps.** An *Azure VM* is the **server** (where the app
 > runs). *Azure DevOps* is a **CI/CD suite** (an alternative to GitHub Actions).

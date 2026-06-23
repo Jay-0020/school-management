@@ -1,25 +1,32 @@
 # School Management Portal
 
-A white-label, multi-school management portal — sold as an **isolated per-school
-deployment** from a single template codebase. Market: **India**. Web-first.
+A white-label, multi-school management portal. **One codebase and one running app
+serve many schools** — each request is routed by hostname to that school's own
+database, so schools share the app but have fully isolated data and branding.
+Market: **India**. Web-first.
 
 See [REQUIREMENTS.md](./REQUIREMENTS.md) for the full spec.
 
 ## 🏫 Onboard a new school (one command)
 
-Each customer school is its own isolated, branded instance. To create one:
+Each school gets its own database + branding, served by the shared app on its own
+domain. To add one:
 
 ```bash
 cd backend
 npm run provision -- \
   --name "Springfield High" --short SHS --color "#7c3aed" \
-  --admin admin@springfield.edu --password "Temp@1234" --db school_springfield
+  --admin admin@springfield.edu --password "Temp@1234" \
+  --db school_springfield --host springfield.edu
 ```
 
 This creates the school's database, applies migrations, seeds its branding +
-admin login, and writes `backend/instances/<db>.env`. Then run it (Node on a
-spare port, or as a container). **Full step-by-step + production deploy:
-[ONBOARDING.md](./ONBOARDING.md).**
+admin login, and **registers it in the tenant registry** (`backend/tenants.json`)
+keyed by `--host`. The one running app picks it up — **no per-school process, no
+redeploy.** Point the school's domain at the server and it's live.
+
+- **Add a school / local dev:** [ONBOARDING.md](./ONBOARDING.md)
+- **Launch in production (server, domains, managed Postgres):** [GOING-LIVE.md](./GOING-LIVE.md)
 
 ## Stack
 
@@ -70,10 +77,17 @@ npm run dev                   # http://localhost:5173
 
 ## White-label model
 
-Each school gets its own deployment. **Branding and config are never hardcoded** —
-they come from environment variables plus the `SchoolSettings` table, so rebranding
-for a new buyer means changing config and deploying a fresh instance from the same
-image. See REQUIREMENTS.md §1.
+One shared app serves every school; **branding and config are never hardcoded**.
+The app resolves the school from the request **hostname** via the tenant registry
+(`backend/tenants.json`), connects to that school's database, and renders its
+branding from the school's `SchoolSettings` row. Adding/rebranding a school is a
+data change (provision + registry entry), never a code fork or a new deployment.
+A per-school JWT secret keeps tokens from crossing tenants. See
+[GOING-LIVE.md](./GOING-LIVE.md) and REQUIREMENTS.md §1.
+
+> **Single-school fallback:** with no registry but `DATABASE_URL`/`JWT_SECRET` set
+> in the environment, the app serves one school on any hostname — how the hosted
+> demo runs, and the simplest way to deploy a single school.
 
 ## Status
 

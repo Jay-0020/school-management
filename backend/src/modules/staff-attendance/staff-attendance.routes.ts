@@ -10,7 +10,7 @@ export const staffAttendanceRouter = Router();
 const STAFF_ROLES = ["SUPER_ADMIN", "ADMIN", "DEAN", "ACCOUNTANT", "TEACHER"] as const;
 
 /** Working days from session start to today (the attendance-% denominator). */
-async function workingDaysToDate(): Promise<{ days: number; start: Date | null }> {
+export async function workingDaysToDate(): Promise<{ days: number; start: Date | null }> {
   const s = await prisma.schoolSettings.findFirst();
   if (!s?.sessionStart) return { days: 0, start: null };
   const holidays = await prisma.holiday.findMany();

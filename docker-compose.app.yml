@@ -1,0 +1,37 @@
+# Shared multi-tenant app stack (the CURRENT model).
+#
+# ONE app container serves EVERY school, routing by hostname and connecting to
+# each school's own database (on your managed/external Postgres). See GOING-LIVE.md.
+#
+#   docker compose -f docker-compose.app.yml up -d --build
+#
+# The app reads backend/tenants.json (the tenant registry, written by the
+# provisioner) — mounted in read-only below. Each school's database is created
+# and migrated by `npm run provision`, so this app does NOT migrate/seed on boot
+# (the command overrides the image's default migrate+seed CMD).
+#
+# Put a TLS-terminating reverse proxy (Caddy / Cloudflare / nginx) in front to
+# route every school domain → this app on port 4000.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      # JWT_SECRET/DATABASE_URL are NOT needed in multi-school mode — they come
+      # per-school from the registry. (They're only used by the single-tenant
+      # fallback for a one-school deploy.)
+    command: ["node", "dist/index.js"]
+    ports:
+      - "${APP_PORT:-4000}:4000"
+    volumes:
+      # The tenant registry (host → db, secrets). Provisioner writes it on the host.
+      - ./backend/tenants.json:/app/backend/tenants.json:ro
+      # Persist uploaded files (notes, etc.) across redeploys.
+      - app_uploads:/app/backend/uploads
+
+volumes:
+  app_uploads:

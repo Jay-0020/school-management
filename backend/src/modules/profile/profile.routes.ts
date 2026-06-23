@@ -3,6 +3,8 @@ import type { AttendanceRecord } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { utcMidnight } from "../../lib/calendar";
+import { workingDaysToDate } from "../staff-attendance/staff-attendance.routes";
 
 export const profileRouter = Router();
 
@@ -201,13 +203,38 @@ profileRouter.get(
         where: { isActive: true },
         orderBy: [{ firstName: "asc" }],
       });
-      staffRows = staff.map((t) => ({
-        type: "staff" as const,
-        id: t.id,
-        name: `${t.firstName} ${t.lastName}`,
-        employeeNo: t.employeeNo,
-        staffType: t.staffType,
-      }));
+      // Staff attendance % = days checked in / working days so far this session
+      // (same basis as the Staff Attendance oversight page). Check-in based, so
+      // staff with no linked user / no check-ins read as 0%.
+      const { days, start } = await workingDaysToDate();
+      const today = utcMidnight(new Date());
+      const counts = start
+        ? await prisma.staffAttendance.groupBy({
+            by: ["userId"],
+            _count: { _all: true },
+            where: { date: { gte: start, lte: today } },
+          })
+        : [];
+      const attendedBy = new Map(counts.map((c) => [c.userId, c._count._all]));
+      const presentToday = new Set(
+        (await prisma.staffAttendance.findMany({ where: { date: today }, select: { userId: true } })).map(
+          (r) => r.userId
+        )
+      );
+      staffRows = staff.map((t) => {
+        const attended = t.userId ? attendedBy.get(t.userId) ?? 0 : 0;
+        return {
+          type: "staff" as const,
+          id: t.id,
+          name: `${t.firstName} ${t.lastName}`,
+          employeeNo: t.employeeNo,
+          staffType: t.staffType,
+          // Attendance only applies to staff with a login (they check in). Staff
+          // without an account, or before a session is configured, read as "—".
+          attendancePercent: t.userId && days ? Math.round((attended / days) * 100) : null,
+          presentToday: t.userId ? presentToday.has(t.userId) : false,
+        };
+      });
     }
 
     res.json({ students: studentRows, staff: staffRows });

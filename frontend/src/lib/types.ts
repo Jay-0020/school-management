@@ -93,6 +93,8 @@ export interface PeopleDirectory {
     name: string;
     employeeNo: string;
     staffType: string;
+    attendancePercent: number | null;
+    presentToday: boolean;
   }[];
 }
 

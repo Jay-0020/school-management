@@ -1,3 +1,9 @@
+# ⚠️ LEGACY — one-container-per-school stack (the OLD instance-per-school model).
+# The current model is ONE shared app serving all schools by hostname — use
+# **docker-compose.app.yml** and see GOING-LIVE.md. Keep this only for a single,
+# fully self-contained school+DB box, or alongside the `single-tenant-legacy`
+# branch if a client wants the old per-school deployment.
+#
 # Per-school deployment stack: one Postgres + one app container.
 # Use the env file produced by `npm run provision`:
 #

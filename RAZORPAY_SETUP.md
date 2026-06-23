@@ -7,6 +7,16 @@ where the feature lives in the codebase.
 to that school's bank). The platform never holds funds. **Parents pay a small
 convenience fee on top**, so the school receives the full fee.
 
+> ⚠️ **Multi-tenant limitation (current):** the Razorpay keys
+> (`RAZORPAY_KEY_ID` / `_SECRET` / `_WEBHOOK_SECRET`) are read from **global
+> environment variables**, not from the per-school tenant registry. So the
+> per-school-account model above holds for a **single-school deploy**, but in
+> multi-school mode all schools would share one Razorpay account. To make it
+> truly per-school: carry these keys per tenant in `backend/tenants.json` and
+> have `src/modules/fees/online.ts` read them from the resolved tenant instead
+> of `env`. Do this before enabling online payments for multiple live schools.
+> (See the same note in [GOING-LIVE.md](./GOING-LIVE.md).)
+
 > **Test vs Live in one line:** *Test mode needs NO KYC/documents — use it to
 > verify the integration today.* *Live mode (real money) requires account
 > activation (KYC).*

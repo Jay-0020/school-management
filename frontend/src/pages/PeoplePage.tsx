@@ -160,6 +160,7 @@ export function PeoplePage() {
               <th>Employee no.</th>
               <th>Name</th>
               <th>Type</th>
+              <th>Attendance</th>
             </tr>
           </thead>
           <tbody>
@@ -168,6 +169,16 @@ export function PeoplePage() {
                 <td data-label="Employee no.">{s.employeeNo}</td>
                 <td data-label="Name">{s.name}</td>
                 <td data-label="Type">{s.staffType === "TEACHING" ? "Teaching" : "Non-teaching"}</td>
+                <td data-label="Attendance">
+                  {s.attendancePercent === null ? (
+                    <span className="muted">—</span>
+                  ) : (
+                    <span className={`pct ${s.attendancePercent < 75 ? "pct-low" : ""}`}>
+                      {s.attendancePercent}%
+                    </span>
+                  )}
+                  {s.presentToday && <span className="muted" style={{ marginLeft: 6 }}>· in today</span>}
+                </td>
               </tr>
             ))}
           </tbody>

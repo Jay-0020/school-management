@@ -1,0 +1,199 @@
+# Going Live — Launching a Real School in Production
+
+This is the end-to-end guide for taking the portal from "works on my machine" to
+"a real school is using it on their own domain." Read [ONBOARDING.md](./ONBOARDING.md)
+first for the day-to-day "add a school" command; this doc covers the **production
+infrastructure** around it.
+
+## The model in one picture
+
+```
+   springfield.edu  ─┐
+   oakwood.edu       ─┼──────►  ONE app (one server)  ──►  resolves school by hostname
+   riverdale.edu     ─┘            (reads tenant registry)        │
+                                                                  ├─ DB: school_springfield
+                                                                  ├─ DB: school_oakwood
+                                                                  └─ DB: school_riverdale
+```
+
+- **One codebase, one running app, one server.** Not one server per school.
+- **One database per school** (full data isolation) on a shared Postgres.
+- **Each school's domain points at the same app.** The app reads the incoming
+  hostname and connects to that school's database.
+- **Adding a school needs no redeploy** — create its DB + add a registry entry,
+  point its domain at the server. Fixing a bug = deploy the one app once; every
+  school gets it.
+
+---
+
+## What you'll need (the shopping list)
+
+| # | Thing | Who provides it | Notes |
+|---|-------|-----------------|-------|
+| 1 | **A server** (VPS / cloud box) | The client | Linux, Docker installed. A small box handles many schools. Needs a public IP + ports 80/443. |
+| 2 | **A Postgres database** | The client (managed) or on the same box | Managed (Neon / Supabase / RDS / DigitalOcean) is recommended over self-hosted. One DB *per school* lives here. |
+| 3 | **A domain per school** | Each school | The school buys/owns it. You just need them to point DNS at the server (an A record, or a CNAME). |
+| 4 | **TLS certificates** | Auto (Caddy / Cloudflare / your reverse proxy) | One per domain; handled automatically by the reverse proxy below. |
+| 5 | **(Optional) A Razorpay account per school** | Each school | Only if online fee payment is wanted. See the limitation note at the bottom. |
+
+You do **not** need: a separate server per school, a domain of your own, or any
+per-school code changes.
+
+---
+
+## One-time server setup (do this once)
+
+1. **Get the server** (client provisions it). SSH in. Install **Docker** +
+   **docker compose**.
+
+2. **Get the codebase on the server:**
+   ```bash
+   git clone https://github.com/Jay-0020/school-management.git
+   cd school-management
+   ```
+
+3. **Have a Postgres ready** and note its admin connection details (host, port,
+   user that can `CREATE DATABASE`, password). For a managed DB this is in its
+   dashboard. Managed Postgres usually requires SSL — keep `sslmode=require` in
+   mind for the connection strings.
+
+4. **Put a reverse proxy in front** to terminate TLS and route every school
+   domain to the app on port 4000. **Caddy** is the simplest — it gets
+   certificates automatically. Example `Caddyfile`:
+   ```
+   springfield.edu, oakwood.edu, riverdale.edu {
+       reverse_proxy localhost:4000
+   }
+   ```
+   (Add each new school's domain to this list and reload Caddy. Cloudflare in
+   front of the box works too and gives you certs + DDoS protection.)
+
+---
+
+## Add each school (repeat per school)
+
+> The provisioner talks to Postgres using `PGHOST/PGPORT/PGUSER/PGPASSWORD`
+> (defaults `school/school@localhost:5432`). Point those at your production
+> Postgres for these commands.
+
+1. **The school buys its domain** and points DNS at the server's IP (an `A`
+   record for `springfield.edu`, and usually `www`).
+
+2. **Provision the school** — creates its database, runs migrations, seeds its
+   branding + admin, and registers it in the tenant registry (`backend/tenants.json`):
+   ```bash
+   cd backend
+   PGHOST=<db-host> PGPORT=5432 PGUSER=<admin-user> PGPASSWORD=<pw> \
+   npm run provision -- \
+     --name "Springfield High School" --short SHS --color "#7c3aed" \
+     --email info@springfield.edu --phone "+91-90000-00000" \
+     --admin admin@springfield.edu --password "<temp-password>" \
+     --db school_springfield \
+     --host springfield.edu
+   ```
+   The `--host` is the **real domain** this school is reached at (this is the key
+   the app routes on). It prints the admin login when done.
+
+3. **Add the domain to the reverse proxy** (the `Caddyfile` above) and reload it.
+
+4. **Restart the app** so it picks up the new registry entry (only needed if the
+   app was already running before you provisioned — the registry loads at
+   startup):
+   ```bash
+   docker compose -f docker-compose.app.yml restart app
+   ```
+   *(If you haven't started the app yet, just start it — see next section.)*
+
+5. **Hand off** the URL + admin login to the school. They change the password on
+   first sign-in and configure classes/staff/students from **School Setup**.
+
+---
+
+## Run the app
+
+The app is one container that reads `backend/tenants.json` and connects to every
+school's database. Because it serves all schools, you run it **once**.
+
+```bash
+# from the repo root
+docker compose -f docker-compose.app.yml up -d --build
+```
+
+- Migrations: each school's DB is migrated by the **provisioner** at creation
+  time, so the app doesn't need to migrate on boot in multi-school mode.
+- The app holds one connection pool per school (created lazily on first request).
+- Health check: `https://<any-school-domain>/api/health` → `{"status":"ok"}`.
+
+> **Single-school shortcut:** if you're launching just *one* school (or a demo),
+> you don't even need the registry. Set `DATABASE_URL`, `JWT_SECRET`, and the
+> `SCHOOL_*` env vars and the app serves that one school on any hostname (this is
+> the "single-tenant fallback"). That's exactly how the Render demo runs.
+
+---
+
+## The tenant registry (`backend/tenants.json`)
+
+This file is the source of truth for "which schools exist and how to reach them":
+
+```json
+{
+  "tenants": [
+    {
+      "host": "springfield.edu",
+      "db": "school_springfield",
+      "databaseUrl": "postgresql://user:pw@db-host:5432/school_springfield?sslmode=require",
+      "jwtSecret": "…per-school secret…",
+      "name": "Springfield High School"
+    }
+  ]
+}
+```
+
+- It is **gitignored** — it holds DB URLs and per-school secrets. Never commit it.
+- The provisioner writes/updates it automatically; you rarely edit it by hand.
+- It lives on the server's disk. On a real VPS (persistent disk) this is fine.
+  On an ephemeral-disk host (e.g. Render free), pass the registry via the
+  `TENANTS_FILE` path on a mounted volume, or graduate to the DB-table approach
+  below.
+
+### When to graduate to a control-plane database
+
+The JSON file is great up to a modest number of schools. Once you're managing
+many — or want provisioning to be "insert a row, no file, no restart" — move the
+registry into a small shared **control-plane Postgres table** the app reads at
+startup. The app's resolver is already centralized (`src/config/tenants.ts`), so
+this is a contained change when you need it. Not required for the first schools.
+
+---
+
+## Backups & operations
+
+- **Back up Postgres** (managed providers do automated backups — turn them on).
+  Each school is a separate database, so restores are per-school.
+- **Uploads** (notes, files) are stored on disk under `backend/uploads`. Mount it
+  as a volume (the compose file does). For multi-node, switch to S3-compatible
+  storage.
+- **Deploying a fix:** `git pull` on the server, then
+  `docker compose -f docker-compose.app.yml up -d --build`. All schools get it at
+  once. No per-school redeploy.
+- **Rollback:** the previous single-tenant architecture is preserved on the
+  `single-tenant-legacy` branch if a client ever wants the old per-school model.
+
+---
+
+## Known limitation — online fee payments are not yet per-school
+
+Online payment (Razorpay) keys are currently read from **global environment
+variables**, not from the per-school registry. So in multi-school mode every
+school would share **one** Razorpay account — which breaks the "money settles to
+each school's own bank" model in [RAZORPAY_SETUP.md](./RAZORPAY_SETUP.md).
+
+- **Single-school deploys (incl. the demo): fine** — one school, one Razorpay
+  account via env.
+- **Multi-school: needs a small enhancement** — carry each school's
+  `RAZORPAY_KEY_ID / SECRET / WEBHOOK_SECRET` in the tenant registry and have
+  `src/modules/fees/online.ts` read them from the resolved tenant instead of
+  `env`. Do this before enabling online payments for multiple real schools.
+
+(Online payment is also still pending a working Razorpay account in general — see
+RAZORPAY_SETUP.md.)

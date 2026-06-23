@@ -104,6 +104,85 @@ per school.
 
 ---
 
+## My two go-to setups (step by step)
+
+Two preferred options, with full recipes. **Both run the exact same app/flow** —
+the only difference is where the database lives. (~₹85/$, approximate; verify at signup.)
+
+| | **A. Hostinger 8GB + self-hosted Postgres** | **B. DigitalOcean droplet + managed Postgres** |
+|---|---|---|
+| App box | Hostinger KVM 2 (2 vCPU / 8 GB / 100 GB) ~$8–10 | DO droplet (2 vCPU / 4 GB) ~$12–24 |
+| Database | self-hosted on the same box — **$0** | DO Managed Postgres ~$15 |
+| **Total / month** | **~$8–10 (≈ ₹680–850)** | **~$27–39 (≈ ₹2,300–3,300)** |
+| DB ops (backups/updates) | **you** | **provider (automatic)** |
+| Best for | cheapest; early / few schools (1–5) | a handful+ of paying schools; hands-off DB |
+| India region | Hostinger **Mumbai** (DB co-located = fastest) | droplet + DB both in **Bangalore** |
+
+Cost is **flat whether 2 or 15 schools** (one box serves all). At 15 schools that
+infra is ~2–10% of revenue, so option B's managed DB becomes an easy call.
+**Free managed tiers (Neon/Supabase free) are demo-only** — they pause when idle
+and cap storage at ~0.5 GB, so don't run real schools on them.
+
+> **Rule:** keep the app and database in the **same region** (both Mumbai, or
+> both Bangalore). Don't pair an India app with a Singapore DB — every query pays
+> the cross-region latency.
+
+### Recipe A — Hostinger 8GB + self-hosted Postgres
+
+1. **Buy** a Hostinger **VPS → KVM 2 (8 GB)**, OS **Ubuntu** (pick the "Ubuntu +
+   Docker" template if offered), region **Mumbai (India)**.
+2. **SSH in** from your Mac (`ssh root@<server-ip>`) and install Docker +
+   docker compose (skip if the Docker template did it). Install **Caddy** for TLS.
+3. **Clone** the repo: `git clone https://github.com/Jay-0020/school-management.git`
+4. **Run Postgres + the app together** (so they share a Docker network and the app
+   reaches the DB by name). Use a compose with a `postgres:16` service (named
+   volume for its data, a strong password) plus the app from `docker-compose.app.yml`.
+   *(Ask me to generate this exact `docker-compose.selfhost.yml` — it wires the app's
+   DB host to the `db` service and persists both the DB volume and the uploads volume.)*
+5. **Provision each school** from **inside the app container** (so the DB hostname
+   matches what the app uses): `docker compose exec app npm run provision -- --name "…" --admin "…" --db school_x --host x.edu` with `PGHOST=db`. It creates the DB,
+   migrates, seeds, and registers the school in `tenants.json`.
+6. **Point each school's domain** at the server (DNS A record) and add it to the
+   Caddyfile; reload Caddy.
+7. **Restart the app** if it was already running (it loads the registry at startup).
+8. **Set up backups (critical — you own this):** a `pg_dump` cron pushed off-server
+   (e.g. `rclone` to Backblaze B2 / S3), **and** back up the uploads volume. See the
+   Backups section below.
+
+### Recipe B — DigitalOcean droplet + managed Postgres
+
+1. **Create a Droplet** — Ubuntu, region **Bangalore (BLR1)**, 2 vCPU / 4 GB.
+2. **Create a Managed Postgres** (DO → Databases) in the **same Bangalore region**.
+   Copy its connection details; under the DB's **Trusted Sources**, add the droplet
+   so only it can connect.
+3. **SSH into the droplet**, install Docker + docker compose + **Caddy**.
+4. **Clone** the repo.
+5. **Provision each school against the managed DB** (run on the droplet host):
+   ```bash
+   cd backend
+   PGHOST=<managed-host> PGPORT=<port> PGUSER=<user> PGPASSWORD=<pw> PGSSLMODE=require \
+   npm run provision -- --name "…" --admin "…" --db school_x --host x.edu
+   ```
+   ⚠️ Managed Postgres **requires SSL** — keep `PGSSLMODE=require`, and make sure the
+   `databaseUrl` written to `tenants.json` ends with `?sslmode=require` (ask me to
+   confirm the provisioner appends it; if not, it's a one-line tweak).
+6. **Run the app:** `docker compose -f docker-compose.app.yml up -d --build` (it reads
+   `tenants.json`; the managed DB is reachable from both host and container, so no
+   networking gotcha here).
+7. **Point each school's domain** at the droplet (DNS) + add to Caddy; reload.
+8. **Backups:** the managed DB's **automatic backups** (turn them on in the DO
+   dashboard) cover the database. You still **back up the uploads volume** on the
+   droplet yourself.
+
+> Either recipe: the **uploads volume must be persisted + backed up** (photos/files
+> live there, separate from the DB). And run `npm run migrate:all` to apply future
+> schema migrations across every school DB.
+
+I can generate the exact compose files, Caddyfile, and backup cron for whichever
+option you pick — just say which.
+
+---
+
 ## One-time server setup (do this once)
 
 1. **Get the server** (client provisions it). SSH in. Install **Docker** +

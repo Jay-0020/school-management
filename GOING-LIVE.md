@@ -41,6 +41,55 @@ per-school code changes.
 
 ---
 
+## Choosing a platform & what it costs
+
+This is **cloud** hosting — a *rented* virtual server + managed database, billed
+monthly, **no hardware to buy**. (A physical / on-premise server means buying
+hardware up front and running power, cooling, uptime and backups yourself —
+overkill here; only consider it for strict data-residency rules or very large
+scale.)
+
+**Recommended shape on any cloud: one small VM + managed Postgres, Dockerized,
+with Caddy for TLS.** It maps 1:1 to this guide, and the `tenants.json` file
+registry works on the VM's persistent disk.
+
+### Cost comparison
+
+Approximate **mid-2026 pay-as-you-go** prices, ~₹85/$, for the **whole setup**
+(one box serves *many* schools — **not** per-school). Confirm on each provider's
+calculator.
+
+| Stack | Compute (the app) | Managed Postgres | **Total / month** | Best for |
+|-------|-------------------|------------------|-------------------|----------|
+| **A. Hetzner VPS + Neon** | CX22 (2 vCPU/4GB) ~$6 | Neon free (or self-host on VM) ~$0 | **~$6 (≈ ₹500)** | Cheapest, max margin; you manage the box |
+| **B. DigitalOcean + DO Managed PG** | 2 vCPU/4GB ~$24 | ~$15 | **~$39 (≈ ₹3,300)** | Simple, fully managed |
+| **C. Azure VM + PG Flexible Server** | B2s ~$36 pay-go / ~$22 reserved | Burstable B1ms ~$25 | **~$61 pay-go / ~$47 reserved (≈ ₹4,000–5,200)** | Client is an Azure / enterprise shop; India regions |
+| **D. Render (paid)** | Standard web ~$25 | ~$7–19 | **~$32–44 (≈ ₹2,700–3,700)** | Least ops, push-to-deploy built in; pricier than a VPS |
+
+**Free / not on this bill:** TLS (Caddy + Let's Encrypt), CI/CD (GitHub Actions
+free tier + GHCR), and per-school **domains** (each school buys its own,
+~₹800–1,000/yr).
+
+**Margin:** against a **₹1,500–3,000 / school / month** fee, even the Azure stack
+(~₹5k total) is covered by ~2–3 schools — every school after that is near-pure
+margin because the box is shared. Scale by bumping the VM size (vertical), not
+per school.
+
+### Which to pick
+- **Cost-sensitive / your call →** Hetzner + Neon (cheapest; you manage the box —
+  light work with Docker + Caddy).
+- **Managed simplicity →** DigitalOcean (~₹3.3k flat, everything managed).
+- **Client mandates Azure →** Azure VM + PG Flexible Server; buy **1-year
+  reserved** instances (~40% off).
+- **Avoid Render *free*** for production (it sleeps and the DB expires — demo
+  tier only). Render *paid* only if push-button simplicity is worth the premium.
+
+> **Azure VM ≠ Azure DevOps.** An *Azure VM* is the **server** (where the app
+> runs). *Azure DevOps* is a **CI/CD suite** (an alternative to GitHub Actions).
+> You need a server — not necessarily Azure DevOps. See the pipeline section.
+
+---
+
 ## One-time server setup (do this once)
 
 1. **Get the server** (client provisions it). SSH in. Install **Docker** +
@@ -178,6 +227,39 @@ this is a contained change when you need it. Not required for the first schools.
   once. No per-school redeploy.
 - **Rollback:** the previous single-tenant architecture is preserved on the
   `single-tenant-legacy` branch if a client ever wants the old per-school model.
+
+---
+
+## Deployment pipeline (CI/CD)
+
+The code lives on GitHub, so use **GitHub Actions** (use Azure DevOps only if the
+client standardises on it). Pipeline shape:
+
+```
+push to main → CI: tsc (backend + frontend) + tests
+             → build Docker image
+             → push to a registry (GHCR free, or Azure Container Registry)
+             → deploy: the server pulls the image and restarts the app
+```
+
+- **Quality gate first:** the `tsc --noEmit` checks (and tests) must pass before
+  any deploy, so a broken build never reaches a live school.
+- **Deploy step — two flavours:** simplest is an SSH action that runs
+  `git pull && docker compose -f docker-compose.app.yml up -d --build` on the VM;
+  cleaner is build-in-CI → push image → server just pulls (no building on the box,
+  faster, reproducible).
+- **Rollback:** redeploy a previous image tag, or point back at the
+  `single-tenant-legacy` branch for the old single-school model.
+
+### ⚠️ Migrations must run against EVERY school database
+
+In multi-school mode each school's DB is migrated by the **provisioner at
+creation** — the app does **not** migrate on boot. So a release that includes a
+new migration must apply it to **all** school databases, not one. Add a
+`migrate-all-tenants` step to the deploy that loops `tenants.json` and runs
+`prisma migrate deploy` against each database. **This is the #1 thing people miss
+with one-database-per-tenant** — without it, new schema reaches the app but not
+the schools' data.
 
 ---
 

@@ -1,0 +1,54 @@
+name: CI
+
+# Quality gate: on every push to main and every PR, typecheck + build both apps
+# and build the Docker image. A red ✗ here means broken code never reaches a
+# live school. Runs entirely on GitHub's runners — no server needed.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend — typecheck & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run prisma:generate   # generate Prisma client types (no DB needed)
+      - run: npm run typecheck
+      - run: npm run build
+
+  frontend:
+    name: Frontend — typecheck & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Builds the actual deploy artifact (frontend + backend + prisma generate),
+      # catching Dockerfile/runtime issues the per-app builds above can't. No push.
+      - run: docker build -t school-mgmt:ci .

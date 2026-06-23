@@ -11,6 +11,7 @@
     "seed": "tsx prisma/seed.ts",
     "seed:bulk": "tsx prisma/seed-bulk.ts",
     "provision": "node provision.mjs",
+    "migrate:all": "node migrate-all-tenants.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "typecheck": "tsc --noEmit"

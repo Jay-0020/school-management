@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { uploadPhoto, streamPhoto, deletePhotoFile } from "../../lib/photos";
 
 export const teachersRouter = Router();
 
@@ -110,5 +111,58 @@ teachersRouter.patch(
       data,
     });
     res.json(teacher);
+  })
+);
+
+// ── Profile photo (per-tenant storage, served tenant-scoped) ────────────────
+// GET is authenticated-only so <img> tags (which send the cookie) can render it.
+teachersRouter.get(
+  "/:id/photo",
+  asyncHandler(async (req, res) => {
+    const t = await prisma.teacher.findUnique({
+      where: { id: req.params.id },
+      select: { photoFile: true },
+    });
+    streamPhoto(res, t?.photoFile);
+  })
+);
+
+teachersRouter.post(
+  "/:id/photo",
+  requireRole("SUPER_ADMIN", "ADMIN"),
+  uploadPhoto,
+  asyncHandler(async (req, res) => {
+    if (!req.file) throw ApiError.badRequest("A photo is required");
+    const existing = await prisma.teacher.findUnique({
+      where: { id: req.params.id },
+      select: { photoFile: true },
+    });
+    if (!existing) {
+      deletePhotoFile(req.file.filename);
+      throw ApiError.notFound("Teacher not found");
+    }
+    await prisma.teacher.update({
+      where: { id: req.params.id },
+      data: { photoFile: req.file.filename },
+    });
+    deletePhotoFile(existing.photoFile); // drop the previous photo, if any
+    res.status(201).json({ ok: true });
+  })
+);
+
+teachersRouter.delete(
+  "/:id/photo",
+  requireRole("SUPER_ADMIN", "ADMIN"),
+  asyncHandler(async (req, res) => {
+    const t = await prisma.teacher.findUnique({
+      where: { id: req.params.id },
+      select: { photoFile: true },
+    });
+    if (!t) throw ApiError.notFound("Teacher not found");
+    if (t.photoFile) {
+      deletePhotoFile(t.photoFile);
+      await prisma.teacher.update({ where: { id: req.params.id }, data: { photoFile: null } });
+    }
+    res.json({ ok: true });
   })
 );

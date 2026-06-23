@@ -1953,6 +1953,29 @@ tr.clickable:hover td {
   background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #ec4899)) !important;
   color: #fff !important;
 }
+/* Photo avatars (image) reuse .avatar sizing but cover the circle. */
+img.avatar {
+  object-fit: cover;
+  background: var(--surface-2, #e5e7eb) !important;
+}
+/* Avatar + upload/remove controls (person editors / detail) */
+.photo-uploader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 14px;
+}
+.photo-uploader-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+/* Tighten the directory name cell so the avatar sits inline with the name. */
+.cell-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 /* ════════════════════════════════════════════════════════════════════════
    BENTO HOME — compact, mixed-size tiles, 2-up KPIs, chip rails

@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import { AppShell } from "../components/AppShell";
 import { EmptyState, SkeletonRows } from "../components/EmptyState";
 import { IconTeacher } from "../components/icons";
+import { PhotoUploader } from "../components/PhotoUploader";
 import { useAuth } from "../context/AuthContext";
 import type { Paginated, StaffType, Teacher } from "../lib/types";
 
@@ -262,6 +263,15 @@ function TeacherModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>{isEdit ? "Edit staff member" : "Add staff member"}</h3>
+        {isEdit && teacher && (
+          <PhotoUploader
+            kind="teachers"
+            id={teacher.id}
+            name={`${teacher.firstName} ${teacher.lastName}`}
+            hasPhoto={!!teacher.photoFile}
+            onChange={() => qc.invalidateQueries({ queryKey: ["teachers"] })}
+          />
+        )}
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
             Employee no.

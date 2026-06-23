@@ -180,6 +180,76 @@ docker compose -f docker-compose.app.yml up -d --build
 
 ---
 
+## Test on the server without buying domains (a full rehearsal)
+
+You can stand up the server and prove the *entire* setup before any school owns a
+domain. **This is the real deployment procedure** — every step below is identical
+to onboarding a real school. The only difference when a real school goes live is
+the final hostname: swap the test hostname for the school's purchased domain (a
+one-line DNS change). Everything else stays the same.
+
+Multi-tenancy routes by **hostname**, so the trick is giving each dummy school a
+distinct hostname that points at the server — without buying one. Two free ways:
+
+### Option A — `nip.io` (recommended: real hostnames + real HTTPS, any browser)
+
+`nip.io` is free wildcard DNS: `anything.<server-ip>.nip.io` resolves to that IP.
+With the server at e.g. `49.12.34.56`:
+
+1. **Provision two dummy schools**, using nip.io hostnames as `--host`:
+   ```bash
+   cd backend
+   PGHOST=<db-host> PGUSER=<admin> PGPASSWORD=<pw> npm run provision -- \
+     --name "Springfield High" --short SHS --color "#7c3aed" \
+     --admin admin@springfield.test --password "Temp@1234" \
+     --db school_springfield --host springfield.49.12.34.56.nip.io
+
+   PGHOST=<db-host> PGUSER=<admin> PGPASSWORD=<pw> npm run provision -- \
+     --name "Oakwood International" --short OAK --color "#0ea5e9" \
+     --admin admin@oakwood.test --password "Temp@5678" \
+     --db school_oakwood --host oakwood.49.12.34.56.nip.io
+   ```
+2. **Add both hostnames to the reverse proxy** (Caddy gets HTTPS automatically):
+   ```
+   springfield.49.12.34.56.nip.io, oakwood.49.12.34.56.nip.io {
+       reverse_proxy localhost:4000
+   }
+   ```
+3. **Run the app** (`docker compose -f docker-compose.app.yml up -d --build`) and
+   open each URL in any browser:
+   - `https://springfield.49.12.34.56.nip.io` → Springfield, its own data/branding
+   - `https://oakwood.49.12.34.56.nip.io` → Oakwood, fully isolated
+
+   (Dashes also work if you prefer: `springfield.49-12-34-56.nip.io`.)
+
+### Option B — `/etc/hosts` on your laptop (simplest, laptop-only, no HTTPS)
+
+On your machine add:
+```
+49.12.34.56  springfield.test
+49.12.34.56  oakwood.test
+```
+Provision with `--host springfield.test` / `--host oakwood.test`, then browse
+`http://springfield.test` / `http://oakwood.test`. Works only from your laptop.
+
+### Option C — on-server smoke test (quickest sanity check)
+
+SSH into the server and hit the app directly with Host headers — no DNS at all:
+```bash
+curl -H "Host: springfield.test" http://127.0.0.1:4000/api/school/settings
+curl -H "Host: oakwood.test"     http://127.0.0.1:4000/api/school/settings
+```
+
+### What the rehearsal proves (and what it doesn't)
+
+Proven end-to-end: one app + two DBs routed by hostname, data isolation,
+per-school branding, the reverse proxy, real TLS (Option A), and the full deploy
+flow (Docker → `provision` → `migrate:all` → Caddy). **Not** tested: only the
+final cutover to a school's *purchased* domain — which is just pointing that
+domain's DNS at this same server. Nothing upstream changes.
+
+---
+
 ## The tenant registry (`backend/tenants.json`)
 
 This file is the source of truth for "which schools exist and how to reach them":

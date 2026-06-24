@@ -166,6 +166,7 @@ bullets([
   "Expenses :: fixed-category claims, approve / reject / mark paid.",
   "Exams & Report Cards :: exams have a start/end date range and a per-subject datesheet (each subject's date within that range); report cards export to PDF.",
   "Notices & Notifications :: announcements + in-app alerts (bell icon).",
+  "Profile photos :: add a photo for any student or staff member — it shows as their avatar across the Directory and the Students / Teachers & Staff lists (initials shown when there's no photo).",
 ]);
 
 h2("Dean  —  oversight, approvals & the people view");
@@ -226,7 +227,15 @@ bullets([
 doc.addPage();
 band("Updates", "Change log");
 
-h2("18 June 2026 — latest");
+h2("23 June 2026 — latest");
+para("Student & staff photos — you can now add a profile photo for any student or staff member. Photos appear as round avatars across the Directory and the Students / Teachers & Staff lists, so people are instantly recognisable; anyone without a photo shows their initials.");
+bullets([
+  "Where :: avatars show in the Directory (Students + Staff tabs) and on the Students and Teachers & Staff list pages.",
+  "Who can add :: Admins / Super Admins upload or change a photo — it's optional, and you can remove it any time.",
+  "Private & per-school :: photos are stored privately for each school; one school can never see another's.",
+]);
+
+h2("18 June 2026");
 para("Online fee payment (Razorpay) — parents and students can now pay fees online (UPI / card / net banking) right from the app; the invoice is marked paid automatically with a receipt, and the school receives the full fee (a small processing fee is added for the parent).");
 bullets([
   "How it works :: open an unpaid invoice → \"Pay online\" → pay in the Razorpay window → invoice flips to PAID; the money settles directly to the school's own bank account, and card details never touch our servers.",
@@ -288,6 +297,8 @@ steps([
   "Staff attendance & calendar :: Admin: School Setup → set the campus location (map) + academic calendar. Staff: Dashboard → \"On Campus\" check-in — works only inside the geofence (use a phone for real GPS).",
   "Dean dashboards & settlements :: Dean: Dashboard shows the Financial overview + Enrolment. Admin/Dean: Settlements → create → approve; the Accountant marks it paid.",
   "Pay fees online — Student / Parent :: Sidebar → Fees → open an unpaid invoice → \"Pay online\" → pay in the Razorpay window (UPI / card / net banking) → the invoice is marked PAID with a receipt. (Needs a working Razorpay account connected; until then the window opens but the payment won't go through.)",
+  "Add a student's photo — Admin :: Sidebar → Directory → Students tab → open a student → \"Upload photo\" next to their avatar → pick an image. It resizes automatically and the avatar updates. (Also available from Students → edit a student.)",
+  "Add a staff photo — Admin :: Sidebar → Teachers & Staff → edit a staff member → \"Upload photo\" at the top of the form → pick an image.",
 ]);
 
 // ── Footer on every page (margin disabled so it never spills to a new page) ──

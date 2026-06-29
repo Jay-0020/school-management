@@ -164,6 +164,9 @@ model Teacher {
   complaintsAbout Complaint[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+
+  @@index([isActive])
+  @@index([staffType])
 }
 
 enum EnrollmentStatus {
@@ -202,6 +205,7 @@ model Student {
 
   @@index([sectionId])
   @@index([status])
+  @@index([admissionDate])
 }
 
 // ── Attendance ──────────────────────────────────────────────────────────────
@@ -237,8 +241,7 @@ model Holiday {
   date      DateTime @unique // normalised to UTC midnight
   note      String?
   createdAt DateTime @default(now())
-
-  @@index([date])
+  // `date` is already @unique (one row per day) — a separate index is redundant.
 }
 
 // ── Staff on-campus attendance (geofenced self check-in) ──────────────────
@@ -538,6 +541,7 @@ model Payslip {
 
   @@unique([teacherId, month])
   @@index([month])
+  @@index([status])
 }
 
 // ── Full & Final settlement (staff exit dues) ────────────────────────────────
@@ -637,6 +641,7 @@ model LeaveRequest {
 
   @@index([applicantId])
   @@index([status])
+  @@index([applicantId, status, fromDate])
 }
 
 // ── In-app notifications ──────────────────────────────────────────────────────
@@ -650,6 +655,7 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, read])
+  @@index([userId, createdAt])
 }
 
 // ── Exams, marks & report cards ───────────────────────────────────────────────

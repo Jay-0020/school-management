@@ -60,9 +60,26 @@ const include = {
 
 const isStaff = (r: string) => ["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"].includes(r);
 
+// Notes may only be UPLOADED by academic staff (client requirement). Students &
+// parents are read-only — which also keeps upload/storage load down.
+const UPLOADERS = ["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"] as const;
+
+// File-type filter groups → the mime types they cover.
+const TYPE_MIMES: Record<string, string[]> = {
+  pdf: ["application/pdf"],
+  image: ["image/png", "image/jpeg", "image/webp"],
+  doc: [
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "text/plain",
+  ],
+};
+
 // ── Upload ──────────────────────────────────────────────────────────────────
 notesRouter.post(
   "/",
+  requireRole(...UPLOADERS), // students/parents are rejected BEFORE the file is processed
   uploadFile,
   asyncHandler(async (req, res) => {
     if (!req.file) throw ApiError.badRequest("A file is required");
@@ -74,9 +91,7 @@ notesRouter.post(
     });
     const data = schema.parse(req.body);
 
-    // Staff uploads are auto-approved; student uploads await moderation.
-    const status = isStaff(req.user!.role) ? "APPROVED" : "PENDING";
-
+    // Only staff upload now, so notes are published immediately (no moderation).
     const note = await prisma.note.create({
       data: {
         title: data.title,
@@ -88,7 +103,7 @@ notesRouter.post(
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         size: req.file.size,
-        status,
+        status: "APPROVED",
       },
       include,
     });
@@ -101,31 +116,47 @@ notesRouter.get(
   "/",
   asyncHandler(async (req, res) => {
     const { role, sub } = req.user!;
-    const q = req.query.q ? String(req.query.q) : undefined;
-    let where: Prisma.NoteWhereInput = {};
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const pageSize = Math.min(100, Number(req.query.pageSize) || 25);
 
+    // Filters applied for every role (server-side so big lists stay cheap).
+    const filters: Prisma.NoteWhereInput[] = [];
+    if (req.query.q) filters.push({ title: { contains: String(req.query.q), mode: "insensitive" } });
+    if (req.query.subjectId) filters.push({ subjectId: String(req.query.subjectId) });
+    if (req.query.uploadedById) filters.push({ uploadedById: String(req.query.uploadedById) });
+    if (req.query.sectionId) filters.push({ sectionId: String(req.query.sectionId) });
+    const type = req.query.type ? String(req.query.type) : undefined;
+    if (type && TYPE_MIMES[type]) filters.push({ mimeType: { in: TYPE_MIMES[type] } });
+
+    // Visibility base: staff see all; students/parents see approved school-wide /
+    // own-section notes plus their own uploads.
+    let base: Prisma.NoteWhereInput;
     if (isStaff(role)) {
-      if (req.query.status) where.status = req.query.status as Prisma.NoteWhereInput["status"];
-      if (req.query.sectionId) where.sectionId = String(req.query.sectionId);
+      base = {};
+      if (req.query.status) base.status = req.query.status as Prisma.NoteWhereInput["status"];
     } else {
-      // students/parents: approved notes for their section or school-wide, plus their own
       const student = await prisma.student.findUnique({ where: { userId: sub } });
       const visible: Prisma.NoteWhereInput[] = [
         { status: "APPROVED", sectionId: null },
         { uploadedById: sub },
       ];
-      if (student?.sectionId)
-        visible.push({ status: "APPROVED", sectionId: student.sectionId });
-      where = { OR: visible };
+      if (student?.sectionId) visible.push({ status: "APPROVED", sectionId: student.sectionId });
+      base = { OR: visible };
     }
-    if (q) where = { AND: [where, { title: { contains: q, mode: "insensitive" } }] };
 
-    const items = await prisma.note.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      include,
-    });
-    res.json({ items });
+    const where: Prisma.NoteWhereInput = filters.length ? { AND: [base, ...filters] } : base;
+
+    const [items, total] = await Promise.all([
+      prisma.note.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include,
+      }),
+      prisma.note.count({ where }),
+    ]);
+    res.json({ items, total, page, pageSize });
   })
 );
 
@@ -155,23 +186,6 @@ notesRouter.get(
       `attachment; filename="${note.originalName.replace(/"/g, "")}"`
     );
     createReadStream(path).pipe(res);
-  })
-);
-
-// ── Moderate ────────────────────────────────────────────────────────────────
-notesRouter.post(
-  "/:id/moderate",
-  requireRole("SUPER_ADMIN", "ADMIN", "TEACHER"),
-  asyncHandler(async (req, res) => {
-    const { decision } = z.object({ decision: z.enum(["APPROVED", "REJECTED"]) }).parse(req.body);
-    const note = await prisma.note.findUnique({ where: { id: req.params.id } });
-    if (!note) throw ApiError.notFound("Note not found");
-    const updated = await prisma.note.update({
-      where: { id: note.id },
-      data: { status: decision },
-      include,
-    });
-    res.json(updated);
   })
 );
 

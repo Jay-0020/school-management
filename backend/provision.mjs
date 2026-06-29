@@ -69,7 +69,11 @@ const cfg = {
 const jwtSecret = randomBytes(24).toString("hex");
 
 const baseUrl = `postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}`;
-const dbUrl = `${baseUrl}/${cfg.db}?schema=public`;
+// Managed Postgres (e.g. DigitalOcean) requires SSL. Prisma reads sslmode from
+// the URL (it ignores PGSSLMODE), so when PGSSLMODE is set we must bake it into
+// the URL used for migrate/seed/the runtime registry. No-op locally (unset).
+const sslParam = process.env.PGSSLMODE ? `&sslmode=${process.env.PGSSLMODE}` : "";
+const dbUrl = `${baseUrl}/${cfg.db}?schema=public${sslParam}`;
 const psql = (db, sql) =>
   execSync(`${PSQL} "${baseUrl}/${db}" -tAc "${sql.replace(/"/g, '\\"')}"`, {
     stdio: ["ignore", "pipe", "pipe"],
@@ -138,7 +142,12 @@ const registryPath = join(here, "tenants.json");
 const registry = existsSync(registryPath)
   ? JSON.parse(readFileSync(registryPath, "utf8"))
   : { tenants: [] };
-const entry = { host: cfg.host, db: cfg.db, databaseUrl: dbUrl, jwtSecret, name: cfg.name };
+// Optional per-school Razorpay account (online fee payments settle to its bank).
+const razorpay = {};
+if (a["razorpay-key-id"]) razorpay.razorpayKeyId = a["razorpay-key-id"];
+if (a["razorpay-key-secret"]) razorpay.razorpayKeySecret = a["razorpay-key-secret"];
+if (a["razorpay-webhook-secret"]) razorpay.razorpayWebhookSecret = a["razorpay-webhook-secret"];
+const entry = { host: cfg.host, db: cfg.db, databaseUrl: dbUrl, jwtSecret, name: cfg.name, ...razorpay };
 const idx = registry.tenants.findIndex((t) => t.db === cfg.db || t.host === cfg.host);
 if (idx >= 0) registry.tenants[idx] = entry;
 else registry.tenants.push(entry);

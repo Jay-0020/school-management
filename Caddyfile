@@ -1,0 +1,28 @@
+# Reverse proxy for the shared multi-tenant app (see GOING-LIVE.md).
+#
+# Caddy terminates TLS (auto Let's Encrypt certs) and forwards each school's
+# domain to the single app on :4000. The app routes by the Host header, so the
+# proxy MUST preserve/forward it (reverse_proxy does by default; we also set
+# X-Forwarded-Proto so the app marks session cookies Secure — see C1).
+#
+# Add one block per school domain, then reload:  caddy reload --config ./Caddyfile
+# Email for Let's Encrypt expiry notices:
+{
+	email admin@example.com
+}
+
+# ── Per-school domains ───────────────────────────────────────────────────────
+# Each school points its domain's DNS at this server; add a matching block here.
+springfield.example.com {
+	reverse_proxy localhost:4000
+}
+
+oakwood.example.com {
+	reverse_proxy localhost:4000
+}
+
+# Tip: you can also serve many subdomains of one base domain with a single block:
+#   *.schools.example.com {
+#       reverse_proxy localhost:4000
+#   }
+# (needs a DNS-provider plugin for wildcard TLS — see Caddy docs.)

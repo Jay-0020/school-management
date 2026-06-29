@@ -10,7 +10,6 @@ import {
   createInvoiceOrder,
   onlineConfig,
   OnlinePayError,
-  recomputeInvoice,
   settleOrder,
   verifyPaymentSignature,
 } from "./online";
@@ -264,28 +263,48 @@ feesRouter.post(
   requireRole(...MANAGERS),
   asyncHandler(async (req, res) => {
     const data = paymentSchema.parse(req.body);
-    const invoice = await prisma.invoice.findUnique({ where: { id: req.params.id } });
-    if (!invoice) throw ApiError.notFound("Invoice not found");
-    if (invoice.status === "CANCELLED") throw ApiError.badRequest("Invoice is cancelled");
+    const invoiceId = req.params.id;
 
-    const balance = invoice.total - invoice.amountPaid;
-    if (data.amount > balance) {
-      throw ApiError.badRequest(`Amount exceeds the outstanding balance (₹${balance})`);
-    }
+    // Atomic: create the payment and bump amountPaid under a row lock in one
+    // transaction. The guarded `increment` is what serialises concurrent
+    // payments — two requests can no longer both read a stale balance, pass the
+    // check, and overpay (which would push the balance negative). The second to
+    // arrive blocks on the row lock, re-reads the committed amountPaid, sees the
+    // overpay, and is rejected (rolling its own payment row back).
+    const { payment, title } = await prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.findUnique({
+        where: { id: invoiceId },
+        select: { id: true, status: true, total: true, title: true },
+      });
+      if (!invoice) throw ApiError.notFound("Invoice not found");
+      if (invoice.status === "CANCELLED") throw ApiError.badRequest("Invoice is cancelled");
 
-    const payment = await prisma.payment.create({
-      data: {
-        invoiceId: invoice.id,
-        amount: data.amount,
-        method: data.method,
-        reference: data.reference ?? null,
-        paidAt: data.paidAt ?? new Date(),
-        recordedById: req.user!.sub,
-      },
+      const created = await tx.payment.create({
+        data: {
+          invoiceId: invoice.id,
+          amount: data.amount,
+          method: data.method,
+          reference: data.reference ?? null,
+          paidAt: data.paidAt ?? new Date(),
+          recordedById: req.user!.sub,
+        },
+      });
+
+      const bumped = await tx.invoice.update({
+        where: { id: invoice.id },
+        data: { amountPaid: { increment: data.amount } },
+        select: { amountPaid: true, total: true },
+      });
+      if (bumped.amountPaid > bumped.total) {
+        const outstanding = bumped.total - (bumped.amountPaid - data.amount);
+        throw ApiError.badRequest(`Amount exceeds the outstanding balance (₹${outstanding})`);
+      }
+      const status = bumped.amountPaid >= bumped.total ? "PAID" : "PARTIAL";
+      await tx.invoice.update({ where: { id: invoice.id }, data: { status } });
+      return { payment: created, title: invoice.title };
     });
-    await recomputeInvoice(invoice.id);
 
-    audit(req, "fee.payment", `Recorded payment ₹${data.amount.toLocaleString("en-IN")} (${data.method}) on invoice "${invoice.title}"`, { type: "Invoice", id: invoice.id });
+    audit(req, "fee.payment", `Recorded payment ₹${data.amount.toLocaleString("en-IN")} (${data.method}) on invoice "${title}"`, { type: "Invoice", id: invoiceId });
     res.status(201).json(payment);
   })
 );

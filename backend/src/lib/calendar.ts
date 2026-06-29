@@ -12,6 +12,23 @@ export function dateKey(d: Date): string {
   return utcMidnight(d).toISOString().slice(0, 10);
 }
 
+/**
+ * The UTC-midnight Date for the CURRENT CIVIL DATE in the given IANA timezone.
+ * `utcMidnight(new Date())` keys by the UTC day, so for IST (UTC+5:30) any
+ * instant between 00:00–05:30 local lands on the *previous* day — a check-in at
+ * 1 AM IST would be recorded for yesterday. Computing the civil date in the
+ * school's timezone first fixes that. Used for "today" in attendance.
+ */
+export function todayInZone(timeZone: string, now: Date = new Date()): Date {
+  const ymd = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now); // "YYYY-MM-DD" in the target zone
+  return new Date(`${ymd}T00:00:00.000Z`);
+}
+
 /** Which Saturday of the month a date is (1st, 2nd, …). */
 function nthWeekdayOfMonth(d: Date): number {
   return Math.ceil(d.getUTCDate() / 7);

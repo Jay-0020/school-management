@@ -1,0 +1,11 @@
+{
+  "tenants": [
+    {
+      "host": "test.localhost",
+      "db": "school_test",
+      "databaseUrl": "postgresql://school:school@localhost:5432/school_test?schema=public",
+      "jwtSecret": "test-secret-key-1234567890",
+      "name": "Test School"
+    }
+  ]
+}

@@ -155,10 +155,20 @@ settlementsRouter.post(
     if (settlement.status !== "APPROVED") {
       throw ApiError.badRequest("Only approved settlements can be marked paid");
     }
-    const updated = await prisma.settlement.update({
-      where: { id: settlement.id },
-      data: { status: "PAID", paidAt: new Date() },
-      include,
+    // Pay the settlement AND clear the unpaid payslips it settled, in one
+    // transaction — otherwise those payslips stay GENERATED and can be paid a
+    // second time via payroll (or re-snapshotted into another settlement).
+    const updated = await prisma.$transaction(async (tx) => {
+      const u = await tx.settlement.update({
+        where: { id: settlement.id },
+        data: { status: "PAID", paidAt: new Date() },
+        include,
+      });
+      await tx.payslip.updateMany({
+        where: { teacherId: settlement.teacherId, status: "GENERATED" },
+        data: { status: "PAID", paidAt: new Date() },
+      });
+      return u;
     });
     audit(req, "settlement.pay", `Paid settlement — net ₹${settlement.netPayable.toLocaleString("en-IN")}`, { type: "Settlement", id: settlement.id });
     res.json(updated);

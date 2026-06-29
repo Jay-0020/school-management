@@ -3,11 +3,17 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler, ApiError } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
-import { countWorkingDays, dateKey, distanceMeters, utcMidnight } from "../../lib/calendar";
+import { countWorkingDays, dateKey, distanceMeters, todayInZone, utcMidnight } from "../../lib/calendar";
 
 export const staffAttendanceRouter = Router();
 
 const STAFF_ROLES = ["SUPER_ADMIN", "ADMIN", "DEAN", "ACCOUNTANT", "TEACHER"] as const;
+
+/** "Today" keyed by the school's civil date (its timezone), not the UTC day. */
+async function schoolToday(): Promise<Date> {
+  const s = await prisma.schoolSettings.findFirst({ select: { timezone: true } });
+  return todayInZone(s?.timezone ?? "Asia/Kolkata");
+}
 
 /** Working days from session start to today (the attendance-% denominator). */
 export async function workingDaysToDate(): Promise<{ days: number; start: Date | null }> {
@@ -15,7 +21,7 @@ export async function workingDaysToDate(): Promise<{ days: number; start: Date |
   if (!s?.sessionStart) return { days: 0, start: null };
   const holidays = await prisma.holiday.findMany();
   const keys = new Set(holidays.map((h) => dateKey(h.date)));
-  const today = utcMidnight(new Date());
+  const today = todayInZone(s.timezone);
   const sessionEnd = s.sessionEnd ? utcMidnight(s.sessionEnd) : today;
   const end = today < sessionEnd ? today : sessionEnd;
   const start = utcMidnight(s.sessionStart);
@@ -46,7 +52,7 @@ staffAttendanceRouter.post(
         `You are not on campus (${Math.round(dist)} m away, allowed ${s.geofenceRadius} m).`
       );
     }
-    const date = utcMidnight(new Date());
+    const date = todayInZone(s.timezone);
     const record = await prisma.staffAttendance.upsert({
       where: { userId_date: { userId: req.user!.sub, date } },
       update: { checkInAt: new Date(), latitude, longitude },
@@ -62,7 +68,7 @@ staffAttendanceRouter.get(
   authenticate,
   requireRole(...STAFF_ROLES),
   asyncHandler(async (req, res) => {
-    const date = utcMidnight(new Date());
+    const date = await schoolToday();
     const today = await prisma.staffAttendance.findUnique({
       where: { userId_date: { userId: req.user!.sub, date } },
     });
@@ -89,7 +95,7 @@ staffAttendanceRouter.get(
   requireRole("SUPER_ADMIN", "ADMIN", "DEAN"),
   asyncHandler(async (_req, res) => {
     const { days, start } = await workingDaysToDate();
-    const today = utcMidnight(new Date());
+    const today = await schoolToday();
 
     const teachers = await prisma.teacher.findMany({
       where: { userId: { not: null } },

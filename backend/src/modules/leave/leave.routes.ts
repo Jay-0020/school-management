@@ -256,6 +256,22 @@ leaveRouter.post(
     const { role, sub } = req.user!;
     if (!(await canApprove(role, sub, request))) throw ApiError.forbidden();
 
+    // Re-check the quota AT APPROVAL for ADVANCE leave. The apply-time check only
+    // looks at already-APPROVED leave, so a user could stack several pending
+    // requests (each seeing 0 used) and have them all approved past the quota.
+    // Counting currently-approved leave + this request closes that bypass.
+    if (decision === "APPROVED" && request.kind === "ADVANCE") {
+      const applicant = await prisma.user.findUnique({ where: { id: request.applicantId } });
+      const quota = applicant ? categoryQuota(applicant, request.category) : 0;
+      const used = await usedDays(request.applicantId, request.category);
+      const requested = dayCount(request.fromDate, request.toDate);
+      if (used + requested > quota) {
+        throw ApiError.badRequest(
+          `Approving this would exceed the applicant's ${request.category.toLowerCase()} leave balance — ${Math.max(0, quota - used)} day(s) left this year`
+        );
+      }
+    }
+
     const updated = await prisma.leaveRequest.update({
       where: { id: request.id },
       data: {

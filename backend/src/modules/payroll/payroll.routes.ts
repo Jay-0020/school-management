@@ -179,6 +179,8 @@ payrollRouter.post(
   asyncHandler(async (req, res) => {
     const payslip = await prisma.payslip.findUnique({ where: { id: req.params.id } });
     if (!payslip) throw ApiError.notFound("Payslip not found");
+    // Already paid (e.g. cleared by a full-and-final settlement) → don't pay twice.
+    if (payslip.status === "PAID") throw ApiError.badRequest("Payslip is already paid");
     const updated = await prisma.payslip.update({
       where: { id: payslip.id },
       data: { status: "PAID", paidAt: new Date() },

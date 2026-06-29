@@ -14,7 +14,9 @@
     "migrate:all": "node migrate-all-tenants.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
@@ -41,8 +43,11 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^20.14.0",
     "@types/pdfkit": "^0.17.6",
+    "@types/supertest": "^7.2.0",
     "prisma": "^5.18.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.16.0",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.9"
   }
 }

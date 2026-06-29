@@ -20,6 +20,18 @@ async function main() {
 
   process.on("SIGINT", () => shutdown("SIGINT"));
   process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+  // One app serves every school, so a single stray error must not crash the
+  // whole fleet. A rejection that escapes a request is logged and the process
+  // keeps serving; a truly uncaught exception leaves the process in an unknown
+  // state, so we log and exit for the process manager (Docker) to restart clean.
+  process.on("unhandledRejection", (reason) => {
+    console.error("Unhandled promise rejection:", reason);
+  });
+  process.on("uncaughtException", (err) => {
+    console.error("Uncaught exception — exiting for a clean restart:", err);
+    process.exit(1);
+  });
 }
 
 main().catch((err) => {

@@ -164,6 +164,11 @@ usersRouter.post(
       where: { id: user.id },
       data: { passwordHash: await argon2.hash(newPassword), mustChangePassword: true },
     });
+    // End the user's existing sessions so the old password can't keep a session alive.
+    await prisma.refreshToken.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
     audit(req, "user.reset_password", `Reset password for ${user.email}`, { type: "User", id: user.id });
     res.json({ ok: true });
   })

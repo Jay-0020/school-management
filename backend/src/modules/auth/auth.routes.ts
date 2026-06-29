@@ -1,11 +1,11 @@
 import { Router } from "express";
+import type { Request } from "express";
 import crypto from "node:crypto";
 import argon2 from "argon2";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, signToken } from "../../middleware/auth";
-import { isProd } from "../../config/env";
 import { audit, logAudit } from "../../lib/audit";
 
 export const authRouter = Router();
@@ -20,10 +20,19 @@ const ACCESS_TTL = "1h";
 const ACCESS_MAX_AGE = 60 * 60 * 1000;
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-const accessCookie = { httpOnly: true, secure: isProd, sameSite: "lax" as const, path: "/", maxAge: ACCESS_MAX_AGE };
-const refreshCookie = { httpOnly: true, secure: isProd, sameSite: "lax" as const, path: "/api/auth", maxAge: REFRESH_TTL_MS };
-const clearAccess = { httpOnly: true, secure: isProd, sameSite: "lax" as const, path: "/" };
-const clearRefresh = { httpOnly: true, secure: isProd, sameSite: "lax" as const, path: "/api/auth" };
+// Cookie flags are derived per-request: `secure` follows the ACTUAL transport
+// (req.secure honours X-Forwarded-Proto behind the trusted proxy), not NODE_ENV.
+// So cookies are Secure whenever we're really on HTTPS — and a prod box that
+// forgot to set NODE_ENV no longer silently ships session cookies in the clear.
+function cookieOpts(req: Request) {
+  const secure = req.secure;
+  return {
+    access: { httpOnly: true, secure, sameSite: "lax" as const, path: "/", maxAge: ACCESS_MAX_AGE },
+    refresh: { httpOnly: true, secure, sameSite: "lax" as const, path: "/api/auth", maxAge: REFRESH_TTL_MS },
+    clearAccess: { httpOnly: true, secure, sameSite: "lax" as const, path: "/" },
+    clearRefresh: { httpOnly: true, secure, sameSite: "lax" as const, path: "/api/auth" },
+  };
+}
 
 const hashToken = (raw: string) => crypto.createHash("sha256").update(raw).digest("hex");
 const readCookie = (req: { cookies?: Record<string, string> }, name: string) => req.cookies?.[name];
@@ -64,10 +73,11 @@ authRouter.post(
     });
 
     // Access token in a short-lived cookie; refresh token in its own cookie.
-    const access = signToken({ sub: user.id, role: user.role, email: user.email }, ACCESS_TTL);
-    res.cookie(ACCESS_COOKIE, access, accessCookie);
+    const c = cookieOpts(req);
+    const access = signToken({ sub: user.id, role: user.role, email: user.email, mcp: user.mustChangePassword }, ACCESS_TTL);
+    res.cookie(ACCESS_COOKIE, access, c.access);
     const refresh = await issueRefresh(user.id, req.headers["user-agent"]);
-    res.cookie(REFRESH_COOKIE, refresh, refreshCookie);
+    res.cookie(REFRESH_COOKIE, refresh, c.refresh);
     logAudit({
       actorId: user.id,
       actorEmail: user.email,
@@ -97,17 +107,18 @@ authRouter.post(
       where: { tokenHash: hashToken(raw) },
       include: { user: true },
     });
+    const c = cookieOpts(req);
     if (!rt || rt.revokedAt || rt.expiresAt < new Date() || !rt.user.isActive) {
-      res.clearCookie(ACCESS_COOKIE, clearAccess);
-      res.clearCookie(REFRESH_COOKIE, clearRefresh);
+      res.clearCookie(ACCESS_COOKIE, c.clearAccess);
+      res.clearCookie(REFRESH_COOKIE, c.clearRefresh);
       throw ApiError.unauthorized("Invalid refresh token");
     }
     // Rotate: revoke the used token, issue a new one.
     await prisma.refreshToken.update({ where: { id: rt.id }, data: { revokedAt: new Date() } });
     const newRaw = await issueRefresh(rt.userId, req.headers["user-agent"]);
-    res.cookie(REFRESH_COOKIE, newRaw, refreshCookie);
-    const access = signToken({ sub: rt.user.id, role: rt.user.role, email: rt.user.email }, ACCESS_TTL);
-    res.cookie(ACCESS_COOKIE, access, accessCookie);
+    res.cookie(REFRESH_COOKIE, newRaw, c.refresh);
+    const access = signToken({ sub: rt.user.id, role: rt.user.role, email: rt.user.email, mcp: rt.user.mustChangePassword }, ACCESS_TTL);
+    res.cookie(ACCESS_COOKIE, access, c.access);
     res.json({
       user: {
         id: rt.user.id,
@@ -129,8 +140,9 @@ authRouter.post(
         data: { revokedAt: new Date() },
       });
     }
-    res.clearCookie(ACCESS_COOKIE, clearAccess);
-    res.clearCookie(REFRESH_COOKIE, clearRefresh);
+    const c = cookieOpts(req);
+    res.clearCookie(ACCESS_COOKIE, c.clearAccess);
+    res.clearCookie(REFRESH_COOKIE, c.clearRefresh);
     res.json({ ok: true });
   })
 );
@@ -179,6 +191,20 @@ authRouter.post(
         mustChangePassword: false,
       },
     });
+
+    // Revoke every existing refresh token for this user (force-logout everywhere)
+    // — a password change should end all other sessions. Then re-issue THIS
+    // session with fresh cookies (mcp now cleared) so the current device stays in.
+    await prisma.refreshToken.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    const c = cookieOpts(req);
+    const access = signToken({ sub: user.id, role: user.role, email: user.email, mcp: false }, ACCESS_TTL);
+    res.cookie(ACCESS_COOKIE, access, c.access);
+    const refresh = await issueRefresh(user.id, req.headers["user-agent"]);
+    res.cookie(REFRESH_COOKIE, refresh, c.refresh);
+
     audit(req, "auth.password_change", "Changed their password");
     res.json({ ok: true });
   })

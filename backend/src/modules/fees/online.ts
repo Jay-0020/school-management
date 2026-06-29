@@ -7,29 +7,47 @@ import Razorpay from "razorpay";
 import type { InvoiceStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { env } from "../../config/env";
+import { currentTenant } from "../../lib/tenant-context";
+
+// Razorpay credentials are PER SCHOOL: each tenant carries its own keys in the
+// registry, so a parent's payment settles into THAT school's account rather than
+// one shared account. Falls back to global env for the single-tenant demo/fallback.
+function rzpConfig() {
+  const t = currentTenant();
+  return {
+    keyId: t?.razorpayKeyId ?? env.RAZORPAY_KEY_ID,
+    keySecret: t?.razorpayKeySecret ?? env.RAZORPAY_KEY_SECRET,
+    webhookSecret: t?.razorpayWebhookSecret ?? env.RAZORPAY_WEBHOOK_SECRET,
+    feePercent: t?.razorpayConveniencePercent ?? env.CONVENIENCE_FEE_PERCENT,
+  };
+}
 
 export function onlineEnabled(): boolean {
-  return !!(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET);
+  const c = rzpConfig();
+  return !!(c.keyId && c.keySecret);
 }
 
 /** Public-safe config for the frontend (no secrets). */
 export function onlineConfig() {
+  const c = rzpConfig();
   return {
-    enabled: onlineEnabled(),
-    keyId: env.RAZORPAY_KEY_ID ?? null,
-    feePercent: env.CONVENIENCE_FEE_PERCENT,
+    enabled: !!(c.keyId && c.keySecret),
+    keyId: c.keyId ?? null,
+    feePercent: c.feePercent,
   };
 }
 
-let _client: Razorpay | null = null;
+// One Razorpay client per key id (each school's own account).
+const clients = new Map<string, Razorpay>();
 function client(): Razorpay {
-  if (!_client) {
-    _client = new Razorpay({
-      key_id: env.RAZORPAY_KEY_ID!,
-      key_secret: env.RAZORPAY_KEY_SECRET!,
-    });
+  const c = rzpConfig();
+  if (!c.keyId || !c.keySecret) throw new OnlinePayError("ONLINE_DISABLED");
+  let inst = clients.get(c.keyId);
+  if (!inst) {
+    inst = new Razorpay({ key_id: c.keyId, key_secret: c.keySecret });
+    clients.set(c.keyId, inst);
   }
-  return _client;
+  return inst;
 }
 
 function safeEqual(a: string, b: string): boolean {
@@ -72,7 +90,8 @@ export async function createInvoiceOrder(
   const outstanding = invoice.total - invoice.amountPaid; // whole INR
   if (outstanding <= 0) throw new OnlinePayError("NOTHING_DUE");
 
-  const surcharge = Math.round((outstanding * env.CONVENIENCE_FEE_PERCENT) / 100);
+  const cfg = rzpConfig();
+  const surcharge = Math.round((outstanding * cfg.feePercent) / 100);
   const gross = outstanding + surcharge;
 
   const order = await client().orders.create({
@@ -96,7 +115,7 @@ export async function createInvoiceOrder(
     orderId: order.id,
     amount: gross * 100,
     currency: "INR",
-    keyId: env.RAZORPAY_KEY_ID,
+    keyId: cfg.keyId,
     invoiceTitle: invoice.title,
     outstanding,
     surcharge,
@@ -108,7 +127,7 @@ export async function createInvoiceOrder(
 /** Checkout handshake signature: HMAC_SHA256(order_id|payment_id, key_secret). */
 export function verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean {
   const expected = crypto
-    .createHmac("sha256", env.RAZORPAY_KEY_SECRET!)
+    .createHmac("sha256", rzpConfig().keySecret!)
     .update(`${orderId}|${paymentId}`)
     .digest("hex");
   return safeEqual(expected, signature);
@@ -143,7 +162,7 @@ export async function settleOrder(orderId: string, paymentId: string): Promise<s
 
 /** Razorpay webhook (raw body, HMAC-verified) — the authoritative confirmation. */
 export async function razorpayWebhookHandler(req: Request, res: Response) {
-  const secret = env.RAZORPAY_WEBHOOK_SECRET;
+  const secret = rzpConfig().webhookSecret;
   if (!secret) return res.status(503).json({ error: "webhook not configured" });
 
   const signature = req.header("x-razorpay-signature") ?? "";

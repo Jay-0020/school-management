@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, createReadStream, unlink } from "node:fs";
-import { extname, join } from "node:path";
+import { basename, extname, join } from "node:path";
 import { Router } from "express";
 import multer from "multer";
 import { z } from "zod";
@@ -8,11 +8,20 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError, asyncHandler } from "../../lib/http";
 import { authenticate, requireRole } from "../../middleware/auth";
+import { currentTenant } from "../../lib/tenant-context";
 
 export const notesRouter = Router();
 
-const UPLOAD_DIR = join(process.cwd(), "uploads", "notes");
-if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
+/** Per-tenant notes directory: uploads/<tenant-db>/notes (created on demand).
+ *  Namespaced like photos.ts so one school's note row can never point at — or
+ *  delete — another school's file in a shared directory. */
+function notesDir(): string {
+  const db = currentTenant()?.db || "default";
+  const safeDb = db.replace(/[^a-z0-9_]/gi, "_"); // never let the tenant key escape the path
+  const dir = join(process.cwd(), "uploads", safeDb, "notes");
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  return dir;
+}
 
 const ALLOWED = new Set([
   "application/pdf",
@@ -27,7 +36,7 @@ const ALLOWED = new Set([
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: UPLOAD_DIR,
+    destination: (_req, _file, cb) => cb(null, notesDir()),
     filename: (_req, file, cb) => cb(null, `${randomUUID()}${extname(file.originalname)}`),
   }),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
@@ -138,7 +147,7 @@ notesRouter.get(
       if (!visible) throw ApiError.forbidden();
     }
 
-    const path = join(UPLOAD_DIR, note.fileName);
+    const path = join(notesDir(), basename(note.fileName));
     if (!existsSync(path)) throw ApiError.notFound("File missing");
     res.setHeader("Content-Type", note.mimeType);
     res.setHeader(
@@ -177,7 +186,7 @@ notesRouter.delete(
     if (!canDelete) throw ApiError.forbidden();
 
     await prisma.note.delete({ where: { id: note.id } });
-    unlink(join(UPLOAD_DIR, note.fileName), () => {}); // best-effort file cleanup
+    unlink(join(notesDir(), basename(note.fileName)), () => {}); // best-effort file cleanup
     res.status(204).end();
   })
 );

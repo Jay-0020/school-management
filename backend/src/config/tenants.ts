@@ -28,6 +28,13 @@ const tenantSchema = z.object({
   databaseUrl: z.string().min(1),
   jwtSecret: z.string().min(8),
   name: z.string().optional(),
+  // Per-school Razorpay account, so online fee payments settle into THIS
+  // school's own bank (not one shared account). Optional — online pay is simply
+  // disabled for a school until its keys are present.
+  razorpayKeyId: z.string().optional(),
+  razorpayKeySecret: z.string().optional(),
+  razorpayWebhookSecret: z.string().optional(),
+  razorpayConveniencePercent: z.number().optional(),
 });
 
 const registrySchema = z.object({

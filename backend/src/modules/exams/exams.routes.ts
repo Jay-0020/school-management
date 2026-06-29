@@ -216,10 +216,30 @@ examsRouter.post(
     if (!paper) throw ApiError.notFound("Paper not found");
     if (paper.examId !== req.params.id) throw ApiError.badRequest("Paper is not in this exam");
 
+    // H2: a teacher may only enter marks for a subject they're assigned to teach.
+    if (req.user!.role === "TEACHER") {
+      const teaches = await prisma.teachingAssignment.findFirst({
+        where: { subjectId: paper.subjectId, teacher: { userId: req.user!.sub } },
+        select: { id: true },
+      });
+      if (!teaches) throw ApiError.forbidden("You can only enter marks for subjects you teach");
+    }
+
     for (const e of entries) {
       if (e.marksObtained > paper.maxMarks) {
         throw ApiError.badRequest(`Marks can't exceed the max of ${paper.maxMarks}`);
       }
+    }
+
+    // HI-1: every student must belong to this exam's class (not just any school id).
+    const exam = await prisma.exam.findUnique({ where: { id: paper.examId }, select: { classId: true } });
+    const classStudents = await prisma.student.findMany({
+      where: { section: { classId: exam!.classId } },
+      select: { id: true },
+    });
+    const inClass = new Set(classStudents.map((s) => s.id));
+    if (entries.some((e) => !inClass.has(e.studentId))) {
+      throw ApiError.badRequest("One or more students are not in this exam's class");
     }
 
     await prisma.$transaction(
@@ -293,15 +313,39 @@ async function buildReport(examId: string, studentId: string) {
   };
 }
 
-/** Can this user see this student's published report card? */
+/** Can this user see this student's report card? */
 async function canViewReport(role: string, sub: string, examId: string, studentId: string) {
-  if (["SUPER_ADMIN", "ADMIN", "DEAN", "TEACHER"].includes(role)) return true;
-  if (role !== "STUDENT" && role !== "PARENT") return false;
-  const where = role === "PARENT" ? { id: studentId, parentId: sub } : { id: studentId, userId: sub };
-  const student = await prisma.student.findFirst({ where });
-  if (!student) return false;
-  const exam = await prisma.exam.findUnique({ where: { id: examId } });
-  return exam?.status === "PUBLISHED";
+  // Oversight roles see any report (incl. drafts) — they run the school.
+  if (role === "SUPER_ADMIN" || role === "ADMIN" || role === "DEAN") return true;
+
+  const exam = await prisma.exam.findUnique({ where: { id: examId }, select: { status: true } });
+  if (!exam) return false;
+
+  if (role === "TEACHER") {
+    // A teacher sees only PUBLISHED reports, and only for a section they teach
+    // (assigned subject or class teacher) — not every student's draft marks.
+    if (exam.status !== "PUBLISHED") return false;
+    const student = await prisma.student.findUnique({ where: { id: studentId }, select: { sectionId: true } });
+    if (!student?.sectionId) return false;
+    const teaches = await prisma.teachingAssignment.findFirst({
+      where: { sectionId: student.sectionId, teacher: { userId: sub } },
+      select: { id: true },
+    });
+    if (teaches) return true;
+    const classTeacher = await prisma.teacher.findFirst({
+      where: { userId: sub, classTeacherOf: { some: { id: student.sectionId } } },
+      select: { id: true },
+    });
+    return !!classTeacher;
+  }
+
+  if (role === "STUDENT" || role === "PARENT") {
+    const where = role === "PARENT" ? { id: studentId, parentId: sub } : { id: studentId, userId: sub };
+    const student = await prisma.student.findFirst({ where });
+    if (!student) return false;
+    return exam.status === "PUBLISHED";
+  }
+  return false;
 }
 
 examsRouter.get(

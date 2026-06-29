@@ -438,3 +438,29 @@ ratings, feedback, a commendation and a complaint. Logins (all `Demo@1234`):
 superadmin@ / admin@ / dean@ / accountant@ / teacher@ / student@ /
 parent@greenwood.demo. Best viewed on a phone. The demo-guide PDF is updated to
 match.
+
+---
+
+## Update — Study Notes: staff-only uploads + better search
+
+**What changed**
+- **Only teachers and school staff can upload notes now.** Students and parents
+  can still **view and download** notes shared with them, but they can no longer
+  upload — this matches how you wanted it and keeps the system lighter (no flood
+  of student uploads to store and moderate).
+- Because only staff upload, notes are **published immediately** — the old
+  "pending approval" step has been removed (there's nothing left to moderate).
+- **Better searching & filtering.** The Notes page now filters by **subject**,
+  **class/section**, **file type** (PDF / image / document) and **which teacher
+  uploaded it**, alongside the title search. Results are now **paginated**, so the
+  page stays fast even with a large library of notes.
+
+**Who can upload:** Teacher, Dean, Admin, Super Admin. Students & parents are
+view-only.
+
+### How to try it
+1. Log in as a **teacher** (or admin) → open **Study Notes** → **+ Upload notes**.
+2. Log in as a **student/parent** → the upload button is gone; they can still
+   search, filter and download notes shared with their class or school-wide.
+3. Use the filter dropdowns (subject / type / class / teacher) and the search box
+   to find a specific note.

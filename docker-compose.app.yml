@@ -21,6 +21,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: "4000"
+      # The registry lives in a mounted DIRECTORY (see volumes) — point the app at it.
+      TENANTS_FILE: /app/backend/registry/tenants.json
       # JWT_SECRET/DATABASE_URL are NOT needed in multi-school mode — they come
       # per-school from the registry. (They're only used by the single-tenant
       # fallback for a one-school deploy.)
@@ -28,9 +30,13 @@ services:
     ports:
       - "${APP_PORT:-4000}:4000"
     volumes:
-      # The tenant registry (host → db, secrets). Provisioner writes it on the host.
-      - ./backend/tenants.json:/app/backend/tenants.json:ro
-      # Persist uploaded files (notes, etc.) across redeploys.
+      # Mount the registry DIRECTORY (not the single file): a fresh clone with no
+      # tenants.json still mounts cleanly (Docker would otherwise create a bogus
+      # *directory* named tenants.json), and the provisioner replacing the file is
+      # reflected after a restart. Provision with:
+      #   TENANTS_FILE="$(pwd)/backend/registry/tenants.json" npm run provision ...
+      - ./backend/registry:/app/backend/registry:ro
+      # Persist uploaded files (notes, photos) across redeploys.
       - app_uploads:/app/backend/uploads
 
 volumes:

@@ -33,5 +33,6 @@ backend/instances/
 
 # Tenant registry — holds per-school DB URLs + JWT secrets
 backend/tenants.json
+backend/registry/tenants.json
 School-Portal-Demo-Guide.pdf
 Online-Fee-Payment-Options.pdf

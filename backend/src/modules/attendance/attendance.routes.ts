@@ -1,4 +1,5 @@
 import { Router } from "express";
+import type { Request } from "express";
 import { z } from "zod";
 import type { AttendanceStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
@@ -10,6 +11,28 @@ export const attendanceRouter = Router();
 attendanceRouter.use(authenticate);
 
 const STAFF = ["SUPER_ADMIN", "ADMIN", "TEACHER"] as const;
+
+/** Sections a teacher may touch: those they're class teacher of OR assigned to. */
+async function teacherSectionIds(userId: string): Promise<Set<string>> {
+  const teacher = await prisma.teacher.findUnique({
+    where: { userId },
+    select: {
+      classTeacherOf: { select: { id: true } },
+      teachingAssignments: { select: { sectionId: true } },
+    },
+  });
+  const ids = new Set<string>();
+  teacher?.classTeacherOf.forEach((s) => ids.add(s.id));
+  teacher?.teachingAssignments.forEach((a) => ids.add(a.sectionId));
+  return ids;
+}
+
+/** A TEACHER may only read/write attendance for their own sections; admins any. */
+async function assertSectionAccess(req: Request, sectionId: string) {
+  if (req.user!.role !== "TEACHER") return;
+  const ids = await teacherSectionIds(req.user!.sub);
+  if (!ids.has(sectionId)) throw ApiError.forbidden("You can only manage attendance for your own sections");
+}
 
 /** Parse a "YYYY-MM-DD" string into a UTC-midnight Date. */
 function parseDay(value: string): Date {
@@ -26,6 +49,7 @@ attendanceRouter.get(
   requireRole(...STAFF),
   asyncHandler(async (req, res) => {
     const sectionId = z.string().min(1).parse(req.query.sectionId);
+    await assertSectionAccess(req, sectionId);
     const date = parseDay(String(req.query.date));
 
     const [students, records] = await Promise.all([
@@ -71,8 +95,20 @@ attendanceRouter.post(
   requireRole(...STAFF),
   asyncHandler(async (req, res) => {
     const { sectionId, date: dateStr, entries } = bulkSchema.parse(req.body);
+    await assertSectionAccess(req, sectionId);
     const date = parseDay(dateStr);
     const markedById = req.user!.sub;
+
+    // Every entry must be a student of THIS section — otherwise a posted
+    // studentId could move another section's student into this section's record.
+    const inSection = await prisma.student.findMany({
+      where: { sectionId },
+      select: { id: true },
+    });
+    const validIds = new Set(inSection.map((s) => s.id));
+    if (entries.some((e) => !validIds.has(e.studentId))) {
+      throw ApiError.badRequest("One or more students are not in this section");
+    }
 
     await prisma.$transaction(
       entries.map((e) =>
@@ -86,7 +122,8 @@ attendanceRouter.post(
             note: e.note ?? null,
             markedById,
           },
-          update: { status: e.status, note: e.note ?? null, sectionId, markedById },
+          // NB: sectionId is NOT updated — a record's section is fixed at create.
+          update: { status: e.status, note: e.note ?? null, markedById },
         })
       )
     );
@@ -104,6 +141,7 @@ attendanceRouter.get(
   requireRole(...STAFF, "ACCOUNTANT"),
   asyncHandler(async (req, res) => {
     const sectionId = z.string().min(1).parse(req.query.sectionId);
+    await assertSectionAccess(req, sectionId);
     const from = parseDay(String(req.query.from));
     const to = parseDay(String(req.query.to));
     if (to < from) throw ApiError.badRequest("'to' must be on or after 'from'");

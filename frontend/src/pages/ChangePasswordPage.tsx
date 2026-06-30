@@ -56,6 +56,26 @@ export function ChangePasswordPage() {
           {forced ? "Set a new password to continue" : "Change your password"}
         </p>
 
+        {forced && (
+          <div
+            role="alert"
+            style={{
+              background: "#fef3c7",
+              color: "#92400e",
+              border: "1px solid #fcd34d",
+              borderRadius: 10,
+              padding: "10px 12px",
+              margin: "4px 0 14px",
+              fontSize: 13,
+              lineHeight: 1.45,
+              textAlign: "left",
+            }}
+          >
+            🔒 <strong>Password update required.</strong> For your security, you
+            must set a new password before you can continue using the portal.
+          </div>
+        )}
+
         <label>
           Current password
           <input
